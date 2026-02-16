@@ -1,13 +1,91 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+  <defs>
+    <!-- Uncommon Green Metal Gradients (High Contrast for Gloss) -->
+    <linearGradient id="uncommonLegMetal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2a3a2a"/>
+      <stop offset="30%" style="stop-color:#4a5a4a"/>
+      <stop offset="50%" style="stop-color:#8aba8a"/> <!-- Highlight band -->
+      <stop offset="70%" style="stop-color:#5a7a5a"/>
+      <stop offset="100%" style="stop-color:#2a3a2a"/>
+    </linearGradient>
+    
+    <linearGradient id="footGradUncommon" x1="0%" y1="0%" x2="0%" y2="100%">
+       <stop offset="0%" style="stop-color:#3a4a3a"/>
+       <stop offset="100%" style="stop-color:#1a2a1a"/>
+    </linearGradient>
+    
+    <!-- Glassy/Energy Gradient -->
+    <linearGradient id="energyCore" x1="0%" y1="0%" x2="100%" y2="100%">
+       <stop offset="0%" style="stop-color:#ccffcc;stop-opacity:1"/>
+       <stop offset="50%" style="stop-color:#4aff4a;stop-opacity:1"/>
+       <stop offset="100%" style="stop-color:#003300;stop-opacity:1"/>
+    </linearGradient>
 
-  <g id="boots_uncommon">
-    <path d="M44 188 L74 188 L76 202 L42 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M104 188 L134 188 L136 202 L102 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M42 201 L77 201 L79 209 L40 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M102 201 L137 201 L139 209 L100 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M46 192 L74 192" stroke="#4CAF50" stroke-width="1.3" opacity="0.92"/>
-    <path d="M106 192 L134 192" stroke="#4CAF50" stroke-width="1.3" opacity="0.92"/>
-    <path d="M45 194 L73 194 M106 194 L134 194" stroke="#5f789e" stroke-width="1" opacity="0.85"/>
+    <!-- Specular Highlight Overlay -->
+    <linearGradient id="specularGloss" x1="0%" y1="0%" x2="100%" y2="0%">
+       <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0"/>
+       <stop offset="45%" style="stop-color:#ffffff;stop-opacity:0.6"/> <!-- Sharp highlight -->
+       <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.9"/> <!-- Peak -->
+       <stop offset="55%" style="stop-color:#ffffff;stop-opacity:0.6"/>
+       <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </linearGradient>
+
+    <filter id="glossShadowGreen">
+       <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="#001100" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <g id="boots_uncommon" filter="url(#glossShadowGreen)">
+       <!-- Knee Joint (Reinforced & Tinted) -->
+       <circle cx="348" cy="690" r="16" fill="#1a2a1a" stroke="#001100" stroke-width="1.5"/>
+       <circle cx="348" cy="690" r="15" fill="url(#uncommonLegMetal)" opacity="0.6"/> <!-- Glossy Over -->
+       <circle cx="348" cy="690" r="9" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+       
+       <!-- Knee Energy Core (Glowing) -->
+       <circle cx="348" cy="690" r="4" fill="url(#energyCore)"/>
+       <circle cx="346" cy="688" r="1.5" fill="#ffffff" opacity="0.9"/> <!-- Specular dot -->
+
+       <!-- Upper Rod Structure (Thicker) -->
+       <path d="M338,700 L335,830 L361,830 L358,700 Z" fill="url(#uncommonLegMetal)" stroke="#1a2a1a" stroke-width="1.2"/>
+       
+       <!-- Extra Specular Shine on Rod -->
+       <path d="M346,702 L343,828 L349,828 L352,702 Z" fill="url(#specularGloss)" opacity="0.5"/>
+
+       <!-- Reinforcing Plates (Military Tech Look) -->
+       <path d="M336,730 L360,730 L360,750 L336,750 Z" fill="#2a3a2a" stroke="#1a2a1a" stroke-width="0.8"/>
+       
+       <!-- Energy Slots (Glowing) -->
+       <rect x="338" y="732" width="4" height="16" fill="#4aff4a" stroke="#2aff2a" stroke-width="0.5" opacity="0.8">
+           <animate attributeName="opacity" values="0.8;0.4;0.8" dur="3s" repeatCount="indefinite"/>
+       </rect>
+       <rect x="354" y="732" width="4" height="16" fill="#4aff4a" stroke="#2aff2a" stroke-width="0.5" opacity="0.8">
+           <animate attributeName="opacity" values="0.8;0.4;0.8" dur="3.5s" repeatCount="indefinite"/>
+       </rect>
+
+       <!-- Shin Guard (Polished Glass/Ceramic Look) -->
+       <path d="M334,710 L362,710 L358,780 L338,780 Z" fill="#ffffff" opacity="0.1"/>
+       <path d="M334,710 L362,710 L358,780 L338,780 Z" fill="url(#specularGloss)" opacity="0.3"/> <!-- Glassy Reflection -->
+       <path d="M348,710 L348,780" stroke="#aaffaa" stroke-width="0.5" opacity="0.6" stroke-dasharray="4,2"/>
+
+       <!-- Ankle Structure (Hydraulic hint) -->
+       <circle cx="348" cy="830" r="7" fill="#2a3a2a" stroke="#1a2a1a" stroke-width="1.2"/>
+       <circle cx="348" cy="830" r="3" fill="#88aa88" opacity="0.5"/> <!-- Bearing highlight -->
+       
+       <!-- Wiring (Neon Green) -->
+       <path d="M358,705 C365,720 365,750 362,780" fill="none" stroke="#2a8a2a" stroke-width="1.5"/>
+       <path d="M358,705 C365,720 365,750 362,780" fill="none" stroke="#4aff4a" stroke-width="0.5" opacity="0.6"/> <!-- Glow core -->
+
+       <!-- Metal Foot (Polished) -->
+       <path d="M332,832 L364,832 L370,844 L326,844 Z" fill="url(#footGradUncommon)" stroke="#112211" stroke-width="1.2"/>
+       <path d="M332,832 L364,832 L366,836 L330,836 Z" fill="#557755" opacity="0.4"/> <!-- Top facet highlight -->
+       
+       <path d="M336,844 L340,848 L356,848 L360,844" fill="#0a1a0a" opacity="0.7"/> <!-- Sole shadow -->
+       
+       <!-- Green Emission Strips (Intense) -->
+       <rect x="340" y="838" width="16" height="2" fill="#6aff6a" filter="url(#glossShadowGreen)"/>
+       
+       <!-- Detail Bolts (Shiny) -->
+       <circle cx="342" cy="740" r="1.5" fill="#335533" stroke="#112211" stroke-width="0.5"/>
+       <circle cx="354" cy="740" r="1.5" fill="#335533" stroke="#112211" stroke-width="0.5"/>
   </g>
-
 </svg>

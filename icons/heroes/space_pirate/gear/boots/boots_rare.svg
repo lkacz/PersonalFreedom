@@ -1,13 +1,101 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+  <defs>
+    <!-- Rare Deep Blue Metal Gradients -->
+    <linearGradient id="rareLegMetal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0a1a3a"/>
+      <stop offset="30%" style="stop-color:#1a2a4a"/>
+      <stop offset="50%" style="stop-color:#3a6aaa"/> <!-- Highlight band -->
+      <stop offset="70%" style="stop-color:#1a2a4a"/>
+      <stop offset="100%" style="stop-color:#0a1a3a"/>
+    </linearGradient>
+    
+    <linearGradient id="footGradRare" x1="0%" y1="0%" x2="0%" y2="100%">
+       <stop offset="0%" style="stop-color:#1a2a4a"/>
+       <stop offset="100%" style="stop-color:#0a1a2a"/>
+    </linearGradient>
+    
+    <!-- Pulsing Core Gradient -->
+    <radialGradient id="blueEnergyPulse" cx="50%" cy="50%" r="50%">
+       <stop offset="0%" style="stop-color:#ccffff;stop-opacity:1"/>
+       <stop offset="50%" style="stop-color:#00ccff;stop-opacity:0.8"/>
+       <stop offset="100%" style="stop-color:#0000aa;stop-opacity:0"/>
+    </radialGradient>
 
-  <g id="boots_rare">
-    <path d="M44 188 L74 188 L76 202 L42 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M104 188 L134 188 L136 202 L102 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M42 201 L77 201 L79 209 L40 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M102 201 L137 201 L139 209 L100 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M46 192 L74 192" stroke="#2196F3" stroke-width="1.3" opacity="0.92"/>
-    <path d="M106 192 L134 192" stroke="#2196F3" stroke-width="1.3" opacity="0.92"/>
-    <path d="M45 194 L73 194 M106 194 L134 194" stroke="#5f789e" stroke-width="1" opacity="0.85"/><path d="M48 190 L44 192 L48 196 Z" fill="#2196F3" opacity="0.85"/><path d="M132 190 L136 192 L132 196 Z" fill="#2196F3" opacity="0.85"/>
+    <!-- Specular Highlight Overlay -->
+    <linearGradient id="specularGlossBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+       <stop offset="0%" style="stop-color:#88aaff;stop-opacity:0"/>
+       <stop offset="45%" style="stop-color:#ccddff;stop-opacity:0.6"/> <!-- Sharp highlight -->
+       <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.9"/> <!-- Peak -->
+       <stop offset="55%" style="stop-color:#ccddff;stop-opacity:0.6"/>
+       <stop offset="100%" style="stop-color:#88aaff;stop-opacity:0"/>
+    </linearGradient>
+
+    <filter id="rareGlow">
+       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+       <feMerge>
+         <feMergeNode in="coloredBlur"/>
+         <feMergeNode in="SourceGraphic"/>
+       </feMerge>
+    </filter>
+  </defs>
+
+  <g id="boots_rare" filter="url(#rareGlow)">
+       <!-- Knee Joint (Reinforced & Tinted) -->
+       <circle cx="348" cy="690" r="17" fill="#0a1a2a" stroke="#000011" stroke-width="1.5"/>
+       <circle cx="348" cy="690" r="16" fill="url(#rareLegMetal)" opacity="0.8"/> <!-- Glossy Over -->
+       <circle cx="348" cy="690" r="10" fill="#1a2a3a" stroke="#2a3a4a" stroke-width="1"/>
+       
+       <!-- Knee Energy Core (Pulsing) -->
+       <circle cx="348" cy="690" r="5" fill="url(#blueEnergyPulse)">
+           <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+           <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+       </circle>
+       <circle cx="346" cy="688" r="1.5" fill="#ffffff" opacity="0.95"/> <!-- Specular dot -->
+
+       <!-- Upper Rod Structure (Thick & Angular) -->
+       <path d="M336,700 L332,830 L364,830 L360,700 Z" fill="url(#rareLegMetal)" stroke="#0a1a2a" stroke-width="1.2"/>
+       
+       <!-- Extra Specular Shine on Rod -->
+       <path d="M346,702 L343,828 L351,828 L354,702 Z" fill="url(#specularGlossBlue)" opacity="0.6"/>
+
+       <!-- Advanced Plating (Layered) -->
+       <path d="M334,730 L362,730 L362,760 L334,760 Z" fill="#1a2a3a" stroke="#0a1a2a" stroke-width="0.8"/>
+       
+       <!-- Energy Channels (Pulsing) -->
+       <rect x="336" y="732" width="3" height="26" fill="#00ccff" opacity="0.8">
+           <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.5s" repeatCount="indefinite"/>
+       </rect>
+       <rect x="357" y="732" width="3" height="26" fill="#00ccff" opacity="0.8">
+           <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.8s" repeatCount="indefinite"/>
+       </rect>
+
+       <!-- Shin Guard (Holographic/Glass) -->
+       <path d="M330,710 L366,710 L362,800 L334,800 Z" fill="#004488" opacity="0.15"/>
+       <path d="M330,710 L366,710 L362,800 L334,800 Z" fill="url(#specularGlossBlue)" opacity="0.25"/> <!-- Glassy Reflection -->
+       <path d="M330,710 L334,800" stroke="#00ccff" stroke-width="0.5" opacity="0.7"/>
+       <path d="M366,710 L362,800" stroke="#00ccff" stroke-width="0.5" opacity="0.7"/>
+
+       <!-- Ankle Structure -->
+       <circle cx="348" cy="830" r="8" fill="#1a2a3a" stroke="#0a1a2a" stroke-width="1.2"/>
+       <circle cx="348" cy="830" r="4" fill="#5588cc" opacity="0.5"/> <!-- Bearing highlight -->
+       
+       <!-- External Hydraulic Cables (Blue Glow) -->
+       <path d="M360,705 C370,720 370,760 366,800" fill="none" stroke="#0088cc" stroke-width="2"/>
+       <path d="M360,705 C370,720 370,760 366,800" fill="none" stroke="#ccffff" stroke-width="0.6" opacity="0.8"/> <!-- Core -->
+
+       <!-- Metal Foot (High Tech) -->
+       <path d="M328,832 L368,832 L374,844 L322,844 Z" fill="url(#footGradRare)" stroke="#0a1a2a" stroke-width="1.2"/>
+       <path d="M328,832 L368,832 L370,836 L326,836 Z" fill="#335588" opacity="0.5"/> <!-- Top facet highlight -->
+       
+       <path d="M336,844 L340,848 L356,848 L360,844" fill="#001122" opacity="0.8"/> <!-- Sole shadow -->
+       
+       <!-- Blue Emission Strips (Scanning effect) -->
+       <rect x="335" y="838" width="26" height="2" fill="#00ccff">
+            <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+       </rect>
+       
+       <!-- Detail Bolts (Chrome) -->
+       <circle cx="342" cy="745" r="1.5" fill="#aabbcc" stroke="#112233" stroke-width="0.5"/>
+       <circle cx="354" cy="745" r="1.5" fill="#aabbcc" stroke="#112233" stroke-width="0.5"/>
   </g>
-
 </svg>

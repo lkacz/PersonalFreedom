@@ -23,10 +23,11 @@ from PySide6.QtSvg import QSvgRenderer
 # Try to import QWebEngineView for animated SVG support
 try:
     from PySide6.QtWebEngineWidgets import QWebEngineView
-    from PySide6.QtWebEngineCore import QWebEngineSettings
+    from PySide6.QtWebEngineCore import QWebEngineSettings, QWebEnginePage
     HAS_WEBENGINE = True
 except ImportError:
     HAS_WEBENGINE = False
+    QWebEnginePage = None
     _logger.info("QWebEngineView not available - SVG animations disabled")
 
 # Import entitidex components
@@ -470,45 +471,63 @@ class AnimatedSvgWidget(QtWidgets.QWidget):
     when the same entity appears in multiple contexts.
     """
     # Industry standard: __slots__ reduces memory footprint for many instances
-    __slots__ = ('svg_path', 'web_view', 'svg_widget')
+    __slots__ = ('svg_path', 'web_view', 'svg_widget', '_loaded')
     
     def __init__(self, svg_path: str, parent=None):
         super().__init__(parent)
         self.svg_path = svg_path
-        self.web_view: Optional[QWebEngineView] = None  # Industry standard: explicit typing
+        self.web_view: Optional[QWebEngineView] = None
         self.svg_widget: Optional[QSvgWidget] = None
+        self._loaded = False  # Track if HTML has been loaded
         self.setFixedSize(128, 128)
-        
+
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        
+
         if HAS_WEBENGINE:
             # Use WebEngine for full SVG animation support
-            # Industry standard: Pass parent for proper Qt object ownership/cleanup
             self.web_view = QWebEngineView(self)
             self.web_view.setFixedSize(128, 128)
-            
+
             # Configure for transparent background
             self.web_view.page().setBackgroundColor(QtCore.Qt.transparent)
             self.web_view.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-            
+
             # Disable scrollbars and interactions
             settings = self.web_view.settings()
             settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
             settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)  # For CSS animations
-            
-            # Load SVG with transparent background HTML wrapper
-            self._load_svg()
-            
+
+            # NOTE: Do NOT call _load_svg() here - defer until widget is visible.
+            # Qt WebEngine maps widget visibility to Document.hidden. Loading while
+            # hidden causes Chromium to throttle/pause SMIL animations immediately.
+            # The SVG will be loaded on first showEvent via ensure_loaded().
+
             layout.addWidget(self.web_view)
         else:
             # Fallback to static QSvgWidget
-            # Industry standard: Pass parent for proper Qt object ownership/cleanup
             self.svg_widget = QSvgWidget(svg_path, self)
             self.svg_widget.setFixedSize(128, 128)
             self.svg_widget.setStyleSheet("background: transparent;")
             layout.addWidget(self.svg_widget)
+
+    def showEvent(self, event):
+        """Load SVG when widget becomes visible for the first time."""
+        super().showEvent(event)
+        # Defer load one tick to ensure geometry/visibility is fully settled
+        QtCore.QTimer.singleShot(0, self.ensure_loaded)
+
+    def ensure_loaded(self):
+        """Load HTML exactly once, only when widget is actually visible."""
+        if not self.web_view or self._loaded:
+            return
+        # Guard against show->hide races: singleShot(0) can run after the widget
+        # becomes hidden, and hidden loads may start in Chromium throttled state.
+        if not self.isVisible():
+            return
+        self._loaded = True
+        self._load_svg()
     
     @staticmethod
     def _get_cached_svg_content(svg_path: str) -> str:
@@ -573,24 +592,42 @@ class AnimatedSvgWidget(QtWidgets.QWidget):
     
     def stop_animations(self) -> None:
         """Pause WebEngine animations without destroying content.
-        
-        Industry best practice: Use CSS animation-play-state to pause
-        animations instead of unloading content, avoiding expensive re-render.
+
+        Uses page visibility API to pause SMIL animations (Chromium pauses
+        SMIL when Document.hidden=true). CSS animations are paused via
+        animationPlayState. This avoids beginElement/endElement which would
+        reset animation timelines to t=0.
         """
-        if self.web_view:
-            # Pause all CSS/SMIL animations via JavaScript without unloading
-            self.web_view.page().runJavaScript(
+        if self.web_view and HAS_WEBENGINE:
+            # Pause SMIL via page visibility (Chromium pauses SMIL when hidden)
+            page = self.web_view.page()
+            page.setVisible(False)
+            try:
+                page.setLifecycleState(QWebEnginePage.LifecycleState.Frozen)
+            except Exception:
+                pass
+            # Pause CSS animations
+            page.runJavaScript(
                 "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = 'paused');"
-                "document.querySelectorAll('animate, animateTransform, animateMotion').forEach(el => el.endElement ? el.endElement() : null);"
             )
-    
+
     def restart_animations(self) -> None:
-        """Resume WebEngine animations."""
-        if self.web_view:
-            # Resume CSS animations; SMIL animations restart automatically on visibility
-            self.web_view.page().runJavaScript(
+        """Resume WebEngine animations from where they left off.
+
+        Restores page visibility (Chromium auto-resumes SMIL when visible)
+        and clears CSS animation pause state.
+        """
+        if self.web_view and HAS_WEBENGINE:
+            page = self.web_view.page()
+            # Resume SMIL via page visibility
+            try:
+                page.setLifecycleState(QWebEnginePage.LifecycleState.Active)
+            except Exception:
+                pass
+            page.setVisible(True)
+            # Resume CSS animations
+            page.runJavaScript(
                 "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = '');"
-                "document.querySelectorAll('animate, animateTransform, animateMotion').forEach(el => el.beginElement ? el.beginElement() : null);"
             )
 
 
@@ -1281,6 +1318,8 @@ class EntityCard(QtWidgets.QFrame):
         to avoid wasted work on offscreen widgets.
         """
         if not self._animations_paused:
+            return
+        if not self.isVisible():
             return
         self._animations_paused = False
         
@@ -1977,6 +2016,8 @@ class CelebrationCard(QtWidgets.QFrame):
         """Resume animations when card becomes visible."""
         if not self._animations_paused:
             return
+        if not self.isVisible():
+            return
         self._animations_paused = False
         
         if self._glow_animation and self._glow_animation.state() == QtCore.QAbstractAnimation.Paused:
@@ -2216,6 +2257,9 @@ class EntitidexTab(QtWidgets.QWidget):
         
         Resumes animations only for the currently visible theme tab.
         """
+        # Avoid waking hidden tab animations when another tab is active.
+        if not self.isVisible():
+            return
         if self._is_visible:
             return  # Already running
         self._is_visible = True
@@ -2265,6 +2309,10 @@ class EntitidexTab(QtWidgets.QWidget):
         Only resumes animations for cards in the currently visible theme sub-tab.
         """
         if not self._initialized:
+            return
+        if not self.isVisible():
+            # Defensive guard for startup/background tab changes.
+            self._is_visible = False
             return
         self._is_visible = True
         

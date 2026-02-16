@@ -608,6 +608,209 @@ class TestDailyRewardSystem(unittest.TestCase):
         self.assertIn("slot", item)
 
 
+class TestPowerGatedRarityRoll(unittest.TestCase):
+    """Tests for hero-power rarity gating on lottery rolls."""
+
+    def test_default_power_gates_match_requested_thresholds(self) -> None:
+        """Defaults should gate Epic at 200 and Legendary at 400."""
+        from gamification import get_rarity_power_gates
+
+        gates = get_rarity_power_gates({})
+        self.assertEqual(gates.get("Epic"), 200)
+        self.assertEqual(gates.get("Legendary"), 400)
+
+    def test_power_gate_can_be_overridden_from_config(self) -> None:
+        """Per-profile gate config should override defaults."""
+        from gamification import get_rarity_power_gates
+
+        gates = get_rarity_power_gates({
+            "rarity_power_gates": {
+                "Epic": 250,
+                "legendary": 500,
+            }
+        })
+        self.assertEqual(gates.get("Epic"), 250)
+        self.assertEqual(gates.get("Legendary"), 500)
+
+    def test_power_gate_config_is_normalized_to_non_decreasing_order(self) -> None:
+        """Manual inversions should be normalized so higher tiers never unlock earlier."""
+        from gamification import get_rarity_power_gates
+
+        gates = get_rarity_power_gates({
+            "rarity_power_gates": {
+                "Epic": 500,
+                "Legendary": 300,
+            }
+        })
+        self.assertEqual(gates.get("Epic"), 500)
+        self.assertEqual(gates.get("Legendary"), 500)
+
+    def test_roll_is_capped_to_unlocked_span_when_tiers_are_locked(self) -> None:
+        """When high tiers are locked, roll ceiling should stop before their zones."""
+        from gamification import evaluate_power_gated_rarity_roll
+
+        rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        weights = [5, 15, 30, 35, 15]  # unlocked span for <200 should end at 50%
+        outcome = evaluate_power_gated_rarity_roll(
+            rarities,
+            weights,
+            hero_power=150,
+            roll=99.0,
+        )
+
+        self.assertAlmostEqual(outcome["roll_ceiling"], 50.0, places=6)
+        self.assertLess(outcome["roll"], 50.0)
+        self.assertEqual(outcome["rarity"], "Rare")
+        self.assertIn("Epic", outcome["locked_rarities"])
+        self.assertIn("Legendary", outcome["locked_rarities"])
+        self.assertTrue(outcome["downgraded"])
+
+    def test_all_weighted_locked_downgrades_to_highest_unlocked_tier(self) -> None:
+        """If all weighted zones are locked, fallback should pick highest unlocked tier."""
+        from gamification import evaluate_power_gated_rarity_roll
+
+        rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        weights = [0, 0, 0, 80, 20]  # Only locked tiers weighted at low power
+        outcome = evaluate_power_gated_rarity_roll(
+            rarities,
+            weights,
+            hero_power=100,
+            roll=90.0,
+        )
+
+        self.assertTrue(outcome["all_weighted_locked"])
+        self.assertTrue(outcome["downgraded"])
+        self.assertEqual(outcome["roll_ceiling"], 0.0)
+        self.assertEqual(outcome["rarity"], "Rare")
+
+    def test_weight_daily_outcome_is_power_gated(self) -> None:
+        """Weight daily rarity should respect hero-power locks."""
+        from gamification import roll_daily_weight_reward_outcome
+
+        adhd_buster = {
+            "equipped": {},
+            "inventory": [],
+            "rarity_power_gates": {
+                "Epic": 200,
+                "Legendary": 400,
+            },
+        }
+        outcome = roll_daily_weight_reward_outcome(
+            weight_loss_grams=500,
+            legendary_bonus=0,
+            adhd_buster=adhd_buster,
+            roll=99.0,
+        )
+        self.assertIsNotNone(outcome)
+        self.assertEqual(outcome["rarity"], "Rare")
+        self.assertTrue(outcome["power_gating"]["all_weighted_locked"])
+        self.assertTrue(outcome["power_gating"]["downgraded"])
+
+    def test_eye_routine_outcome_is_gated_but_merge_stays_ungated(self) -> None:
+        """Eye-routine roll applies gates while lucky-merge behavior is unchanged."""
+        from gamification import roll_eye_routine_reward_outcome, roll_merge_lottery
+
+        adhd_buster = {
+            "equipped": {},
+            "inventory": [],
+            "rarity_power_gates": {
+                "Epic": 200,
+                "Legendary": 400,
+            },
+        }
+        eye_outcome = roll_eye_routine_reward_outcome(
+            success_threshold=1.0,
+            base_rarity="Legendary",
+            adhd_buster=adhd_buster,
+            success_roll=0.0,
+            tier_roll=99.0,
+        )
+        merge_outcome = roll_merge_lottery(
+            success_threshold=1.0,
+            base_rarity="Legendary",
+            success_roll=0.0,
+            tier_roll=99.0,
+        )
+
+        self.assertEqual(eye_outcome["rolled_tier"], "Rare")
+        self.assertIn("power_gating", eye_outcome)
+        self.assertEqual(merge_outcome["rolled_tier"], "Legendary")
+
+    def test_deterministic_reward_target_is_downtoned_when_locked(self) -> None:
+        """Fixed rarity grants should downgrade to unlocked tiers at low power."""
+        from gamification import resolve_power_gated_reward_rarity
+
+        adhd_buster = {
+            "equipped": {},
+            "inventory": [],
+            "rarity_power_gates": {
+                "Epic": 200,
+                "Legendary": 400,
+            },
+        }
+        outcome = resolve_power_gated_reward_rarity("Legendary", adhd_buster=adhd_buster)
+
+        self.assertEqual(outcome["rarity"], "Rare")
+        self.assertTrue(outcome["downgraded"])
+        self.assertTrue(outcome["power_gating"]["downgraded"])
+
+    def test_weight_weekly_and_monthly_rewards_respect_power_gates(self) -> None:
+        """Weight weekly/monthly deterministic bonuses should not bypass gates."""
+        from gamification import check_weight_entry_rewards
+
+        adhd_buster = {
+            "equipped": {},
+            "inventory": [],
+            "rarity_power_gates": {
+                "Epic": 200,
+                "Legendary": 400,
+            },
+        }
+        existing_entries = [
+            {"date": "2026-01-17", "weight": 82.0},  # 30 days before current_date
+            {"date": "2026-02-09", "weight": 81.0},  # 7 days before current_date
+        ]
+        rewards = check_weight_entry_rewards(
+            weight_entries=existing_entries,
+            new_weight=80.0,
+            current_date="2026-02-16",
+            story_id="warrior",
+            adhd_buster=adhd_buster,
+        )
+
+        self.assertIsNotNone(rewards.get("weekly_reward"))
+        self.assertIsNotNone(rewards.get("monthly_reward"))
+        self.assertEqual(rewards["weekly_reward"]["rarity"], "Rare")
+        self.assertEqual(rewards["monthly_reward"]["rarity"], "Rare")
+        self.assertTrue((rewards.get("weekly_power_gating") or {}).get("downgraded"))
+        self.assertTrue((rewards.get("monthly_power_gating") or {}).get("downgraded"))
+
+    def test_hydration_streak_bonus_reward_is_power_gated(self) -> None:
+        """Hydration streak bonuses should downtone locked tiers."""
+        from gamification import check_water_entry_reward
+
+        adhd_buster = {
+            "equipped": {},
+            "inventory": [],
+            "rarity_power_gates": {
+                "Epic": 200,
+                "Legendary": 400,
+            },
+        }
+        rewards = check_water_entry_reward(
+            glasses_today=4,
+            streak_days=29,
+            story_id="warrior",
+            adhd_buster=adhd_buster,
+        )
+
+        streak_bonus = rewards.get("streak_bonus")
+        self.assertIsNotNone(streak_bonus)
+        self.assertEqual(streak_bonus["requested_rarity"], "Legendary")
+        self.assertEqual(streak_bonus["rarity"], "Rare")
+        self.assertTrue((streak_bonus.get("power_gating") or {}).get("downgraded"))
+
+
 class TestPriorityCompletionReward(unittest.TestCase):
     """Tests for priority completion reward system."""
     

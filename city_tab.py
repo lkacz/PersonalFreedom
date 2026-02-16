@@ -342,6 +342,10 @@ class AnimatedBuildingWidget(QtWidgets.QWidget):
         """Load HTML exactly once, only when widget is actually visible."""
         if not self.web_view or self._loaded:
             return
+        # Guard against show->hide races: singleShot(0) can run after the widget
+        # becomes hidden, and hidden loads may start in Chromium throttled state.
+        if not self.isVisible():
+            return
         self._loaded = True
         
         svg_content = self._get_cached_svg_content(self.svg_path)
@@ -426,21 +430,28 @@ class AnimatedBuildingWidget(QtWidgets.QWidget):
                 pass  # Lifecycle API may not be available in all Qt versions
     
     def stop_animations(self) -> None:
-        """Pause WebEngine animations without destroying content."""
+        """Pause WebEngine animations without destroying content.
+
+        Uses page visibility API to pause SMIL (Chromium auto-pauses SMIL when
+        Document.hidden=true). CSS animations are paused via animationPlayState.
+        Avoids beginElement/endElement which would reset animation timelines.
+        """
         if self.web_view:
             self.set_active(False)
             self.web_view.page().runJavaScript(
                 "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = 'paused');"
-                "document.querySelectorAll('animate, animateTransform, animateMotion').forEach(el => el.endElement ? el.endElement() : null);"
             )
-    
+
     def restart_animations(self) -> None:
-        """Resume WebEngine animations."""
+        """Resume WebEngine animations from where they left off.
+
+        Restores page visibility (Chromium auto-resumes SMIL when visible)
+        and clears CSS animation pause state.
+        """
         if self.web_view:
             self.set_active(True)
             self.web_view.page().runJavaScript(
                 "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = '');"
-                "document.querySelectorAll('animate, animateTransform, animateMotion').forEach(el => el.beginElement ? el.beginElement() : null);"
             )
 
 
@@ -962,30 +973,25 @@ class CityCell(QtWidgets.QFrame):
         
         # Create WebEngineView if it doesn't exist
         if not self._web_view:
-            self._web_view = QWebEngineView()  # No parent - will be added to layout
+            self._web_view = QWebEngineView(self)  # Pass parent for proper Qt ownership
             self._web_view.setFixedSize(128, 128)
-            
-            # DON'T set transparent background - it breaks animations
-            # Just use dark background to match theme
-            # self._web_view.page().setBackgroundColor(QtCore.Qt.transparent)
-            # self._web_view.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-            
+
             # Allow mouse clicks to pass through to parent CityCell
             self._web_view.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, True)
-            
+
             # Disable scrollbars
             settings = self._web_view.settings()
             settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
             settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
-            
+
             # Add to layout at same position as icon_label
             self.layout().insertWidget(0, self._web_view, 0, QtCore.Qt.AlignCenter)
-        
+
         self._web_view.show()
-        
+
         # Load SVG content immediately
         svg_content = self._get_cached_svg_content(svg_path)
-        
+
         # Use dark background to match theme (not transparent)
         html = f'''<!DOCTYPE html>
 <html>
@@ -1036,16 +1042,16 @@ class CityCell(QtWidgets.QFrame):
         
         # Create WebEngineView if it doesn't exist
         if not self._web_view:
-            self._web_view = QWebEngineView()
+            self._web_view = QWebEngineView(self)  # Pass parent for proper Qt ownership
             self._web_view.setFixedSize(128, 128)
-            
+
             # Allow mouse clicks to pass through to parent CityCell
             self._web_view.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, True)
-            
+
             settings = self._web_view.settings()
             settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
             settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
-            
+
             self.layout().insertWidget(0, self._web_view, 0, QtCore.Qt.AlignCenter)
         
         self._web_view.show()
@@ -3075,7 +3081,9 @@ class BuildingDetailsDialog(StyledDialog):
         content_layout.addSpacing(15)
         
         # Upgrade section
-        can_up, up_reason = can_upgrade(self.adhd_buster, self.row, self.col)
+        # IMPORTANT: check full initiation readiness (including stockpile costs),
+        # not just logical upgrade eligibility.
+        can_up, up_reason = can_initiate_upgrade(self.adhd_buster, self.row, self.col)
         
         if level < max_level:
             next_reqs = get_level_requirements(self.building, level + 1)
@@ -3226,8 +3234,19 @@ class BuildingDetailsDialog(StyledDialog):
     
     def _start_upgrade(self):
         """Start the upgrade process."""
-        success = start_upgrade(self.adhd_buster, self.row, self.col)
-        if success:
+        # Use canonical initiate API so we can surface detailed failure reasons.
+        game_state = None
+        try:
+            main_window = self.window()
+            game_state = getattr(main_window, "game_state", None)
+        except Exception:
+            game_state = None
+
+        result = initiate_upgrade(self.adhd_buster, self.row, self.col, game_state)
+        if result.get("success"):
+            effort_req = result.get("effort_required", {})
+            activity_needed = int(effort_req.get("activity", 0) or 0)
+            focus_needed = int(effort_req.get("focus", 0) or 0)
             # Play ascending anticipation sound
             play_upgrade_started(self.building_id)
             styled_info(
@@ -3235,14 +3254,20 @@ class BuildingDetailsDialog(StyledDialog):
                 "Upgrade Started",
                 f"Upgrading {self.building.get('name')}!<br><br>"
                 f"Invest effort to complete:<br>"
-                f"🏃 Activity - Log workouts<br>"
-                f"🎯 Focus - Complete focus sessions"
+                f"Activity: {activity_needed}<br>"
+                f"Focus: {focus_needed}"
             )
             self.accept()
         else:
-            # Silent failure - just close dialog
-            self.reject()
-    
+            reason = result.get("error", "Upgrade could not be started.")
+            styled_warning(
+                self,
+                "Upgrade Unavailable",
+                f"{reason}<br><br>"
+                f"Tip: Upgrades consume Water and Materials upfront, "
+                f"then complete via Activity and Focus."
+            )
+
     def _demolish(self):
         """Demolish the building."""
         # Calculate refund preview before confirming
@@ -3301,24 +3326,45 @@ class CityTab(QtWidgets.QWidget):
         # Don't call _refresh_city() here - defer to showEvent
         # This prevents WebEngineViews from loading while tab is hidden
     
-    def showEvent(self, event):
-        """Handle tab becoming visible - load/reload WebEngineViews."""
-        super().showEvent(event)
-        if self._first_show:
-            # First time visible - do initial refresh (deferred to ensure visibility)
-            self._first_show = False
-            # Use longer delay and also trigger animation load after grid is ready
-            QtCore.QTimer.singleShot(100, self._refresh_city)
-            QtCore.QTimer.singleShot(500, self._force_reload_all_svgs)
+    def _on_first_show(self) -> None:
+        """Run one-time first-show refresh after the tab becomes visible."""
+        if not self._first_show:
+            return
+        self._first_show = False
+        # Defer a bit so WebEngine widgets are attached/visible before loading SVG HTML.
+        QtCore.QTimer.singleShot(100, self._refresh_city)
+        QtCore.QTimer.singleShot(500, self._force_reload_all_svgs)
     
     def _force_reload_all_svgs(self):
         """Force reload all SVGs in the grid after a delay."""
         if hasattr(self, 'city_grid') and hasattr(self.city_grid, 'cells'):
-            for cell in self.city_grid.cells:
-                if hasattr(cell, '_current_svg_path') and cell._current_svg_path:
-                    # Force reload by clearing current path
-                    svg_path = cell._current_svg_path
+            for row_cells in self.city_grid.cells:
+                for cell in row_cells:
+                    if not cell.isVisible():
+                        continue
+                    if not hasattr(cell, "_current_svg_path") or not cell._current_svg_path:
+                        continue
+
+                    # Force reload by clearing current path first.
+                    svg_path = str(cell._current_svg_path)
                     cell._current_svg_path = None
+
+                    # Construction state stores a synthetic key:
+                    #   "<building_svg_path>+construction"
+                    # so we need to route reload to the correct API.
+                    if svg_path.endswith("+construction"):
+                        building_svg_path = svg_path[:-len("+construction")]
+                        construction_svg_path = CITY_ICONS_PATH / "_construction.svg"
+                        if construction_svg_path.exists():
+                            cell._show_construction_animated_svg(
+                                building_svg_path,
+                                str(construction_svg_path),
+                            )
+                            continue
+                        if building_svg_path:
+                            cell._show_animated_svg(building_svg_path)
+                            continue
+
                     cell._show_animated_svg(svg_path)
     
     def _setup_ui(self):
@@ -3553,6 +3599,10 @@ class CityTab(QtWidgets.QWidget):
     
     def _refresh_city(self):
         """Refresh all city displays from data."""
+        # Prevent hidden-tab WebEngine churn: many external callers refresh city
+        # state opportunistically, but SVG pages should only load while visible.
+        if not self.isVisible():
+            return
         if not CITY_AVAILABLE:
             self.info_panel.setText("City system not available")
             return
@@ -3620,13 +3670,11 @@ class CityTab(QtWidgets.QWidget):
         """Activate animations on all cells when tab becomes visible.
         
         This is called when the tab is re-shown after being hidden.
-        WebEngineViews need their content reloaded when becoming visible.
+        WebEngine pages may need visibility/lifecycle nudges when becoming visible.
         """
         try:
-            if hasattr(self, 'city_grid') and hasattr(self.city_grid, 'cells'):
-                for cell in self.city_grid.cells:
-                    if hasattr(cell, '_load_pending_svg'):
-                        cell._load_pending_svg()
+            self._resume_all_animations()
+            self._force_reload_all_svgs()
         except Exception as e:
             _logger.debug(f"Error activating animations: {e}")
     
@@ -3876,8 +3924,11 @@ class CityTab(QtWidgets.QWidget):
         self.request_save.emit()
     
     def showEvent(self, event: QtGui.QShowEvent):
-        """Refresh when tab becomes visible (with throttling)."""
+        """Refresh when tab becomes visible and resume animation lifecycle."""
         super().showEvent(event)
+        self._on_first_show()
+        self._resume_all_animations()
+
         # Throttle refreshes to avoid excessive updates
         current_time = time.time()
         if current_time - self._last_refresh_time > 0.5:  # Max once per 500ms
@@ -3891,8 +3942,56 @@ class CityTab(QtWidgets.QWidget):
     def hideEvent(self, event: QtGui.QHideEvent):
         """Stop auto-refresh when tab is hidden to save resources."""
         super().hideEvent(event)
+        self._pause_all_animations()
         self._income_timer.stop()
-    
+
+    # ------------------------------------------------------------------
+    # Animation lifecycle management (called by MainWindow._on_tab_changed
+    # and on_window_minimized / on_window_restored)
+    # ------------------------------------------------------------------
+    def _pause_all_animations(self) -> None:
+        """Pause all WebEngine SMIL animations in the city grid to save CPU."""
+        if not hasattr(self, 'city_grid') or not hasattr(self.city_grid, 'cells'):
+            return
+        for row_cells in self.city_grid.cells:
+            for cell in row_cells:
+                if hasattr(cell, '_web_view') and cell._web_view and HAS_WEBENGINE:
+                    page = cell._web_view.page()
+                    page.setVisible(False)
+                    try:
+                        page.setLifecycleState(QWebEnginePage.LifecycleState.Frozen)
+                    except Exception:
+                        pass
+
+    def _resume_all_animations(self) -> None:
+        """Resume all WebEngine SMIL animations in the city grid."""
+        if not self.isVisible():
+            return
+        if not hasattr(self, 'city_grid') or not hasattr(self.city_grid, 'cells'):
+            return
+        for row_cells in self.city_grid.cells:
+            for cell in row_cells:
+                if not cell.isVisible():
+                    continue
+                if hasattr(cell, '_web_view') and cell._web_view and HAS_WEBENGINE:
+                    page = cell._web_view.page()
+                    try:
+                        page.setLifecycleState(QWebEnginePage.LifecycleState.Active)
+                    except Exception:
+                        pass
+                    page.setVisible(True)
+
+    def on_window_minimized(self) -> None:
+        """Pause city animations when the main window is minimized."""
+        self._pause_all_animations()
+
+    def on_window_restored(self) -> None:
+        """Resume city animations when the main window is restored."""
+        # City pages should only resume when the tab is actually visible.
+        if not self.isVisible():
+            return
+        self._resume_all_animations()
+
     def _update_pending_income_display(self):
         """Update only the pending income display (lightweight refresh)."""
         if not CITY_AVAILABLE:

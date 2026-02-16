@@ -1,10 +1,301 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <!-- Parrot-colored metals -->
+    <linearGradient id="redShell" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d42848"/>
+      <stop offset="40%" style="stop-color:#b82040"/>
+      <stop offset="100%" style="stop-color:#8e1830"/>
+    </linearGradient>
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0b830"/>
+      <stop offset="50%" style="stop-color:#d89c18"/>
+      <stop offset="100%" style="stop-color:#b88010"/>
+    </linearGradient>
+    <linearGradient id="blueAccent" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2098dd"/>
+      <stop offset="50%" style="stop-color:#1878bb"/>
+      <stop offset="100%" style="stop-color:#106098"/>
+    </linearGradient>
+    <linearGradient id="greenAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#30bb60"/>
+      <stop offset="100%" style="stop-color:#209848"/>
+    </linearGradient>
+    <linearGradient id="darkMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3a3a50"/>
+      <stop offset="50%" style="stop-color:#2a2a3e"/>
+      <stop offset="100%" style="stop-color:#1e1e30"/>
+    </linearGradient>
+    <linearGradient id="lightMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8a8ea0"/>
+      <stop offset="40%" style="stop-color:#6e7288"/>
+      <stop offset="100%" style="stop-color:#585c72"/>
+    </linearGradient>
+    <linearGradient id="chrome" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#b0b4c8"/>
+      <stop offset="50%" style="stop-color:#d8dce8"/>
+      <stop offset="100%" style="stop-color:#b0b4c8"/>
+    </linearGradient>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#001820"/>
+      <stop offset="100%" style="stop-color:#002830"/>
+    </linearGradient>
+    <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00ffcc;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#00ccaa;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#008866;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="thrusterGlow" cx="50%" cy="0%" r="80%">
+      <stop offset="0%" style="stop-color:#2098dd;stop-opacity:0.7"/>
+      <stop offset="50%" style="stop-color:#1878bb;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#106098;stop-opacity:0"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+    <clipPath id="screenClip">
+      <rect x="100" y="150" width="58" height="34" rx="5"/>
+    </clipPath>
+  </defs>
 
-  <g id="shield_rare">
-    <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="#2e476f" stroke="#13233a" stroke-width="1.2"/>
-    <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="none" stroke="#2196F3" stroke-width="1" opacity="0.95"/>
-    <path d="M37 106 L60 105" stroke="#a6c0e4" stroke-width="0.85" opacity="0.62"/>
-    <path d="M38 111 L59 111 M38 120 L59 120 M38 129 L59 129" stroke="#58739b" stroke-width="0.92" opacity="0.72"/><path d="M40 105 L58 102 L61 118 L57 143 L40 141 L38 125 Z" fill="none" stroke="#2196F3" stroke-width="0.9" opacity="0.8"/>
+  <!-- Ground shadow - scaled down significantly and moved to match new foot position -->
+  <ellipse cx="40" cy="216" rx="16" ry="2" fill="#000" opacity="0.1"/>
+
+  <g transform="translate(5, 175) scale(0.133)">
+      <!-- Ground shadow (internal to group, now redundant but kept for self-containment if needed) -->
+      <!-- <ellipse cx="130" cy="286" rx="48" ry="5" fill="#000" opacity="0.1"/> -->
+
+      <g id="parrotBot" filter="url(#shadow)">
+
+        <!-- ===== LEGS ===== -->
+        <g id="legs">
+          <!-- Left leg -->
+          <g id="leftLeg">
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -10; 0 0; 0 0" keyTimes="0; 0.2; 0.4; 1" dur="4s" repeatCount="indefinite" />
+            <rect x="95" y="248" width="6" height="22" rx="2" fill="url(#lightMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <!-- Left knee joint -->
+            <circle cx="98" cy="250" r="4" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <circle cx="98" cy="250" r="1.5" fill="#30bb60" opacity="0.5"/>
+            <!-- Left foot -->
+            <path d="M86,268 L80,275 L78,280 L118,280 L116,275 L110,268" fill="url(#darkMetal)" stroke="#3a3a50" stroke-width="0.8"/>
+            <!-- Foot grip pads -->
+            <rect x="84" y="276" width="8" height="3" rx="1" fill="#30bb60" opacity="0.3"/>
+            <rect x="96" y="276" width="8" height="3" rx="1" fill="#30bb60" opacity="0.3"/>
+            <rect x="108" y="276" width="6" height="3" rx="1" fill="#30bb60" opacity="0.25"/>
+            <!-- Foot edge -->
+            <line x1="80" y1="280" x2="118" y2="280" stroke="#4a4e64" stroke-width="1"/>
+          </g>
+
+          <!-- Right leg -->
+          <g id="rightLeg">
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 0; 0 -10; 0 0" keyTimes="0; 0.5; 0.7; 1" dur="4s" repeatCount="indefinite" />
+            <rect x="157" y="248" width="6" height="22" rx="2" fill="url(#lightMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <!-- Right knee joint -->
+            <circle cx="160" cy="250" r="4" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <circle cx="160" cy="250" r="1.5" fill="#30bb60" opacity="0.5"/>
+            <!-- Right foot -->
+            <path d="M148,268 L142,275 L140,280 L180,280 L178,275 L172,268" fill="url(#darkMetal)" stroke="#3a3a50" stroke-width="0.8"/>
+            <rect x="146" y="276" width="6" height="3" rx="1" fill="#30bb60" opacity="0.25"/>
+            <rect x="154" y="276" width="8" height="3" rx="1" fill="#30bb60" opacity="0.3"/>
+            <rect x="166" y="276" width="8" height="3" rx="1" fill="#30bb60" opacity="0.3"/>
+            <line x1="142" y1="280" x2="180" y2="280" stroke="#4a4e64" stroke-width="1"/>
+          </g>
+        </g>
+
+        <!-- ===== LOWER BODY / HIP ===== -->
+        <g id="hip">
+          <rect x="88" y="232" width="82" height="22" rx="6" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="1"/>
+          <!-- Hip stripe -->
+          <rect x="92" y="238" width="74" height="4" rx="2" fill="url(#blueAccent)" opacity="0.5"/>
+          <!-- Hip vents -->
+          <line x1="98" y1="234" x2="98" y2="252" stroke="#222236" stroke-width="1.5" opacity="0.4"/>
+          <line x1="160" y1="234" x2="160" y2="252" stroke="#222236" stroke-width="1.5" opacity="0.4"/>
+        </g>
+
+        <!-- ===== TORSO (main red shell) ===== -->
+        <g id="torso">
+          <!-- Main body -->
+          <rect x="78" y="130" width="102" height="108" rx="14" fill="url(#redShell)" stroke="#8e1830" stroke-width="1.2"/>
+
+          <!-- Gold chest plate -->
+          <rect x="92" y="142" width="74" height="50" rx="8" fill="url(#goldAccent)" stroke="#a07808" stroke-width="0.8"/>
+          <!-- Chest screen -->
+          <rect x="100" y="150" width="58" height="34" rx="5" fill="url(#screenGrad)" stroke="#004450" stroke-width="1"/>
+          <!-- Screen content: simple waveform / heartbeat -->
+          <g clip-path="url(#screenClip)">
+            <polyline points="0,167 10,167 14,157 18,177 22,162 26,172 30,164 34,167 40,167 44,160 48,174 52,167 60,167" fill="none" stroke="#00ffcc" stroke-width="1.2" opacity="0.7" filter="url(#glow)" transform="translate(100, 0)">
+               <animateTransform attributeName="transform" type="translate" from="100 0" to="90 0" dur="0.2s" repeatCount="indefinite" additive="sum"/>
+               <!-- More complex scrolling look simulation by just repeating a pattern -->
+               <animate attributeName="points" values="
+                100,167 108,167 112,157 116,177 120,162 124,172 128,164 132,167 136,167 140,160 144,174 148,167;
+                96,167 104,167 108,157 112,177 116,162 120,172 124,164 128,167 132,167 136,160 140,174 144,167" 
+                dur="0.5s" repeatCount="indefinite"/>
+            </polyline>
+            <!-- Moving scan line (already exists, keeping it) -->
+            <rect x="100" y="165" width="58" height="1" fill="#00ffcc" opacity="0.08">
+              <animate attributeName="y" values="150;182;150" dur="3s" repeatCount="indefinite"/>
+            </rect>
+          </g>
+          <!-- Screen corner dots -->
+          <circle cx="105" cy="155" r="1.5" fill="#00ffcc" opacity="0.4"/>
+          <circle cx="153" cy="155" r="1.5" fill="#00ffcc" opacity="0.4"/>
+          <circle cx="105" cy="179" r="1.5" fill="#00ffcc" opacity="0.4"/>
+          <circle cx="153" cy="179" r="1.5" fill="#00ffcc" opacity="0.4"/>
+
+          <!-- Blue panel below chest -->
+          <rect x="92" y="198" width="74" height="18" rx="5" fill="url(#blueAccent)" stroke="#10588a" stroke-width="0.8"/>
+          <!-- Panel details -->
+          <circle cx="106" cy="207" r="3" fill="#0e4870" stroke="#1878bb" stroke-width="0.6"/>
+          <circle cx="106" cy="207" r="1.2" fill="#2098dd" opacity="0.7"/>
+          <rect x="118" y="204" width="30" height="6" rx="3" fill="#0e4870" stroke="#1878bb" stroke-width="0.5"/>
+          <rect x="120" y="205.5" width="12" height="3" rx="1.5" fill="#30bb60" opacity="0.6"/>
+          <circle cx="152" cy="207" r="3" fill="#0e4870" stroke="#1878bb" stroke-width="0.6"/>
+          <circle cx="152" cy="207" r="1.2" fill="#f0b830" opacity="0.7"/>
+
+          <!-- Side panel lines -->
+          <line x1="82" y1="160" x2="82" y2="220" stroke="#771428" stroke-width="0.8" opacity="0.5"/>
+          <line x1="176" y1="160" x2="176" y2="220" stroke="#771428" stroke-width="0.8" opacity="0.5"/>
+
+          <!-- Side rivets -->
+          <circle cx="84" cy="150" r="2" fill="#a02038" stroke="#881830" stroke-width="0.5"/>
+          <circle cx="84" cy="175" r="2" fill="#a02038" stroke="#881830" stroke-width="0.5"/>
+          <circle cx="84" cy="200" r="2" fill="#a02038" stroke="#881830" stroke-width="0.5"/>
+          <circle cx="174" cy="150" r="2" fill="#a02038" stroke="#881830" stroke-width="0.5"/>
+          <circle cx="174" cy="175" r="2" fill="#a02038" stroke="#881830" stroke-width="0.5"/>
+          <circle cx="174" cy="200" r="2" fill="#a02038" stroke="#881830" stroke-width="0.5"/>
+        </g>
+
+        <!-- ===== ARMS ===== -->
+        <g id="arms">
+          <!-- Left arm -->
+          <g id="leftArm">
+            <!-- Shoulder joint -->
+            <circle cx="74" cy="148" r="8" fill="url(#redShell)" stroke="#8e1830" stroke-width="1"/>
+            <circle cx="74" cy="148" r="4" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <!-- Upper arm -->
+            <rect x="66" y="155" width="10" height="28" rx="4" fill="url(#goldAccent)" stroke="#a07808" stroke-width="0.8"/>
+            <!-- Elbow joint -->
+            <circle cx="71" cy="186" r="5" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <circle cx="71" cy="186" r="2" fill="#2098dd" opacity="0.4"/>
+            <!-- Forearm -->
+            <rect x="64" y="190" width="10" height="24" rx="4" fill="url(#blueAccent)" stroke="#10588a" stroke-width="0.8"/>
+            <!-- Hand / gripper -->
+            <path d="M62,214 C58,218 56,224 60,228 C63,231 70,230 73,226 C76,222 77,216 74,214" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <!-- Gripper slit -->
+            <line x1="64" y1="220" x2="72" y2="220" stroke="#222236" stroke-width="1.2"/>
+            <!-- Finger tips -->
+            <path d="M60,228 C59,230 60,232 62,232 L63,229" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.5"/>
+            <path d="M70,228 C72,230 72,232 70,232 L69,229" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.5"/>
+          </g>
+
+          <!-- Right arm -->
+          <g id="rightArm">
+            <circle cx="184" cy="148" r="8" fill="url(#redShell)" stroke="#8e1830" stroke-width="1"/>
+            <circle cx="184" cy="148" r="4" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <rect x="182" y="155" width="10" height="28" rx="4" fill="url(#goldAccent)" stroke="#a07808" stroke-width="0.8"/>
+            <circle cx="187" cy="186" r="5" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <circle cx="187" cy="186" r="2" fill="#2098dd" opacity="0.4"/>
+            <rect x="184" y="190" width="10" height="24" rx="4" fill="url(#blueAccent)" stroke="#10588a" stroke-width="0.8"/>
+            <path d="M184,214 C180,218 178,224 182,228 C185,231 192,230 195,226 C198,222 199,216 196,214" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+            <line x1="186" y1="220" x2="194" y2="220" stroke="#222236" stroke-width="1.2"/>
+            <path d="M182,228 C181,230 182,232 184,232 L185,229" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.5"/>
+            <path d="M192,228 C194,230 194,232 192,232 L191,229" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.5"/>
+          </g>
+        </g>
+
+        <!-- ===== NECK ===== -->
+        <g id="neck">
+          <rect x="120" y="116" width="18" height="18" rx="3" fill="url(#chrome)" stroke="#8a8ea0" stroke-width="0.8"/>
+          <!-- Neck rings -->
+          <rect x="118" y="120" width="22" height="3" rx="1.5" fill="url(#lightMetal)" stroke="#6e7288" stroke-width="0.5"/>
+          <rect x="118" y="126" width="22" height="3" rx="1.5" fill="url(#lightMetal)" stroke="#6e7288" stroke-width="0.5"/>
+        </g>
+
+        <!-- ===== HEAD ===== -->
+        <g id="head">
+          <animateTransform attributeName="transform" type="rotate" values="0 130 118; 15 130 118; 15 130 118; -15 130 118; -15 130 118; 0 130 118; 0 130 118" keyTimes="0; 0.1; 0.3; 0.4; 0.6; 0.7; 1" dur="5s" repeatCount="indefinite" />
+          <!-- Main head dome (red) -->
+          <path d="M90,82 C90,52 108,30 130,30 C152,30 170,52 170,82 L170,105 C170,112 162,118 130,118 C98,118 90,112 90,105 Z" fill="url(#redShell)" stroke="#8e1830" stroke-width="1.2"/>
+
+          <!-- Face plate (gold) -->
+          <rect x="96" y="66" width="66" height="42" rx="10" fill="url(#goldAccent)" stroke="#a07808" stroke-width="0.8"/>
+
+          <!-- Eye sockets -->
+          <!-- Left eye -->
+          <rect x="102" y="72" width="24" height="20" rx="6" fill="url(#screenGrad)" stroke="#004450" stroke-width="1"/>
+          <ellipse cx="114" cy="82" rx="8" ry="6" fill="url(#eyeGlow)" opacity="0.8" filter="url(#glow)"/>
+          <ellipse cx="114" cy="82" rx="4" ry="3" fill="#00ffcc" opacity="0.9"/>
+          <ellipse cx="116" cy="81" rx="1.5" ry="1" fill="#ffffff" opacity="0.6"/>
+
+          <!-- Right eye (slightly different - red tint, matching captain's cyber eye) -->
+          <rect x="132" y="72" width="24" height="20" rx="6" fill="#0a0a1a" stroke="#444460" stroke-width="1"/>
+          <ellipse cx="144" cy="82" rx="8" ry="6" fill="#ff2244" opacity="0.5" filter="url(#glow)"/>
+          <ellipse cx="144" cy="82" rx="4" ry="3" fill="#ff3355" opacity="0.8"/>
+          <ellipse cx="146" cy="81" rx="1.5" ry="1" fill="#ffffff" opacity="0.5"/>
+          <!-- Scan cross on right eye -->
+          <line x1="137" y1="82" x2="151" y2="82" stroke="#ff2244" stroke-width="0.3" opacity="0.5"/>
+          <line x1="144" y1="76" x2="144" y2="88" stroke="#ff2244" stroke-width="0.3" opacity="0.5"/>
+
+          <!-- Mouth / speaker grille -->
+          <rect x="110" y="96" width="38" height="10" rx="5" fill="url(#darkMetal)" stroke="#3a3a50" stroke-width="0.8"/>
+          <!-- Speaker slits -->
+          <line x1="116" y1="98" x2="116" y2="104" stroke="#222236" stroke-width="1.2"/>
+          <line x1="121" y1="98" x2="121" y2="104" stroke="#222236" stroke-width="1.2"/>
+          <line x1="126" y1="98" x2="126" y2="104" stroke="#222236" stroke-width="1.2"/>
+          <line x1="131" y1="98" x2="131" y2="104" stroke="#222236" stroke-width="1.2"/>
+          <line x1="136" y1="98" x2="136" y2="104" stroke="#222236" stroke-width="1.2"/>
+          <line x1="141" y1="98" x2="141" y2="104" stroke="#222236" stroke-width="1.2"/>
+
+          <!-- Head top ridge -->
+          <path d="M105,46 C115,38 145,38 155,46" fill="none" stroke="#a82040" stroke-width="1.2"/>
+
+          <!-- Small red crest fin on top -->
+          <path d="M125,34 L130,12 L135,34" fill="url(#redShell)" stroke="#8e1830" stroke-width="0.8"/>
+          <path d="M128,34 L130,18 L132,34" fill="#d42848" opacity="0.6"/>
+
+          <!-- Ear sensors (small discs on sides) -->
+          <ellipse cx="88" cy="88" rx="5" ry="8" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+          <ellipse cx="88" cy="88" rx="2.5" ry="4" fill="#f0b830" opacity="0.3"/>
+          <ellipse cx="170" cy="88" rx="5" ry="8" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+          <ellipse cx="170" cy="88" rx="2.5" ry="4" fill="#f0b830" opacity="0.3"/>
+        </g>
+
+        <!-- ===== BACK THRUSTER PACK (small, visible behind) ===== -->
+        <g id="thrusterPack">
+          <rect x="112" y="220" width="34" height="16" rx="4" fill="url(#darkMetal)" stroke="#4a4e64" stroke-width="0.8"/>
+          <!-- Thruster nozzles (dormant) -->
+          <circle cx="120" cy="234" r="4" fill="#1a1a2e" stroke="#333350" stroke-width="0.8"/>
+          <circle cx="120" cy="234" r="2" fill="url(#blueAccent)" opacity="0.2"/>
+          <circle cx="138" cy="234" r="4" fill="#1a1a2e" stroke="#333350" stroke-width="0.8"/>
+          <circle cx="138" cy="234" r="2" fill="url(#blueAccent)" opacity="0.2"/>
+        </g>
+
+      </g>
+
+      <!-- ===== ANIMATIONS ===== -->
+      <!-- Right eye pulse (red, matching captain) -->
+      <ellipse cx="144" cy="82" rx="4" ry="3" fill="#ff2244" opacity="0">
+        <animate attributeName="opacity" values="0;0.3;0" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="rx" values="4;7;4" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="ry" values="3;5;3" dur="3s" repeatCount="indefinite"/>
+      </ellipse>
+      <!-- Screen waveform shimmer -->
+      <rect x="100" y="150" width="2" height="34" fill="#00ffcc" opacity="0.06">
+        <animate attributeName="x" values="100;156;100" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <!-- Chest status lights -->
+      <circle cx="106" cy="207" r="1.2" fill="#2098dd" opacity="0.7">
+        <animate attributeName="opacity" values="0.7;0.2;0.7" dur="1.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="152" cy="207" r="1.2" fill="#f0b830" opacity="0.7">
+        <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2.2s" repeatCount="indefinite"/>
+      </circle>
   </g>
-
 </svg>

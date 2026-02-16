@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 import json
 import random
@@ -76,7 +76,18 @@ from hero_svg_system import (
     release_hero_svg_renderer_paths,
     render_hero_svg_character,
     retain_hero_svg_renderer_paths,
+    generate_hero_composed_html,
 )
+
+try:
+    from PySide6.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
+    from PySide6.QtWebEngineCore import QWebEnginePage
+    HAS_WEBENGINE = True
+except ImportError:
+    HAS_WEBENGINE = False
+    QWebEngineView = None
+    QWebEngineSettings = None
+    QWebEnginePage = None
 
 # pynput for reliable global hotkeys (works even when window hidden)
 try:
@@ -185,7 +196,7 @@ def request_system_permission(parent, action: str, title: str, description: str,
     
     # Create custom dialog with comprehensive info
     dialog = QtWidgets.QDialog(parent)
-    dialog.setWindowTitle("⚠️ System Modification Permission")
+    dialog.setWindowTitle("âš ď¸Ź System Modification Permission")
     dialog.setModal(True)
     dialog.setMinimumWidth(550)
     dialog.setMaximumWidth(700)
@@ -196,7 +207,7 @@ def request_system_permission(parent, action: str, title: str, description: str,
     
     # Icon and title
     title_layout = QtWidgets.QHBoxLayout()
-    icon_label = QtWidgets.QLabel("⚠️")
+    icon_label = QtWidgets.QLabel("âš ď¸Ź")
     icon_label.setStyleSheet("font-size: 40px;")
     title_label = QtWidgets.QLabel(f"<b>{title}</b>")
     title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #e17055;")
@@ -225,7 +236,7 @@ def request_system_permission(parent, action: str, title: str, description: str,
     details_layout.setSpacing(8)
     
     # What will happen
-    what_header = QtWidgets.QLabel("📋 <b>What will happen:</b>")
+    what_header = QtWidgets.QLabel("đź“‹ <b>What will happen:</b>")
     what_header.setStyleSheet("font-size: 12px; color: #74b9ff;")
     details_layout.addWidget(what_header)
     
@@ -235,7 +246,7 @@ def request_system_permission(parent, action: str, title: str, description: str,
     details_layout.addWidget(what_text)
     
     # Persistence info
-    persist_header = QtWidgets.QLabel("⏱️ <b>Duration of changes:</b>")
+    persist_header = QtWidgets.QLabel("âŹ±ď¸Ź <b>Duration of changes:</b>")
     persist_header.setStyleSheet("font-size: 12px; color: #fdcb6e;")
     details_layout.addWidget(persist_header)
     
@@ -245,7 +256,7 @@ def request_system_permission(parent, action: str, title: str, description: str,
     details_layout.addWidget(persist_text)
     
     # Revert info
-    revert_header = QtWidgets.QLabel("🔄 <b>How to revert manually:</b>")
+    revert_header = QtWidgets.QLabel("đź”„ <b>How to revert manually:</b>")
     revert_header.setStyleSheet("font-size: 12px; color: #55efc4;")
     details_layout.addWidget(revert_header)
     
@@ -257,7 +268,7 @@ def request_system_permission(parent, action: str, title: str, description: str,
     layout.addWidget(details_frame)
     
     # "Don't show again" checkbox
-    dont_ask_checkbox = QtWidgets.QCheckBox("Trust this action — don't ask again")
+    dont_ask_checkbox = QtWidgets.QCheckBox("Trust this action â€” don't ask again")
     dont_ask_checkbox.setStyleSheet("""
         QCheckBox {
             color: #74b9ff;
@@ -272,7 +283,7 @@ def request_system_permission(parent, action: str, title: str, description: str,
     button_layout = QtWidgets.QHBoxLayout()
     button_layout.addStretch()
     
-    deny_btn = QtWidgets.QPushButton("🚫 Deny")
+    deny_btn = QtWidgets.QPushButton("đźš« Deny")
     deny_btn.setStyleSheet("""
         QPushButton {
             background: #636e72;
@@ -289,7 +300,7 @@ def request_system_permission(parent, action: str, title: str, description: str,
     """)
     deny_btn.clicked.connect(dialog.reject)
     
-    allow_btn = QtWidgets.QPushButton("✅ Allow")
+    allow_btn = QtWidgets.QPushButton("âś… Allow")
     allow_btn.setStyleSheet("""
         QPushButton {
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -338,7 +349,7 @@ class PerkToast(QtWidgets.QWidget):
     
     _active_toasts = []  # Track active toasts for stacking
     
-    def __init__(self, message: str, icon: str = "✨", duration_ms: int = 2500,
+    def __init__(self, message: str, icon: str = "âś¨", duration_ms: int = 2500,
                  parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
         self.setWindowFlags(
@@ -435,7 +446,7 @@ class PerkToast(QtWidgets.QWidget):
         self.deleteLater()
 
 
-def show_perk_toast(message: str, icon: str = "✨", parent: QtWidgets.QWidget = None):
+def show_perk_toast(message: str, icon: str = "âś¨", parent: QtWidgets.QWidget = None):
     """
     Show a non-blocking toast notification for perk activation.
     
@@ -941,7 +952,7 @@ class HardcoreChallengeDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title="HARDCORE MODE ACTIVE",
-            header_icon="💪",
+            header_icon="đź’Ş",
             min_width=550,
             max_width=650,
             closable=False,
@@ -950,7 +961,7 @@ class HardcoreChallengeDialog(StyledDialog):
     def _generate_problems(self) -> list:
         """Generate two challenging math problems with large numbers."""
         problems = []
-        operations = ['+', '-', '×']
+        operations = ['+', '-', 'Ă—']
         
         for _ in range(2):
             op = random.choice(operations)
@@ -965,8 +976,8 @@ class HardcoreChallengeDialog(StyledDialog):
                 a = random.randint(50000, 99999)
                 b = random.randint(10000, a - 1)
                 answer = a - b
-            else:  # ×
-                # Multiplication: 4-digit × 2-digit
+            else:  # Ă—
+                # Multiplication: 4-digit Ă— 2-digit
                 a = random.randint(1000, 9999)
                 b = random.randint(10, 99)
                 answer = a * b
@@ -1112,7 +1123,7 @@ class HardcoreChallengeDialog(StyledDialog):
         try:
             user_answer = int(self.answer_input.text().strip())
         except ValueError:
-            self.feedback_label.setText("❌ Please enter a valid number!")
+            self.feedback_label.setText("âťŚ Please enter a valid number!")
             self.feedback_label.setStyleSheet("font-size: 14px; color: #FF6B6B; min-height: 30px;")
             return
         
@@ -1124,7 +1135,7 @@ class HardcoreChallengeDialog(StyledDialog):
             
             if self.solved_count >= 2:
                 # All problems solved! Require explicit confirmation to close.
-                self.feedback_label.setText("✅ Correct! Click 'End Session' to finish.")
+                self.feedback_label.setText("âś… Correct! Click 'End Session' to finish.")
                 self.feedback_label.setStyleSheet("font-size: 14px; color: #4CAF50; min-height: 30px;")
                 self.answer_input.setEnabled(False)
                 self.submit_btn.setText("End Session")
@@ -1137,12 +1148,12 @@ class HardcoreChallengeDialog(StyledDialog):
                     self._ready_to_finish = True
             else:
                 # Show next problem
-                self.feedback_label.setText("✅ Correct! One more to go...")
+                self.feedback_label.setText("âś… Correct! One more to go...")
                 self.feedback_label.setStyleSheet("font-size: 14px; color: #4CAF50; min-height: 30px;")
                 QtCore.QTimer.singleShot(800, self._show_current_problem)
         else:
             # Wrong answer - generate new problems and restart
-            self.feedback_label.setText("❌ Wrong! Starting over with new problems...")
+            self.feedback_label.setText("âťŚ Wrong! Starting over with new problems...")
             self.feedback_label.setStyleSheet("font-size: 14px; color: #FF6B6B; min-height: 30px;")
             
             # Reset with new problems after a delay
@@ -1186,7 +1197,7 @@ class EnforcementModeDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title=title,
-            header_icon="🛡️",
+            header_icon="đź›ˇď¸Ź",
             min_width=480,
             max_width=550,
         )
@@ -1195,10 +1206,10 @@ class EnforcementModeDialog(StyledDialog):
         # Introduction
         if self.is_first_run:
             intro_text = (
-                "Welcome to Personal Liberty! 🎉\n\n"
+                "Welcome to Personal Liberty! đźŽ‰\n\n"
                 "Choose how you want the app to block distracting websites. "
                 "This affects how effectively sites are blocked during focus sessions.\n\n"
-                "You can change this anytime in Settings → Enforcement Mode."
+                "You can change this anytime in Settings â†’ Enforcement Mode."
             )
         else:
             intro_text = (
@@ -1225,15 +1236,15 @@ class EnforcementModeDialog(StyledDialog):
         mode_layout.setSpacing(15)
         
         # Full Mode option
-        self.full_radio = QtWidgets.QRadioButton("🔒 Full Mode (Recommended)")
+        self.full_radio = QtWidgets.QRadioButton("đź”’ Full Mode (Recommended)")
         self.full_radio.setStyleSheet("font-weight: bold; font-size: 13px;")
         mode_layout.addWidget(self.full_radio)
         
         full_desc = QtWidgets.QLabel(
-            "• Blocks sites at the system level — <b>impossible to bypass</b>\n"
-            "• Requires running as Administrator\n"
-            "• Best for serious focus sessions and building discipline\n"
-            "• Modifies Windows hosts file (automatically cleaned on uninstall)"
+            "â€˘ Blocks sites at the system level â€” <b>impossible to bypass</b>\n"
+            "â€˘ Requires running as Administrator\n"
+            "â€˘ Best for serious focus sessions and building discipline\n"
+            "â€˘ Modifies Windows hosts file (automatically cleaned on uninstall)"
         )
         full_desc.setWordWrap(True)
         full_desc.setStyleSheet("color: #9ca3af; margin-left: 24px; line-height: 1.3;")
@@ -1244,15 +1255,15 @@ class EnforcementModeDialog(StyledDialog):
         mode_layout.addSpacing(5)
         
         # Light Mode option
-        self.light_radio = QtWidgets.QRadioButton("🔔 Light Mode (No Admin Required)")
+        self.light_radio = QtWidgets.QRadioButton("đź”” Light Mode (No Admin Required)")
         self.light_radio.setStyleSheet("font-weight: bold; font-size: 13px;")
         mode_layout.addWidget(self.light_radio)
         
         light_desc = QtWidgets.QLabel(
-            "• Shows reminder notifications when visiting blocked sites\n"
-            "• <b>No administrator privileges needed</b>\n"
-            "• Good for building awareness and habits\n"
-            "• Does NOT modify any system files — completely portable"
+            "â€˘ Shows reminder notifications when visiting blocked sites\n"
+            "â€˘ <b>No administrator privileges needed</b>\n"
+            "â€˘ Good for building awareness and habits\n"
+            "â€˘ Does NOT modify any system files â€” completely portable"
         )
         light_desc.setWordWrap(True)
         light_desc.setStyleSheet("color: #9ca3af; margin-left: 24px; line-height: 1.3;")
@@ -1266,11 +1277,11 @@ class EnforcementModeDialog(StyledDialog):
         
         is_admin = self._check_admin_status()
         if is_admin:
-            admin_label = QtWidgets.QLabel("✅ Currently running as Administrator")
+            admin_label = QtWidgets.QLabel("âś… Currently running as Administrator")
             admin_label.setStyleSheet("color: #10B981; font-size: 11px;")
         else:
             admin_label = QtWidgets.QLabel(
-                "⚠️ Not running as Administrator — Full Mode requires admin privileges.\n"
+                "âš ď¸Ź Not running as Administrator â€” Full Mode requires admin privileges.\n"
                 "    Restart with 'Run as administrator' or use Light Mode."
             )
             admin_label.setStyleSheet("color: #F59E0B; font-size: 11px;")
@@ -1336,7 +1347,7 @@ class UserProfileDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title=title,
-            header_icon="👤",
+            header_icon="đź‘¤",
             min_width=420,
             max_width=500,
         )
@@ -1347,8 +1358,8 @@ class UserProfileDialog(StyledDialog):
             intro_text = (
                 "To personalize your health targets, please share a few details.\n\n"
                 "This helps us use age and sex-specific guidelines for:\n"
-                "• BMI classification (CDC charts for youth, WHO for adults)\n"
-                "• Sleep duration targets (AASM/NSF recommendations)\n\n"
+                "â€˘ BMI classification (CDC charts for youth, WHO for adults)\n"
+                "â€˘ Sleep duration targets (AASM/NSF recommendations)\n\n"
                 "Your data stays on your device and is never shared."
             )
         else:
@@ -1363,7 +1374,7 @@ class UserProfileDialog(StyledDialog):
         layout.addWidget(intro)
         
         # Profile form
-        form_group = QtWidgets.QGroupBox("📋 Profile Information")
+        form_group = QtWidgets.QGroupBox("đź“‹ Profile Information")
         form_layout = QtWidgets.QFormLayout(form_group)
         form_layout.setSpacing(12)
         
@@ -1411,10 +1422,10 @@ class UserProfileDialog(StyledDialog):
         # Info about what this affects
         layout.addSpacing(10)
         info_label = QtWidgets.QLabel(
-            "ℹ️ <b>Why this matters:</b><br>"
-            "• Children/teens (7-19): BMI uses CDC growth percentiles<br>"
-            "• Adults (20+): BMI uses WHO standard thresholds<br>"
-            "• Sleep targets vary by age (e.g., teens need 8-10h, adults 7-9h)"
+            "â„ąď¸Ź <b>Why this matters:</b><br>"
+            "â€˘ Children/teens (7-19): BMI uses CDC growth percentiles<br>"
+            "â€˘ Adults (20+): BMI uses WHO standard thresholds<br>"
+            "â€˘ Sleep targets vary by age (e.g., teens need 8-10h, adults 7-9h)"
         )
         info_label.setTextFormat(QtCore.Qt.RichText)
         info_label.setWordWrap(True)
@@ -1465,7 +1476,7 @@ class OnboardingModeDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title="Choose Gamification Mode",
-            header_icon="🎮",
+            header_icon="đźŽ®",
             min_width=420,
             max_width=520,
         )
@@ -1490,17 +1501,17 @@ class OnboardingModeDialog(StyledDialog):
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         info = QtWidgets.QLabel(
             "How would you like to play today?\n\n"
-            "• Story: each story has its own hero, gear, and decisions.\n"
-            "• Hero only: level up a free hero, no story.\n"
-            "• Disabled: no gamification for this session."
+            "â€˘ Story: each story has its own hero, gear, and decisions.\n"
+            "â€˘ Hero only: level up a free hero, no story.\n"
+            "â€˘ Disabled: no gamification for this session."
         )
         info.setWordWrap(True)
         info.setStyleSheet("color: #E0E0E0; line-height: 1.4;")
         layout.addWidget(info)
 
-        self.story_radio = QtWidgets.QRadioButton("📖 Story mode")
-        self.hero_only_radio = QtWidgets.QRadioButton("⚔️ Hero only (no story)")
-        self.disabled_radio = QtWidgets.QRadioButton("❌ Disabled")
+        self.story_radio = QtWidgets.QRadioButton("đź“– Story mode")
+        self.hero_only_radio = QtWidgets.QRadioButton("âš”ď¸Ź Hero only (no story)")
+        self.disabled_radio = QtWidgets.QRadioButton("âťŚ Disabled")
 
         mode_group = QtWidgets.QButtonGroup(self)
         for btn in (self.story_radio, self.hero_only_radio, self.disabled_radio):
@@ -1563,13 +1574,13 @@ class LogPastSessionDialog(StyledDialog):
         # Set blocker before super().__init__ because StyledDialog calls _build_content()
         self.blocker = blocker
         self.session_minutes = 0
-        super().__init__(parent, title="📝 Log Past Session", min_width=420, max_width=500)
+        super().__init__(parent, title="đź“ť Log Past Session", min_width=420, max_width=500)
     
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         """Build the dialog content inside the styled frame."""
         # Info label
         info_label = QtWidgets.QLabel(
-            "🕐 <b>Forgot to start the timer?</b><br><br>"
+            "đź• <b>Forgot to start the timer?</b><br><br>"
             "Log your focus session here to record your productivity "
             "and earn rewards retroactively."
         )
@@ -1578,7 +1589,7 @@ class LogPastSessionDialog(StyledDialog):
         layout.addWidget(info_label)
         
         # Duration input section
-        duration_group = QtWidgets.QGroupBox("⏱️ Session Duration")
+        duration_group = QtWidgets.QGroupBox("âŹ±ď¸Ź Session Duration")
         duration_layout = QtWidgets.QVBoxLayout(duration_group)
         
         # Time input row
@@ -1626,7 +1637,7 @@ class LogPastSessionDialog(StyledDialog):
         
         # Honesty note
         honesty_label = QtWidgets.QLabel(
-            "💚 <i>Be honest with yourself - logging fake sessions defeats the purpose!</i>"
+            "đź’š <i>Be honest with yourself - logging fake sessions defeats the purpose!</i>"
         )
         honesty_label.setTextFormat(QtCore.Qt.RichText)
         honesty_label.setStyleSheet("color: #888888; font-size: 11px;")
@@ -1638,14 +1649,14 @@ class LogPastSessionDialog(StyledDialog):
             layout,
             [
                 ("Cancel", "default", self.reject),
-                ("✅ Log Session", "primary", self._on_log),
+                ("âś… Log Session", "primary", self._on_log),
             ]
         )
         
         # Store reference to log button for enabling/disabling
         # Find the primary button we just created
         for child in self.findChildren(QtWidgets.QPushButton):
-            if child.text() == "✅ Log Session":
+            if child.text() == "âś… Log Session":
                 self.log_btn = child
                 break
         
@@ -1664,7 +1675,7 @@ class LogPastSessionDialog(StyledDialog):
         total_minutes = self.hours_spin.value() * 60 + self.minutes_spin.value()
         
         if total_minutes == 0:
-            self.preview_label.setText("⚠️ Enter a duration to see rewards preview")
+            self.preview_label.setText("âš ď¸Ź Enter a duration to see rewards preview")
             self.log_btn.setEnabled(False)
             return
         
@@ -1718,22 +1729,22 @@ class LogPastSessionDialog(StyledDialog):
                     focus_earned = total_minutes // 30
                     building_name = active.get("building_name", "Building")
                     if focus_earned > 0:
-                        city_line = f"<br>• <b style='color:#9b59b6;'>🏗️ City:</b> +{focus_earned} Focus → {building_name}"
+                        city_line = f"<br>â€˘ <b style='color:#9b59b6;'>đźŹ—ď¸Ź City:</b> +{focus_earned} Focus â†’ {building_name}"
                     else:
                         # Show how many more minutes needed
                         mins_needed = 30 - (total_minutes % 30)
-                        city_line = f"<br>• <b style='color:#888;'>🏗️ City:</b> {mins_needed} more min for +1 Focus → {building_name}"
+                        city_line = f"<br>â€˘ <b style='color:#888;'>đźŹ—ď¸Ź City:</b> {mins_needed} more min for +1 Focus â†’ {building_name}"
                 elif total_minutes >= 30:
                     # No construction but would earn Focus
-                    city_line = f"<br>• <b style='color:#888;'>🏗️ City:</b> No construction active (start a build in City tab!)"
+                    city_line = f"<br>â€˘ <b style='color:#888;'>đźŹ—ď¸Ź City:</b> No construction active (start a build in City tab!)"
         except Exception:
             pass
         
         self.preview_label.setText(
-            f"<b style='color:#00b894;'>📊 Rewards Preview:</b><br>"
-            f"• <b style='color:#ffd700;'>XP:</b> ~{total_xp}<br>"
-            f"• <b style='color:#f1c40f;'>Coins:</b> ~{coins}<br>"
-            f"• <b style='color:{rarity_color};'>Item:</b> 1x {rarity} gear (guaranteed)"
+            f"<b style='color:#00b894;'>đź“Š Rewards Preview:</b><br>"
+            f"â€˘ <b style='color:#ffd700;'>XP:</b> ~{total_xp}<br>"
+            f"â€˘ <b style='color:#f1c40f;'>Coins:</b> ~{coins}<br>"
+            f"â€˘ <b style='color:{rarity_color};'>Item:</b> 1x {rarity} gear (guaranteed)"
             f"{city_line}"
         )
     
@@ -2294,7 +2305,7 @@ class FocusChartWidget(QtWidgets.QWidget):
         painter.setFont(font)
         painter.setPen(QtGui.QColor(self.COLORS["text_light"]))
         
-        text = "⏱️ No focus sessions yet\nStart a session to see your progress!"
+        text = "âŹ±ď¸Ź No focus sessions yet\nStart a session to see your progress!"
         painter.drawText(self.rect(), QtCore.Qt.AlignmentFlag.AlignCenter, text)
     
     def _draw_grid(self, painter: QtGui.QPainter, left: int, top: int, 
@@ -2371,7 +2382,7 @@ class FocusChartWidget(QtWidgets.QWidget):
                 font.setPointSize(8)
                 painter.setFont(font)
                 painter.drawText(int(x), int(y - 2), int(bar_width), 15,
-                                QtCore.Qt.AlignmentFlag.AlignCenter, "⭐")
+                                QtCore.Qt.AlignmentFlag.AlignCenter, "â­")
     
     def _draw_weekly_bars(self, painter: QtGui.QPainter, left: int, top: int,
                           width: int, height: int) -> None:
@@ -2421,7 +2432,7 @@ class FocusChartWidget(QtWidgets.QWidget):
                 font.setPointSize(9)
                 painter.setFont(font)
                 painter.drawText(int(x), int(y - 2), int(bar_width), 15,
-                                QtCore.Qt.AlignmentFlag.AlignCenter, "🏆")
+                                QtCore.Qt.AlignmentFlag.AlignCenter, "đźŹ†")
     
     def _draw_goal_line(self, painter: QtGui.QPainter, left: int, top: int,
                         width: int, height: int) -> None:
@@ -2570,15 +2581,15 @@ class FocusChartWidget(QtWidgets.QWidget):
         font.setBold(True)
         painter.setFont(font)
         
-        title = "⏱️ Focus Time Progress"
+        title = "âŹ±ď¸Ź Focus Time Progress"
         
         # Add trend indicator
         if self._cached_trend:
             direction, slope, r_sq = self._cached_trend
             if direction == "improving":
-                title += " 📈"
+                title += " đź“"
             elif direction == "declining":
-                title += " 📉"
+                title += " đź“‰"
         
         painter.drawText(self.MARGIN_LEFT, 5, rect.width() - self.MARGIN_LEFT - self.MARGIN_RIGHT, 
                         25, QtCore.Qt.AlignmentFlag.AlignLeft, title)
@@ -2627,7 +2638,7 @@ class FocusChartWidget(QtWidgets.QWidget):
         font.setBold(True)
         painter.setFont(font)
         
-        streak_text = f"🔥 {streak} day streak!"
+        streak_text = f"đź”Ą {streak} day streak!"
         text_rect = QtCore.QRect(rect.width() - 120, 5, 110, 25)
         
         # Glow background
@@ -2671,7 +2682,7 @@ class FocusChartWidget(QtWidgets.QWidget):
             f"Sessions: {sessions}",
         ]
         if met_goal:
-            lines.append("⭐ Daily Goal Met!")
+            lines.append("â­ Daily Goal Met!")
         
         tooltip_text = "\n".join(lines)
         
@@ -2942,7 +2953,7 @@ class TimerTab(QtWidgets.QWidget):
         action_row.setSpacing(12)
         
         # Dynamic Start/Stop button
-        self.action_btn = QtWidgets.QPushButton("▶  Start Focus Session")
+        self.action_btn = QtWidgets.QPushButton("â–¶  Start Focus Session")
         self.action_btn.setMinimumHeight(52)
         self.action_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self._set_action_btn_start_style()
@@ -2985,9 +2996,9 @@ class TimerTab(QtWidgets.QWidget):
             
             return frame, value_lbl
         
-        stat1, self.today_focus_lbl = create_mini_stat("📊", "Today", "0m", "#74b9ff", "#1a2a3a")
-        stat2, self.streak_display_lbl = create_mini_stat("🔥", "Streak", "0 days", "#ff9800", "#2a2010")
-        stat3, self.sessions_today_lbl = create_mini_stat("✅", "Sessions", "0", "#4caf50", "#1a2a1a")
+        stat1, self.today_focus_lbl = create_mini_stat("đź“Š", "Today", "0m", "#74b9ff", "#1a2a3a")
+        stat2, self.streak_display_lbl = create_mini_stat("đź”Ą", "Streak", "0 days", "#ff9800", "#2a2010")
+        stat3, self.sessions_today_lbl = create_mini_stat("âś…", "Sessions", "0", "#4caf50", "#1a2a1a")
         
         # Prevent stat cards from expanding vertically
         for stat_frame in [stat1, stat2, stat3]:
@@ -3016,7 +3027,7 @@ class TimerTab(QtWidgets.QWidget):
         duration_section = QtWidgets.QHBoxLayout()
         duration_section.setSpacing(12)
         
-        duration_label = QtWidgets.QLabel("⏱ Duration")
+        duration_label = QtWidgets.QLabel("âŹ± Duration")
         duration_label.setStyleSheet("font-weight: 600; color: #74b9ff; font-size: 12px;")
         duration_section.addWidget(duration_label)
         
@@ -3074,7 +3085,7 @@ class TimerTab(QtWidgets.QWidget):
         preset_row = QtWidgets.QHBoxLayout()
         preset_row.setSpacing(4)
         
-        preset_label = QtWidgets.QLabel("⚡")
+        preset_label = QtWidgets.QLabel("âšˇ")
         preset_label.setStyleSheet("color: #888; font-size: 12px;")
         preset_row.addWidget(preset_label)
         
@@ -3161,7 +3172,7 @@ class TimerTab(QtWidgets.QWidget):
         """
         
         # Mode dropdown
-        mode_label = QtWidgets.QLabel("🎮 Mode")
+        mode_label = QtWidgets.QLabel("đźŽ® Mode")
         mode_label.setStyleSheet("font-weight: 600; color: #74b9ff; font-size: 12px;")
         dropdowns_row.addWidget(mode_label)
         
@@ -3172,9 +3183,9 @@ class TimerTab(QtWidgets.QWidget):
         self._mode_values = []  # Store mode values for lookup
         modes = [
             ("Normal", BlockMode.NORMAL, "Can stop session anytime"),
-            ("Strict 🔐", BlockMode.STRICT, "Requires password to stop"),
-            ("Hardcore 💀", BlockMode.HARDCORE, "Solve math problems to stop"),
-            ("Pomodoro 🍅", BlockMode.POMODORO, "25 min work / 5 min break"),
+            ("Strict đź”", BlockMode.STRICT, "Requires password to stop"),
+            ("Hardcore đź’€", BlockMode.HARDCORE, "Solve math problems to stop"),
+            ("Pomodoro đźŤ…", BlockMode.POMODORO, "25 min work / 5 min break"),
         ]
         for text, value, tooltip in modes:
             self.mode_combo.addItem(text)
@@ -3185,7 +3196,7 @@ class TimerTab(QtWidgets.QWidget):
         dropdowns_row.addSpacing(12)
         
         # Alert dropdown
-        notify_label = QtWidgets.QLabel("🔔 Alert")
+        notify_label = QtWidgets.QLabel("đź”” Alert")
         notify_label.setStyleSheet("font-weight: 600; color: #00b894; font-size: 12px;")
         dropdowns_row.addWidget(notify_label)
         
@@ -3231,12 +3242,12 @@ class TimerTab(QtWidgets.QWidget):
         
         # Rewards header with toggle
         rewards_header = QtWidgets.QHBoxLayout()
-        rewards_title = QtWidgets.QLabel("🎁 Rewards Guide")
+        rewards_title = QtWidgets.QLabel("đźŽ Rewards Guide")
         rewards_title.setStyleSheet("color: #ffeaa7; font-weight: 600; font-size: 11px;")
         rewards_header.addWidget(rewards_title)
         rewards_header.addStretch()
         
-        self.rewards_toggle_btn = QtWidgets.QPushButton("▼")
+        self.rewards_toggle_btn = QtWidgets.QPushButton("â–Ľ")
         self.rewards_toggle_btn.setFixedSize(24, 24)
         self.rewards_toggle_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.rewards_toggle_btn.setStyleSheet("""
@@ -3303,12 +3314,12 @@ class TimerTab(QtWidgets.QWidget):
         
         # Chart header with toggle
         chart_header = QtWidgets.QHBoxLayout()
-        chart_title = QtWidgets.QLabel("📊 Focus History")
+        chart_title = QtWidgets.QLabel("đź“Š Focus History")
         chart_title.setStyleSheet("color: #a29bfe; font-weight: 600; font-size: 11px;")
         chart_header.addWidget(chart_title)
         chart_header.addStretch()
         
-        self.chart_toggle_btn = QtWidgets.QPushButton("▼")
+        self.chart_toggle_btn = QtWidgets.QPushButton("â–Ľ")
         self.chart_toggle_btn.setFixedSize(24, 24)
         self.chart_toggle_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.chart_toggle_btn.setStyleSheet("""
@@ -3348,7 +3359,7 @@ class TimerTab(QtWidgets.QWidget):
         bottom_row = QtWidgets.QHBoxLayout()
         bottom_row.setSpacing(10)
         
-        self.log_past_btn = QtWidgets.QPushButton("📝 Log Past Session")
+        self.log_past_btn = QtWidgets.QPushButton("đź“ť Log Past Session")
         self.log_past_btn.setToolTip("Forgot to start the timer? Log a focus session you already completed.")
         self.log_past_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.log_past_btn.setStyleSheet("""
@@ -3391,13 +3402,13 @@ class TimerTab(QtWidgets.QWidget):
         """Toggle rewards info visibility."""
         is_visible = self.rewards_content.isVisible()
         self.rewards_content.setVisible(not is_visible)
-        self.rewards_toggle_btn.setText("▲" if not is_visible else "▼")
+        self.rewards_toggle_btn.setText("â–˛" if not is_visible else "â–Ľ")
     
     def _toggle_chart(self) -> None:
         """Toggle focus chart visibility."""
         is_visible = self.focus_chart_container.isVisible()
         self.focus_chart_container.setVisible(not is_visible)
-        self.chart_toggle_btn.setText("▲" if not is_visible else "▼")
+        self.chart_toggle_btn.setText("â–˛" if not is_visible else "â–Ľ")
         
         # Refresh chart when showing
         if not is_visible:
@@ -3439,43 +3450,43 @@ class TimerTab(QtWidgets.QWidget):
         # Context-aware messages
         if self.timer_running:
             messages = [
-                "You're doing great! Stay focused! 💪",
-                "Deep work in progress... 🧠",
-                "Every minute counts. Keep going! ⏰",
-                "You've got this! 🔥",
+                "You're doing great! Stay focused! đź’Ş",
+                "Deep work in progress... đź§ ",
+                "Every minute counts. Keep going! âŹ°",
+                "You've got this! đź”Ą",
             ]
         elif hour < 9:
             messages = [
-                "Early bird gets the worm! Great time to focus. 🌅",
-                "Morning focus sessions are the most productive! ☀️",
-                "Start your day with a win! 🏆",
+                "Early bird gets the worm! Great time to focus. đźŚ…",
+                "Morning focus sessions are the most productive! â€ď¸Ź",
+                "Start your day with a win! đźŹ†",
             ]
         elif hour >= 22:
             messages = [
-                "Late night focus? Remember to rest well! 🌙",
-                "A quick session before bed? You're dedicated! ⭐",
+                "Late night focus? Remember to rest well! đźŚ™",
+                "A quick session before bed? You're dedicated! â­",
             ]
         elif streak >= 7:
             messages = [
-                f"🔥 {streak} day streak! You're on fire!",
-                f"Amazing! {streak} days strong! Keep it going! 💪",
+                f"đź”Ą {streak} day streak! You're on fire!",
+                f"Amazing! {streak} days strong! Keep it going! đź’Ş",
             ]
         elif duration >= 120:
             messages = [
-                f"Deep work mode: {duration//60}h session for epic rewards! 🎯",
-                f"Going for the long haul? Legendary rewards await! ✨",
+                f"Deep work mode: {duration//60}h session for epic rewards! đźŽŻ",
+                f"Going for the long haul? Legendary rewards await! âś¨",
             ]
         elif duration >= 60:
             messages = [
-                f"1 hour of focus = rare gear and major XP! 💎",
-                f"Great choice! Hour-long sessions boost productivity! 📈",
+                f"1 hour of focus = rare gear and major XP! đź’Ž",
+                f"Great choice! Hour-long sessions boost productivity! đź“",
             ]
         else:
             messages = [
                 "Ready to focus? Set your duration and press Start!",
-                "Short bursts can be powerful. Let's go! ⚡",
-                "Every focus session makes you stronger! 💪",
-                "Longer sessions = better rewards! Try 1h+ for rare gear! 🎁",
+                "Short bursts can be powerful. Let's go! âšˇ",
+                "Every focus session makes you stronger! đź’Ş",
+                "Longer sessions = better rewards! Try 1h+ for rare gear! đźŽ",
             ]
         
         self.motivation_label.setText(random.choice(messages))
@@ -3563,7 +3574,7 @@ class TimerTab(QtWidgets.QWidget):
 
     def _set_action_btn_start_style(self) -> None:
         """Set the action button to Start style (green, modern)."""
-        self.action_btn.setText("▶  Start Focus Session")
+        self.action_btn.setText("â–¶  Start Focus Session")
         self.action_btn.setToolTip("Click to start your focus session. Sites will be blocked until complete.")
         self.action_btn.setStyleSheet("""
             QPushButton {
@@ -3597,7 +3608,7 @@ class TimerTab(QtWidgets.QWidget):
 
     def _set_action_btn_stop_style(self) -> None:
         """Set the action button to Stop style (red, modern)."""
-        self.action_btn.setText("⏹  Stop Session")
+        self.action_btn.setText("âŹą  Stop Session")
         self.action_btn.setToolTip("Click to stop the current session early.")
         self.action_btn.setStyleSheet("""
             QPushButton {
@@ -3663,6 +3674,16 @@ class TimerTab(QtWidgets.QWidget):
     def _toggle_session(self) -> None:
         """Toggle between starting and stopping a session."""
         if self.timer_running:
+            reply = show_question(
+                self,
+                "Stop Session?",
+                "Are you sure you want to stop the current focus session?\n\n"
+                "This ends blocking immediately and marks the session as incomplete.",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.No,
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                return
             self._stop_session()
         else:
             self._start_session()
@@ -3709,7 +3730,7 @@ class TimerTab(QtWidgets.QWidget):
         self.timer_label.setText(self._format_time(self.remaining_seconds))
         if self.timer_running:
             self._set_action_btn_stop_style()
-            self.status_label.setText("🔒 BLOCKING")
+            self.status_label.setText("đź”’ BLOCKING")
         else:
             self._set_action_btn_start_style()
             self.status_label.setText("Ready to focus")
@@ -3777,7 +3798,7 @@ class TimerTab(QtWidgets.QWidget):
         # Pomodoro uses its own durations
         if mode == BlockMode.POMODORO:
             total_seconds = self.blocker.pomodoro_work * 60
-            self.status_label.setText(f"🍅 WORK #{self.pomodoro_session_count + 1}")
+            self.status_label.setText(f"đźŤ… WORK #{self.pomodoro_session_count + 1}")
         else:
             total_seconds = total_minutes * 60
 
@@ -3792,16 +3813,16 @@ class TimerTab(QtWidgets.QWidget):
                     "This is a standard technique used by parental control and productivity software."
                 ),
                 details=(
-                    "• File location: C:\\Windows\\System32\\drivers\\etc\\hosts\n"
-                    "• Action: Add entries that redirect blocked sites to 127.0.0.1\n"
-                    "• Blocked sites will show 'connection refused' in your browser\n"
-                    "• Requires administrator privileges (already granted)"
+                    "â€˘ File location: C:\\Windows\\System32\\drivers\\etc\\hosts\n"
+                    "â€˘ Action: Add entries that redirect blocked sites to 127.0.0.1\n"
+                    "â€˘ Blocked sites will show 'connection refused' in your browser\n"
+                    "â€˘ Requires administrator privileges (already granted)"
                 ),
                 persistence_info=(
-                    "TEMPORARY — Changes are automatically removed when:\n"
-                    "• Your focus session ends normally\n"
-                    "• You click Stop to end the session early\n"
-                    "• The app is closed or crashes (cleanup on next startup)"
+                    "TEMPORARY â€” Changes are automatically removed when:\n"
+                    "â€˘ Your focus session ends normally\n"
+                    "â€˘ You click Stop to end the session early\n"
+                    "â€˘ The app is closed or crashes (cleanup on next startup)"
                 ),
                 revert_info=(
                     "If changes persist after app issues:\n"
@@ -3832,9 +3853,9 @@ class TimerTab(QtWidgets.QWidget):
         if mode != BlockMode.POMODORO:
             # Different status for Full vs Light mode
             if self.blocker.enforcement_mode == EnforcementMode.LIGHT:
-                self.status_label.setText("🔔 MONITORING")
+                self.status_label.setText("đź”” MONITORING")
             else:
-                self.status_label.setText("🔒 BLOCKING")
+                self.status_label.setText("đź”’ BLOCKING")
         self.qt_timer.start()
 
         # Emit session started signal
@@ -3888,14 +3909,17 @@ class TimerTab(QtWidgets.QWidget):
         # Only record stats if ran > 60s
         if elapsed > 60:
             self.blocker.update_stats(elapsed, completed=False)
-            self.session_complete.emit(elapsed)
-            
+
             # Check for entity encounter with reduced chance (bypass penalty)
             # Users who need to stop early (fatigue, emergencies) still have
             # a small chance at encounters to avoid feeling punished
             session_minutes = elapsed // 60
             if session_minutes >= 10:  # Minimum 10 minutes for bypass encounter
                 self._check_entitidex_encounter_bypass(session_minutes)
+
+        # Always emit completion so main-window cleanup runs
+        # (tab re-enable, monitor stop, UI refresh) even for short sessions.
+        self.session_complete.emit(max(0, elapsed))
         
         # Refresh quick stats
         self._refresh_quick_stats()
@@ -3941,17 +3965,17 @@ class TimerTab(QtWidgets.QWidget):
                 # Mode-specific status
                 mode = self._current_mode()
                 mode_emoji = {
-                    BlockMode.NORMAL: "🎯",
-                    BlockMode.STRICT: "🔐",
-                    BlockMode.HARDCORE: "💀",
-                    BlockMode.POMODORO: "🍅",
-                }.get(mode, "🎯")
+                    BlockMode.NORMAL: "đźŽŻ",
+                    BlockMode.STRICT: "đź”",
+                    BlockMode.HARDCORE: "đź’€",
+                    BlockMode.POMODORO: "đźŤ…",
+                }.get(mode, "đźŽŻ")
                 
                 if hasattr(self, 'session_status'):
                     if mode == BlockMode.POMODORO and self.pomodoro_is_break:
-                        self.session_status.setText(f"☕ Break Time • {elapsed_mins}m / {total_mins}m")
+                        self.session_status.setText(f"â• Break Time â€˘ {elapsed_mins}m / {total_mins}m")
                     else:
-                        self.session_status.setText(f"{mode_emoji} Focusing • {elapsed_mins}m / {total_mins}m • {progress_pct}%")
+                        self.session_status.setText(f"{mode_emoji} Focusing â€˘ {elapsed_mins}m / {total_mins}m â€˘ {progress_pct}%")
         except Exception:
             pass
 
@@ -4065,7 +4089,7 @@ class TimerTab(QtWidgets.QWidget):
         
         coins_earned += streak_bonus
         
-        # ✨ ENTITY PERK BONUS: Apply coin perks from collected entities
+        # âś¨ ENTITY PERK BONUS: Apply coin perks from collected entities
         entity_coin_bonus = 0
         coin_perk_breakdown = []
         try:
@@ -4087,7 +4111,7 @@ class TimerTab(QtWidgets.QWidget):
         except Exception as e:
             print(f"[Entity Perks] Error applying coin perks: {e}")
         
-        # ✨ PERFECT SESSION BONUS: Apply bonus if no distraction attempts
+        # âś¨ PERFECT SESSION BONUS: Apply bonus if no distraction attempts
         is_perfect = self._is_perfect_session()
         perfect_session_bonus_pct = 0
         if is_perfect:
@@ -4118,6 +4142,7 @@ class TimerTab(QtWidgets.QWidget):
         item = None
         tier_weights = None
         tier_roll = None
+        focus_power_gating = None
         try:
             from gamification import roll_focus_reward_outcome
             focus_outcome = roll_focus_reward_outcome(
@@ -4128,6 +4153,7 @@ class TimerTab(QtWidgets.QWidget):
             rolled_rarity = focus_outcome.get("rarity")
             tier_roll = focus_outcome.get("roll")
             tier_weights = focus_outcome.get("weights")
+            focus_power_gating = focus_outcome.get("power_gating")
             if rolled_rarity:
                 item = generate_item(
                     rarity=rolled_rarity,
@@ -4174,6 +4200,7 @@ class TimerTab(QtWidgets.QWidget):
             item=item,
             tier_weights=tier_weights,
             tier_roll=tier_roll,
+            power_gating=focus_power_gating,
             parent=self.window()
         )
         lottery_dialog.exec()
@@ -4256,19 +4283,19 @@ class TimerTab(QtWidgets.QWidget):
                     if slot_info.get("unlocked"):
                         if slot_info.get("is_first_slot"):
                             # First slot - give detailed explanation
-                            unlocks.append("🏗️ CITY BUILDING UNLOCKED!")
+                            unlocks.append("đźŹ—ď¸Ź CITY BUILDING UNLOCKED!")
                             unlocks.append("Build structures in the City tab to earn passive coins & bonuses!")
                             unlocks.append("Complete focus sessions & exercise to power construction.")
                         elif slot_info.get("all_slots_unlocked"):
-                            unlocks.append("🏙️ ALL 10 BUILDING SLOTS UNLOCKED!")
+                            unlocks.append("đźŹ™ď¸Ź ALL 10 BUILDING SLOTS UNLOCKED!")
                             unlocks.append("Your city is now at maximum capacity!")
                         else:
                             slot_num = slot_info.get("slot_number", 0)
                             if slot_info.get("slots_unlocked_count", 1) > 1:
-                                unlocks.append(f"🏗️ {slot_info['slots_unlocked_count']} NEW BUILDING SLOTS!")
+                                unlocks.append(f"đźŹ—ď¸Ź {slot_info['slots_unlocked_count']} NEW BUILDING SLOTS!")
                                 unlocks.append(f"You now have {slot_num} city plots available!")
                             else:
-                                unlocks.append(f"🏗️ BUILDING SLOT #{slot_num} UNLOCKED!")
+                                unlocks.append(f"đźŹ—ď¸Ź BUILDING SLOT #{slot_num} UNLOCKED!")
                             unlocks.append("Visit the City tab to expand your empire!")
             except Exception as e:
                 logger.debug(f"Could not check city slot unlocks: {e}")
@@ -4309,7 +4336,7 @@ class TimerTab(QtWidgets.QWidget):
         except Exception as e:
             logger.debug(f"Could not get entity luck perk contributors: {e}")
         
-        # 🏙️ Add city bonus contributors for rarity (Artisan Guild)
+        # đźŹ™ď¸Ź Add city bonus contributors for rarity (Artisan Guild)
         try:
             from city import get_city_bonuses
             city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
@@ -4320,7 +4347,7 @@ class TimerTab(QtWidgets.QWidget):
                     "name": "Artisan Guild",
                     "perk_type": "rarity_bias",
                     "value": int(rarity_bonus),
-                    "icon": "🏛️",
+                    "icon": "đźŹ›ď¸Ź",
                     "is_exceptional": False,
                     "description": f"+{int(rarity_bonus)}% Rarity (City Building)",
                     "is_city": True,  # Mark as city building for different display
@@ -4345,28 +4372,28 @@ class TimerTab(QtWidgets.QWidget):
             short_session = last_contribution.get("short_session", False)
             mins_needed = last_contribution.get("mins_needed", 0)
             
-            resource_emoji = "🎯" if resource == "focus" else "💪"
+            resource_emoji = "đźŽŻ" if resource == "focus" else "đź’Ş"
             
             if wasted:
-                extra_msgs.append(f"⚠️ +{amount} {resource.title()} earned but no building under construction")
+                extra_msgs.append(f"âš ď¸Ź +{amount} {resource.title()} earned but no building under construction")
             elif completed:
-                extra_msgs.append(f"🎉 +{amount} {resource.title()} → {building_name} COMPLETE!")
+                extra_msgs.append(f"đźŽ‰ +{amount} {resource.title()} â†’ {building_name} COMPLETE!")
                 # Save info for celebration dialog
                 building_completed_info = {
                     "building_id": last_contribution.get("building_id", ""),
                     "level": last_contribution.get("level", 1),
                 }
             elif short_session and mins_needed > 0:
-                extra_msgs.append(f"🏗️ {mins_needed} more min → +1 Focus for {building_name}")
+                extra_msgs.append(f"đźŹ—ď¸Ź {mins_needed} more min â†’ +1 Focus for {building_name}")
             elif building_name and amount > 0:
-                extra_msgs.append(f"🏗️ +{amount} {resource.title()} → {building_name} ({progress:.0f}%)")
+                extra_msgs.append(f"đźŹ—ď¸Ź +{amount} {resource.title()} â†’ {building_name} ({progress:.0f}%)")
             
             # Clear the contribution info after showing
             main_window._last_city_contribution = None
         
         reward_dialog = ItemRewardDialog(
             parent=self.window(),
-            source_label=f"Focus Session: {session_minutes} min" + (f" • {streak} day streak 🔥" if streak > 0 else ""),
+            source_label=f"Focus Session: {session_minutes} min" + (f" â€˘ {streak} day streak đź”Ą" if streak > 0 else ""),
             items_earned=[item],
             equipped=equipped_before,
             coins_earned=coins_earned,
@@ -4380,7 +4407,7 @@ class TimerTab(QtWidgets.QWidget):
         reward_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
         reward_dialog.deleteLater()  # Ensure dialog is cleaned up
         
-        # 🎉 Show building complete celebration if construction just finished
+        # đźŽ‰ Show building complete celebration if construction just finished
         if building_completed_info:
             try:
                 from city_tab import show_building_complete_dialog
@@ -4494,7 +4521,7 @@ class TimerTab(QtWidgets.QWidget):
             show_info(
                 self.window(),
                 "Item Equipped!",
-                f"✓ {item.get('name', 'Item')} equipped to {display_slot} slot!"
+                f"âś“ {item.get('name', 'Item')} equipped to {display_slot} slot!"
             )
             
             # Refresh UI
@@ -4559,13 +4586,13 @@ class TimerTab(QtWidgets.QWidget):
                 if encounter.get("encounter_perk_bonus", 0) > 0:
                     perk_parts.append(f"+{int(encounter['encounter_perk_bonus'])}% encounter (Perks)")
                 if encounter.get("city_encounter_bonus", 0) > 0:
-                    perk_parts.append(f"+{int(encounter['city_encounter_bonus'])}% encounter (🔭 Observatory)")
+                    perk_parts.append(f"+{int(encounter['city_encounter_bonus'])}% encounter (đź”­ Observatory)")
                 if encounter.get("capture_perk_bonus", 0) > 0:
                     perk_parts.append(f"+{int(encounter['capture_perk_bonus'])}% capture (Perks)")
                 if encounter.get("city_catch_bonus", 0) > 0:
-                    perk_parts.append(f"+{int(encounter['city_catch_bonus'])}% capture (🎓 University)")
+                    perk_parts.append(f"+{int(encounter['city_catch_bonus'])}% capture (đźŽ“ University)")
                 if perk_parts:
-                    show_perk_toast(f"Bonuses: {', '.join(perk_parts)}", "🌟", self)
+                    show_perk_toast(f"Bonuses: {', '.join(perk_parts)}", "đźŚź", self)
             
             # Show encounter dialog using new merge-style flow
             entity = encounter["entity"]
@@ -4787,7 +4814,7 @@ class TimerTab(QtWidgets.QWidget):
                 self.blocker.save_config()
             
             # Show a special toast noting the lucky bypass encounter
-            show_perk_toast("Lucky! Encounter despite early stop 🎁", "✨", self)
+            show_perk_toast("Lucky! Encounter despite early stop đźŽ", "âś¨", self)
             
             # Show encounter dialog using the same flow as normal sessions
             entity = encounter["entity"]
@@ -5023,13 +5050,13 @@ class TimerTab(QtWidgets.QWidget):
         # Show desktop notification (tray balloon) always when running
         session_minutes = elapsed // 60
         self._show_desktop_notification(
-            "🎉 Focus Session Complete!",
+            "đźŽ‰ Focus Session Complete!",
             f"Great job! You focused for {session_minutes} minutes.\nTime for a well-deserved break!"
         )
 
         self.timer_label.setText("00:00:00")
         self._set_action_btn_start_style()
-        self.status_label.setText("Session complete 🎉")
+        self.status_label.setText("Session complete đźŽ‰")
 
         # Update tray icon to ready state
         main_window = self.window()
@@ -5071,7 +5098,9 @@ class TimerTab(QtWidgets.QWidget):
 
             dialog.view_stats.connect(_open_stats_tab)
             main_window = self.window()
-            if hasattr(main_window, 'show_priorities_dialog'):
+            if hasattr(main_window, "_open_priorities"):
+                dialog.view_priorities.connect(main_window._open_priorities)
+            elif hasattr(main_window, "show_priorities_dialog"):
                 dialog.view_priorities.connect(main_window.show_priorities_dialog)
             
             dialog.exec()
@@ -5148,7 +5177,7 @@ class TimerTab(QtWidgets.QWidget):
         )
         base_xp_total = xp_info["total_xp"]
         
-        # 🏙️ CITY BONUS: Library XP bonus (preview what award_xp will apply)
+        # đźŹ™ď¸Ź CITY BONUS: Library XP bonus (preview what award_xp will apply)
         city_xp_bonus = 0
         try:
             from city import get_city_bonuses
@@ -5191,7 +5220,7 @@ class TimerTab(QtWidgets.QWidget):
         elif streak >= 3:
             coins_earned += 10
         
-        # ✨ ENTITY PERK BONUS: Apply coin perks from collected entities
+        # âś¨ ENTITY PERK BONUS: Apply coin perks from collected entities
         try:
             from gamification import get_entity_coin_perks
             coin_perks = get_entity_coin_perks(self.blocker.adhd_buster, source="session")
@@ -5215,7 +5244,7 @@ class TimerTab(QtWidgets.QWidget):
         
         rewards["coins"] = coins_earned
         
-        # 🏛️ Preview Royal Mint income (coins from focus sessions)
+        # đźŹ›ď¸Ź Preview Royal Mint income (coins from focus sessions)
         rewards["city_mint_coins"] = 0
         if CITY_AVAILABLE:
             try:
@@ -5264,7 +5293,7 @@ class TimerTab(QtWidgets.QWidget):
         # Don't generate preview - the lottery will generate the real item
         rewards["items"] = [{"teaser": True}]  # Just a flag that item is coming
         
-        # 🏙️ Preview city construction contribution (actual award happens later)
+        # đźŹ™ď¸Ź Preview city construction contribution (actual award happens later)
         if CITY_AVAILABLE:
             try:
                 from city import get_active_construction_info
@@ -5345,7 +5374,7 @@ class TimerTab(QtWidgets.QWidget):
             if CITY_AVAILABLE and hasattr(main_window, 'city_tab'):
                 main_window.city_tab._refresh_city()
             
-            self.status_label.setText(f"✅ Logged {session_minutes} min session")
+            self.status_label.setText(f"âś… Logged {session_minutes} min session")
             self.status_label.setStyleSheet("""
                 font-size: 16px;
                 font-weight: bold;
@@ -5364,13 +5393,13 @@ class TimerTab(QtWidgets.QWidget):
             if notify_mode in ("sound", "both"):
                 self._play_notification_sound()
             self._show_desktop_notification(
-                "⏰ Break Over!",
+                "âŹ° Break Over!",
                 f"Break time is over!\nReady for another focus session?"
             )
             self.blocker.unblock_sites(force=True)
 
             if show_question(
-                self, "Break Over! 🍅",
+                self, "Break Over! đźŤ…",
                 f"Break time is over!\n\n"
                 f"Sessions completed: {self.pomodoro_session_count}\n"
                 f"Total focus time: {self.pomodoro_total_work_time // 60} min\n\n"
@@ -5390,7 +5419,7 @@ class TimerTab(QtWidgets.QWidget):
             # Show desktop notification
             session_minutes = elapsed // 60
             self._show_desktop_notification(
-                f"🍅 Pomodoro #{self.pomodoro_session_count} Complete!",
+                f"đźŤ… Pomodoro #{self.pomodoro_session_count} Complete!",
                 f"Great work! You focused for {session_minutes} minutes.\nTime for a break!"
             )
             self.blocker.unblock_sites(force=True)
@@ -5410,7 +5439,7 @@ class TimerTab(QtWidgets.QWidget):
                 break_type = "Short Break"
 
             if show_question(
-                self, f"Work Complete! 🍅 {break_type}",
+                self, f"Work Complete! đźŤ… {break_type}",
                 f"Great work! Session #{self.pomodoro_session_count} complete!\n\n"
                 f"Time for a {break_minutes}-minute {break_type.lower()}.\n\n"
                 "Start break timer?"
@@ -5439,7 +5468,7 @@ class TimerTab(QtWidgets.QWidget):
 
         self.timer_label.setText(self._format_time(self.remaining_seconds))
         self._set_action_btn_stop_style()
-        self.status_label.setText(f"🍅 WORK #{self.pomodoro_session_count + 1}")
+        self.status_label.setText(f"đźŤ… WORK #{self.pomodoro_session_count + 1}")
         self.qt_timer.start()
         
         # Emit session started signal
@@ -5456,7 +5485,7 @@ class TimerTab(QtWidgets.QWidget):
         self.pomodoro_is_break = True
 
         self.timer_label.setText(self._format_time(self.remaining_seconds))
-        self.status_label.setText("☕ BREAK")
+        self.status_label.setText("â• BREAK")
         self.qt_timer.start()
         
         # Emit session started signal (breaks also lock controls)
@@ -5480,7 +5509,7 @@ class TimerTab(QtWidgets.QWidget):
 
         if self.pomodoro_session_count > 0:
             self.status_label.setText(
-                f"🍅 Done! {self.pomodoro_session_count} sessions, "
+                f"đźŤ… Done! {self.pomodoro_session_count} sessions, "
                 f"{self.pomodoro_total_work_time // 60} min"
             )
             if session_minutes > 0:
@@ -5584,16 +5613,32 @@ class SitesTab(QtWidgets.QWidget):
         white_layout.addLayout(white_input_layout)
         layout.addWidget(white_group)
 
-        # Import/Export buttons
+        # Import/Export buttons (sites list only)
         io_layout = QtWidgets.QHBoxLayout()
-        import_btn = QtWidgets.QPushButton("📥 Import")
+        import_btn = QtWidgets.QPushButton("Import Sites")
+        import_btn.setToolTip(
+            "Import blacklist/whitelist sites only. "
+            "Use Backup & Restore for full profile data."
+        )
         import_btn.clicked.connect(self._import_sites)
         io_layout.addWidget(import_btn)
-        export_btn = QtWidgets.QPushButton("📤 Export")
+        export_btn = QtWidgets.QPushButton("Export Sites")
+        export_btn.setToolTip(
+            "Export blacklist/whitelist sites only. "
+            "Use Backup & Restore for full profile data."
+        )
         export_btn.clicked.connect(self._export_sites)
         io_layout.addWidget(export_btn)
         io_layout.addStretch()
         layout.addLayout(io_layout)
+
+        io_note = QtWidgets.QLabel(
+            "These buttons handle only blacklist/whitelist site lists, "
+            "not full app settings or progress."
+        )
+        io_note.setStyleSheet("color: #9aa0a6; font-size: 11px;")
+        io_note.setWordWrap(True)
+        layout.addWidget(io_note)
 
     def _refresh_lists(self) -> None:
         self.black_list.clear()
@@ -5626,15 +5671,29 @@ class SitesTab(QtWidgets.QWidget):
         self._refresh_lists()
 
     def _import_sites(self) -> None:
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Import Sites", "", "JSON Files (*.json)")
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Import Sites List (Blacklist/Whitelist)",
+            "",
+            "JSON Files (*.json)"
+        )
         if path and self.blocker.import_config(path):
             self._refresh_lists()
-            show_info(self, "Import", "Sites imported successfully!")
+            show_info(self, "Sites Imported", "Sites list imported successfully!")
+        elif path:
+            show_warning(self, "Import Failed", "Could not import the sites list file.")
 
     def _export_sites(self) -> None:
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Export Sites", "", "JSON Files (*.json)")
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export Sites List (Blacklist/Whitelist)",
+            "",
+            "JSON Files (*.json)"
+        )
         if path and self.blocker.export_config(path):
-            show_info(self, "Export", "Sites exported successfully!")
+            show_info(self, "Sites Exported", "Sites list exported successfully!")
+        elif path:
+            show_warning(self, "Export Failed", "Could not export the sites list file.")
 
 
 class CategoriesTab(QtWidgets.QWidget):
@@ -5772,7 +5831,7 @@ class ScheduleTab(QtWidgets.QWidget):
             self.table.insertRow(row)
             days_str = ", ".join(day_names[d] for d in sorted(sched.get("days", [])))
             time_str = f"{sched.get('start_time', '')} - {sched.get('end_time', '')}"
-            status = "✅ Active" if sched.get("enabled", True) else "⏸ Paused"
+            status = "âś… Active" if sched.get("enabled", True) else "âŹ¸ Paused"
             self.table.setItem(row, 0, QtWidgets.QTableWidgetItem(days_str))
             self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(time_str))
             self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(status))
@@ -5822,11 +5881,11 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
     """Multi-metric health dashboard showing all trackers normalized to goal %.
     
     Combines 6 metrics into one unified view:
-    - Focus Time (minutes → % of daily focus goal)
-    - Eye Protection (routines → % of daily cap)
-    - Hydration (glasses → % of 8 glasses)
-    - Activity (minutes → % of 30min goal)
-    - Sleep (hours → % of 8 hours)
+    - Focus Time (minutes â†’ % of daily focus goal)
+    - Eye Protection (routines â†’ % of daily cap)
+    - Hydration (glasses â†’ % of 8 glasses)
+    - Activity (minutes â†’ % of 30min goal)
+    - Sleep (hours â†’ % of 8 hours)
     - Weight (distance from goal as %)
     
     Features:
@@ -5864,42 +5923,42 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
         "focus": {
             "label": "Focus",
             "color": "#6366f1",  # Indigo
-            "icon": "🎯",
+            "icon": "đźŽŻ",
             "unit": "min",
             "default_goal": 120,  # 2 hours
         },
         "eyes": {
             "label": "Eyes",
             "color": "#22c55e",  # Green
-            "icon": "👁️",
+            "icon": "đź‘ď¸Ź",
             "unit": "routines",
             "default_goal": 20,
         },
         "water": {
             "label": "Water",
             "color": "#3b82f6",  # Blue
-            "icon": "💧",
+            "icon": "đź’§",
             "unit": "glasses",
             "default_goal": 8,
         },
         "activity": {
             "label": "Activity",
             "color": "#f97316",  # Orange
-            "icon": "🏃",
+            "icon": "đźŹ",
             "unit": "min",
             "default_goal": 30,
         },
         "sleep": {
             "label": "Sleep",
             "color": "#8b5cf6",  # Purple
-            "icon": "😴",
+            "icon": "đź´",
             "unit": "hrs",
             "default_goal": 8.0,
         },
         "weight": {
             "label": "Weight",
             "color": "#ec4899",  # Pink
-            "icon": "⚖️",
+            "icon": "âš–ď¸Ź",
             "unit": "%",
             "default_goal": None,  # Uses weight goal from blocker
         },
@@ -6148,7 +6207,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
                 raw: Dict[str, Any] = {}
                 normalized: Dict[str, float] = {}
                 
-                # Focus: seconds → minutes → % of goal
+                # Focus: seconds â†’ minutes â†’ % of goal
                 focus_data = daily_stats.get(date_str, {})
                 if isinstance(focus_data, dict):
                     try:
@@ -6160,7 +6219,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
                     except (ValueError, TypeError):
                         pass
                 
-                # Eyes: count → % of cap
+                # Eyes: count â†’ % of cap
                 if date_str in eye_by_date:
                     try:
                         eye_count = eye_by_date[date_str]
@@ -6170,7 +6229,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
                     except (ValueError, TypeError, ZeroDivisionError):
                         pass
                 
-                # Water: glasses → % of 8
+                # Water: glasses â†’ % of 8
                 if date_str in water_by_date:
                     try:
                         glasses = water_by_date[date_str]
@@ -6180,7 +6239,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
                     except (ValueError, TypeError, ZeroDivisionError):
                         pass
                 
-                # Activity: minutes → % of 30
+                # Activity: minutes â†’ % of 30
                 if date_str in activity_by_date:
                     try:
                         act_min = activity_by_date[date_str]
@@ -6190,7 +6249,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
                     except (ValueError, TypeError, ZeroDivisionError):
                         pass
                 
-                # Sleep: hours → % of 8
+                # Sleep: hours â†’ % of 8
                 if date_str in sleep_by_date:
                     try:
                         sleep_hrs = sleep_by_date[date_str]
@@ -6615,7 +6674,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
         # Title
         painter.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
         painter.setPen(QtGui.QColor("#a5b4fc"))
-        painter.drawText(self.MARGIN_LEFT, 25, "📊 Integrated Health Dashboard")
+        painter.drawText(self.MARGIN_LEFT, 25, "đź“Š Integrated Health Dashboard")
         
         # Health score badge
         score = self.get_health_score()
@@ -6664,7 +6723,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
             # Draw label with trend arrow
             painter.setPen(color if is_visible else QtGui.QColor("#666666"))
             trend = self._cached_trends.get(metric, "stable") if self._cached_trends else "stable"
-            trend_arrow = "↑" if trend == "up" else ("↓" if trend == "down" else "→")
+            trend_arrow = "â†‘" if trend == "up" else ("â†“" if trend == "down" else "â†’")
             label = f"{config['icon']} {config['label']} {trend_arrow}"
             painter.drawText(int(legend_x + 16), int(y + 10), label)
     
@@ -6695,7 +6754,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
             date_label = dt.strftime("%A, %B %d") if dt else self._hover_date
             
             # Build tooltip lines
-            lines = [f"📅 {date_label}"]
+            lines = [f"đź“… {date_label}"]
             for metric, config in self.METRICS.items():
                 if metric in normalized:
                     raw_val = raw.get(metric, 0)
@@ -6721,7 +6780,7 @@ class IntegratedHealthChartWidget(QtWidgets.QWidget):
             values = [v for v in normalized.values() if isinstance(v, (int, float))]
             if values:
                 day_score = min(100, sum(values) / len(values))
-                lines.append(f"📊 Day Score: {day_score:.0f}%")
+                lines.append(f"đź“Š Day Score: {day_score:.0f}%")
             
             # Calculate tooltip dimensions
             painter.setFont(QtGui.QFont("Arial", 9))
@@ -7133,7 +7192,7 @@ class StatsTab(QtWidgets.QWidget):
         inner.setSpacing(20)
 
         # Header row with title and help button
-        title = QtWidgets.QLabel("📊 Focus Statistics")
+        title = QtWidgets.QLabel("đź“Š Focus Statistics")
         title.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
         title.setStyleSheet("""
             QLabel {
@@ -7162,7 +7221,7 @@ class StatsTab(QtWidgets.QWidget):
         chad_layout.setSpacing(12)
         
         # Chad section title
-        self.chad_section_title = QtWidgets.QLabel("🤖 AGI Assistant Productivity Tips")
+        self.chad_section_title = QtWidgets.QLabel("đź¤– AGI Assistant Productivity Tips")
         self.chad_section_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
         self.chad_section_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
         chad_layout.addWidget(self.chad_section_title)
@@ -7216,7 +7275,7 @@ class StatsTab(QtWidgets.QWidget):
         chad_layout.addWidget(self.chad_tip_text)
         
         # Acknowledge button
-        self.chad_acknowledge_btn = QtWidgets.QPushButton("✓ Got it! (+1 🪙)")
+        self.chad_acknowledge_btn = QtWidgets.QPushButton("âś“ Got it! (+1 đźŞ™)")
         self.chad_acknowledge_btn.setStyleSheet("""
             QPushButton {
                 background: #4ade80;
@@ -7286,16 +7345,16 @@ class StatsTab(QtWidgets.QWidget):
         self.best_streak_lbl = QtWidgets.QLabel("0 days")
         
         overview_layout.addWidget(
-            create_stat_card("⏱️", "Total Focus Time", self.total_hours_lbl, "#2196f3"), 0, 0
+            create_stat_card("âŹ±ď¸Ź", "Total Focus Time", self.total_hours_lbl, "#2196f3"), 0, 0
         )
         overview_layout.addWidget(
-            create_stat_card("✅", "Sessions Completed", self.sessions_lbl, "#4caf50"), 0, 1
+            create_stat_card("âś…", "Sessions Completed", self.sessions_lbl, "#4caf50"), 0, 1
         )
         overview_layout.addWidget(
-            create_stat_card("🔥", "Current Streak", self.streak_lbl, "#ff9800"), 1, 0
+            create_stat_card("đź”Ą", "Current Streak", self.streak_lbl, "#ff9800"), 1, 0
         )
         overview_layout.addWidget(
-            create_stat_card("🏆", "Best Streak", self.best_streak_lbl, "#9c27b0"), 1, 1
+            create_stat_card("đźŹ†", "Best Streak", self.best_streak_lbl, "#9c27b0"), 1, 1
         )
         inner.addWidget(overview_group)
 
@@ -7314,7 +7373,7 @@ class StatsTab(QtWidgets.QWidget):
         goals_layout.setSpacing(12)
         
         # Goals title
-        goals_title = QtWidgets.QLabel("🎯 Focus Goals")
+        goals_title = QtWidgets.QLabel("đźŽŻ Focus Goals")
         goals_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
         goals_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
         goals_layout.addWidget(goals_title)
@@ -7332,7 +7391,7 @@ class StatsTab(QtWidgets.QWidget):
         weekly_layout = QtWidgets.QVBoxLayout(weekly_card)
         weekly_layout.setSpacing(6)
         
-        weekly_label = QtWidgets.QLabel("📅 Weekly Goal")
+        weekly_label = QtWidgets.QLabel("đź“… Weekly Goal")
         weekly_label.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
         weekly_label.setStyleSheet("color: #93c5fd;")
         weekly_layout.addWidget(weekly_label)
@@ -7412,7 +7471,7 @@ class StatsTab(QtWidgets.QWidget):
         monthly_layout = QtWidgets.QVBoxLayout(monthly_card)
         monthly_layout.setSpacing(6)
         
-        monthly_label = QtWidgets.QLabel("📆 Monthly Goal")
+        monthly_label = QtWidgets.QLabel("đź“† Monthly Goal")
         monthly_label.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
         monthly_label.setStyleSheet("color: #c4b5fd;")
         monthly_layout.addWidget(monthly_label)
@@ -7495,7 +7554,7 @@ class StatsTab(QtWidgets.QWidget):
         week_layout = QtWidgets.QVBoxLayout(week_group)
         week_layout.setSpacing(6)
         
-        week_title = QtWidgets.QLabel("📊 Weekly Focus Time")
+        week_title = QtWidgets.QLabel("đź“Š Weekly Focus Time")
         week_title.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
         week_title.setStyleSheet("color: #a5b4fc; padding: 0px 0px 4px 0px;")
         week_layout.addWidget(week_title)
@@ -7549,9 +7608,9 @@ class StatsTab(QtWidgets.QWidget):
         
         inner.addWidget(week_group)
 
-        # ═══════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # PRODUCTIVITY ANALYTICS SECTION - State-of-the-art visualization
-        # ═══════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
         analytics_group = QtWidgets.QGroupBox()
         analytics_group.setStyleSheet("""
@@ -7568,7 +7627,7 @@ class StatsTab(QtWidgets.QWidget):
         
         # Analytics header with period selector
         analytics_header = QtWidgets.QHBoxLayout()
-        analytics_title = QtWidgets.QLabel("📈 Productivity Analytics")
+        analytics_title = QtWidgets.QLabel("đź“ Productivity Analytics")
         analytics_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
         analytics_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
         analytics_header.addWidget(analytics_title)
@@ -7621,7 +7680,7 @@ class StatsTab(QtWidgets.QWidget):
         timeline_layout = QtWidgets.QVBoxLayout(timeline_card)
         timeline_layout.setSpacing(8)
         
-        timeline_title = QtWidgets.QLabel("🕐 24-Hour Focus Timeline")
+        timeline_title = QtWidgets.QLabel("đź• 24-Hour Focus Timeline")
         timeline_title.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
         timeline_title.setStyleSheet("color: #93c5fd;")
         timeline_layout.addWidget(timeline_title)
@@ -7656,7 +7715,7 @@ class StatsTab(QtWidgets.QWidget):
         dow_layout = QtWidgets.QVBoxLayout(dow_card)
         dow_layout.setSpacing(8)
         
-        dow_title = QtWidgets.QLabel("📅 Weekly Productivity Patterns")
+        dow_title = QtWidgets.QLabel("đź“… Weekly Productivity Patterns")
         dow_title.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
         dow_title.setStyleSheet("color: #c4b5fd;")
         dow_layout.addWidget(dow_title)
@@ -7694,7 +7753,7 @@ class StatsTab(QtWidgets.QWidget):
         """)
         stats_summary_layout = QtWidgets.QVBoxLayout(stats_summary_card)
         
-        stats_summary_title = QtWidgets.QLabel("📊 Statistical Summary")
+        stats_summary_title = QtWidgets.QLabel("đź“Š Statistical Summary")
         stats_summary_title.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
         stats_summary_title.setStyleSheet("color: #fbbf24;")
         stats_summary_layout.addWidget(stats_summary_title)
@@ -7762,7 +7821,7 @@ class StatsTab(QtWidgets.QWidget):
         wow_layout.setContentsMargins(4, 8, 4, 4)
         wow_layout.setSpacing(12)
         
-        self.stat_wow_label = QtWidgets.QLabel("📈 Week-over-Week:")
+        self.stat_wow_label = QtWidgets.QLabel("đź“ Week-over-Week:")
         self.stat_wow_label.setStyleSheet("color: #9ca3af; font-size: 10px;")
         wow_layout.addWidget(self.stat_wow_label)
         
@@ -7788,9 +7847,9 @@ class StatsTab(QtWidgets.QWidget):
         
         inner.addWidget(analytics_group)
 
-        # ═══════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # INTEGRATED HEALTH DASHBOARD - All metrics in one view
-        # ═══════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
         health_dashboard_group = QtWidgets.QGroupBox()
         health_dashboard_group.setStyleSheet("""
@@ -7808,7 +7867,7 @@ class StatsTab(QtWidgets.QWidget):
         # Header with controls
         health_header = QtWidgets.QHBoxLayout()
         
-        health_title = QtWidgets.QLabel("🏥 Integrated Health Dashboard")
+        health_title = QtWidgets.QLabel("đźŹĄ Integrated Health Dashboard")
         health_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
         health_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
         health_header.addWidget(health_title)
@@ -7848,7 +7907,7 @@ class StatsTab(QtWidgets.QWidget):
         health_header.addWidget(self.health_range_combo)
         
         # Moving average toggle
-        self.health_ma_btn = QtWidgets.QPushButton("📈 MA")
+        self.health_ma_btn = QtWidgets.QPushButton("đź“ MA")
         self.health_ma_btn.setToolTip("Toggle 7-day moving average")
         self.health_ma_btn.setCheckable(True)
         self.health_ma_btn.setStyleSheet("""
@@ -7871,7 +7930,7 @@ class StatsTab(QtWidgets.QWidget):
         health_header.addWidget(self.health_ma_btn)
         
         # Reset view button
-        health_reset_btn = QtWidgets.QPushButton("🔄")
+        health_reset_btn = QtWidgets.QPushButton("đź”„")
         health_reset_btn.setToolTip("Reset zoom/pan")
         health_reset_btn.setFixedWidth(30)
         health_reset_btn.setStyleSheet("""
@@ -7959,7 +8018,7 @@ class StatsTab(QtWidgets.QWidget):
             bypass_layout = QtWidgets.QVBoxLayout(bypass_group)
             bypass_layout.setSpacing(10)
             
-            bypass_title = QtWidgets.QLabel("🚫 Distraction Attempts")
+            bypass_title = QtWidgets.QLabel("đźš« Distraction Attempts")
             bypass_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
             bypass_title.setStyleSheet("color: #fca5a5; padding: 4px;")
             bypass_layout.addWidget(bypass_title)
@@ -8027,7 +8086,7 @@ class StatsTab(QtWidgets.QWidget):
             """)
             bypass_layout.addWidget(self.bypass_insights)
 
-            refresh_bypass = QtWidgets.QPushButton("🔄 Refresh Attempts")
+            refresh_bypass = QtWidgets.QPushButton("đź”„ Refresh Attempts")
             refresh_bypass.setStyleSheet("""
                 QPushButton {
                     background: #ef4444;
@@ -8047,7 +8106,7 @@ class StatsTab(QtWidgets.QWidget):
             inner.addWidget(bypass_group)
 
         # Reset button - dark theme
-        reset_btn = QtWidgets.QPushButton("🔄 Reset All Statistics")
+        reset_btn = QtWidgets.QPushButton("đź”„ Reset All Statistics")
         reset_btn.setStyleSheet("""
             QPushButton {
                 background: #4b5563;
@@ -8227,9 +8286,9 @@ class StatsTab(QtWidgets.QWidget):
             relevant_dates = [d for d in daily_stats.keys() 
                             if datetime.strptime(d, "%Y-%m-%d") >= cutoff]
         
-        # ═══════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # 24-HOUR TIMELINE ANALYSIS
-        # ═══════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
         hourly_totals = [0.0] * 24
         hourly_counts = [0] * 24
@@ -8259,13 +8318,13 @@ class StatsTab(QtWidgets.QWidget):
         peak_hours = sorted(enumerate(hourly_averages), key=lambda x: x[1], reverse=True)[:3]
         if peak_hours[0][1] > 0:
             peak_text = ", ".join([f"{h:02d}:00 ({m:.0f}m)" for h, m in peak_hours if m > 0])
-            self.peak_hours_label.setText(f"🔥 Peak productivity: {peak_text}")
+            self.peak_hours_label.setText(f"đź”Ą Peak productivity: {peak_text}")
         else:
             self.peak_hours_label.setText("Peak productivity: No data yet")
         
-        # ═══════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # DAY-OF-WEEK PATTERN ANALYSIS WITH CONFIDENCE INTERVALS
-        # ═══════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
         # Collect data by day of week
         dow_data = {i: [] for i in range(7)}  # 0=Monday, 6=Sunday
@@ -8293,7 +8352,7 @@ class StatsTab(QtWidgets.QWidget):
                 std_dev = math.sqrt(variance)
                 std_error = std_dev / math.sqrt(n)
                 
-                # 95% CI using t-distribution approximation (z ≈ 1.96 for large n)
+                # 95% CI using t-distribution approximation (z â‰ 1.96 for large n)
                 # For small n, use t-value (approximation)
                 if n >= 30:
                     t_value = 1.96
@@ -8323,21 +8382,21 @@ class StatsTab(QtWidgets.QWidget):
             worst_mean = dow_stats[worst_day_idx][0]
             
             if best_mean >= 60:
-                self.best_day_label.setText(f"🏆 Most productive: {day_names[best_day_idx]} ({best_mean/60:.1f}h avg)")
+                self.best_day_label.setText(f"đźŹ† Most productive: {day_names[best_day_idx]} ({best_mean/60:.1f}h avg)")
             else:
-                self.best_day_label.setText(f"🏆 Most productive: {day_names[best_day_idx]} ({best_mean:.0f}m avg)")
+                self.best_day_label.setText(f"đźŹ† Most productive: {day_names[best_day_idx]} ({best_mean:.0f}m avg)")
             
             if worst_mean >= 60:
-                self.worst_day_label.setText(f"📉 Least productive: {day_names[worst_day_idx]} ({worst_mean/60:.1f}h avg)")
+                self.worst_day_label.setText(f"đź“‰ Least productive: {day_names[worst_day_idx]} ({worst_mean/60:.1f}h avg)")
             else:
-                self.worst_day_label.setText(f"📉 Least productive: {day_names[worst_day_idx]} ({worst_mean:.0f}m avg)")
+                self.worst_day_label.setText(f"đź“‰ Least productive: {day_names[worst_day_idx]} ({worst_mean:.0f}m avg)")
         else:
-            self.best_day_label.setText("🏆 Most productive: -")
-            self.worst_day_label.setText("📉 Least productive: -")
+            self.best_day_label.setText("đźŹ† Most productive: -")
+            self.worst_day_label.setText("đź“‰ Least productive: -")
         
-        # ═══════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # STATISTICAL SUMMARY (Industry-Standard Metrics)
-        # ═══════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
         # Collect all daily focus times and session details
         all_daily_focus = []
@@ -8375,9 +8434,9 @@ class StatsTab(QtWidgets.QWidget):
         
         max_day = max(all_daily_focus) if all_daily_focus else 0
         
-        # ───────────────────────────────────────────────────────────────────
+        # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         # INDUSTRY-STANDARD METRICS
-        # ───────────────────────────────────────────────────────────────────
+        # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         
         # 1. PRODUCTIVITY SCORE (0-100)
         # Composite score based on: consistency, avg focus, trend, goal achievement
@@ -8468,13 +8527,13 @@ class StatsTab(QtWidgets.QWidget):
             if first_half_avg > 0:
                 trend_pct = ((second_half_avg - first_half_avg) / first_half_avg) * 100
                 if trend_pct > 5:
-                    trend_text = f"↗+{trend_pct:.0f}%"
+                    trend_text = f"â†—+{trend_pct:.0f}%"
                     self.stat_trend.setStyleSheet("color: #10b981; font-weight: bold;")
                 elif trend_pct < -5:
-                    trend_text = f"↘{trend_pct:.0f}%"
+                    trend_text = f"â†{trend_pct:.0f}%"
                     self.stat_trend.setStyleSheet("color: #f87171; font-weight: bold;")
                 else:
-                    trend_text = "→ 0%"
+                    trend_text = "â†’ 0%"
                     self.stat_trend.setStyleSheet("color: #94a3b8;")
             else:
                 trend_text = "-"
@@ -8483,9 +8542,9 @@ class StatsTab(QtWidgets.QWidget):
             trend_text = "-"
             self.stat_trend.setStyleSheet("color: #94a3b8;")
         
-        # ───────────────────────────────────────────────────────────────────
+        # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         # UPDATE UI LABELS
-        # ───────────────────────────────────────────────────────────────────
+        # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         
         # Productivity Score with color coding
         if productivity_score >= 80:
@@ -8555,33 +8614,33 @@ class StatsTab(QtWidgets.QWidget):
         
         # Std dev (variability)
         if std_dev >= 60:
-            self.stat_std_dev.setText(f"±{std_dev/60:.1f}h")
+            self.stat_std_dev.setText(f"Â±{std_dev/60:.1f}h")
         else:
-            self.stat_std_dev.setText(f"±{std_dev:.0f}m")
+            self.stat_std_dev.setText(f"Â±{std_dev:.0f}m")
         
         # Trend
         self.stat_trend.setText(trend_text)
         
         # Week-over-week change
         if wow_change > 0:
-            self.stat_wow_value.setText(f"↗ +{wow_change:.0f}%")
+            self.stat_wow_value.setText(f"â†— +{wow_change:.0f}%")
             self.stat_wow_value.setStyleSheet("color: #10b981; font-weight: bold;")
         elif wow_change < 0:
-            self.stat_wow_value.setText(f"↘ {wow_change:.0f}%")
+            self.stat_wow_value.setText(f"â† {wow_change:.0f}%")
             self.stat_wow_value.setStyleSheet("color: #f87171; font-weight: bold;")
         else:
-            self.stat_wow_value.setText("→ 0%")
+            self.stat_wow_value.setText("â†’ 0%")
             self.stat_wow_value.setStyleSheet("color: #94a3b8;")
         
         # Vs period average
         if vs_avg_pct > 0:
-            self.stat_vs_avg_value.setText(f"↗ +{vs_avg_pct:.0f}%")
+            self.stat_vs_avg_value.setText(f"â†— +{vs_avg_pct:.0f}%")
             self.stat_vs_avg_value.setStyleSheet("color: #10b981; font-weight: bold;")
         elif vs_avg_pct < 0:
-            self.stat_vs_avg_value.setText(f"↘ {vs_avg_pct:.0f}%")
+            self.stat_vs_avg_value.setText(f"â† {vs_avg_pct:.0f}%")
             self.stat_vs_avg_value.setStyleSheet("color: #f87171; font-weight: bold;")
         else:
-            self.stat_vs_avg_value.setText("→ 0%")
+            self.stat_vs_avg_value.setText("â†’ 0%")
             self.stat_vs_avg_value.setStyleSheet("color: #94a3b8;")
 
     def _refresh_chad_tips(self) -> None:
@@ -8625,12 +8684,12 @@ class StatsTab(QtWidgets.QWidget):
         
         # Update section title based on variant
         if is_exceptional:
-            self.chad_section_title.setText("⭐ AGI Assistant (Exceptional) Advanced Tips")
+            self.chad_section_title.setText("â­ AGI Assistant (Exceptional) Advanced Tips")
             self.chad_section_title.setStyleSheet("color: #ffd700; padding: 4px;")
-            self.chad_entity_name.setText("⭐ AGI Assistant Chad")
+            self.chad_entity_name.setText("â­ AGI Assistant Chad")
             self.chad_entity_name.setStyleSheet("color: #ffd700; font-weight: bold; font-size: 12px;")
         else:
-            self.chad_section_title.setText("🤖 AGI Assistant Productivity Tips")
+            self.chad_section_title.setText("đź¤– AGI Assistant Productivity Tips")
             self.chad_section_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
             self.chad_entity_name.setText("AGI Assistant Chad")
             self.chad_entity_name.setStyleSheet("color: #e5e7eb; font-weight: bold; font-size: 12px;")
@@ -8670,7 +8729,7 @@ class StatsTab(QtWidgets.QWidget):
                             """)
         except Exception:
             # Fallback - just show text
-            self.chad_icon_label.setText("🤖")
+            self.chad_icon_label.setText("đź¤–")
         
         # Get current tip index (sequential cycling)
         tip_key = "chad_tip_index_exceptional" if is_exceptional else "chad_tip_index"
@@ -8692,11 +8751,11 @@ class StatsTab(QtWidgets.QWidget):
         if last_acknowledged == today_str:
             # Already acknowledged today
             self.chad_acknowledge_btn.setEnabled(False)
-            self.chad_acknowledge_btn.setText("✓ +1 🪙 collected!")
+            self.chad_acknowledge_btn.setText("âś“ +1 đźŞ™ collected!")
         else:
             # Can acknowledge
             self.chad_acknowledge_btn.setEnabled(True)
-            self.chad_acknowledge_btn.setText("✓ Got it! (+1 🪙)")
+            self.chad_acknowledge_btn.setText("âś“ Got it! (+1 đźŞ™)")
     
     def _acknowledge_chad_tip(self) -> None:
         """Acknowledge the daily Chad tip and award 1 coin."""
@@ -8746,7 +8805,7 @@ class StatsTab(QtWidgets.QWidget):
         
         # Update button state - no dialog, just update text
         self.chad_acknowledge_btn.setEnabled(False)
-        self.chad_acknowledge_btn.setText("✓ +1 🪙 collected!")
+        self.chad_acknowledge_btn.setText("âś“ +1 đźŞ™ collected!")
 
     # =========================================================================
     # Integrated Health Dashboard Controls
@@ -8810,7 +8869,7 @@ class SettingsTab(QtWidgets.QWidget):
         inner = QtWidgets.QVBoxLayout(container)
 
         # User Profile Settings
-        user_group = QtWidgets.QGroupBox("👤 User Profile")
+        user_group = QtWidgets.QGroupBox("đź‘¤ User Profile")
         user_layout = QtWidgets.QHBoxLayout(user_group)
         current_user = self.window().blocker.user_dir.name if hasattr(self.window().blocker, 'user_dir') else "Default"
         user_label = QtWidgets.QLabel(f"Current Profile: <b>{current_user}</b>")
@@ -8823,7 +8882,7 @@ class SettingsTab(QtWidgets.QWidget):
         inner.addWidget(user_group)
 
         # Audio Settings
-        audio_group = QtWidgets.QGroupBox("🔊 Audio Settings")
+        audio_group = QtWidgets.QGroupBox("đź”Š Audio Settings")
         audio_layout = QtWidgets.QFormLayout(audio_group)
 
         # Get audio manager instance
@@ -8851,7 +8910,7 @@ class SettingsTab(QtWidgets.QWidget):
         inner.addWidget(audio_group)
 
         # Password protection
-        pwd_group = QtWidgets.QGroupBox("🔐 Password Protection")
+        pwd_group = QtWidgets.QGroupBox("đź” Password Protection")
         pwd_layout = QtWidgets.QVBoxLayout(pwd_group)
         pwd_layout.addWidget(QtWidgets.QLabel("Set a password to prevent stopping Strict Mode sessions early."))
         self.pwd_status = QtWidgets.QLabel()
@@ -8869,15 +8928,15 @@ class SettingsTab(QtWidgets.QWidget):
         self._update_pwd_status()
 
         # Mode explanations
-        mode_group = QtWidgets.QGroupBox("📋 Session Modes")
+        mode_group = QtWidgets.QGroupBox("đź“‹ Session Modes")
         mode_layout = QtWidgets.QVBoxLayout(mode_group)
         mode_info = QtWidgets.QLabel(
             "<b>Normal:</b> Can stop anytime - good for flexibility<br>"
-            "<b>Strict 🔐:</b> Requires password to stop - prevents impulsive exits<br>"
-            "<b>Hardcore 💪:</b> Must solve 2 math problems to stop - maximum commitment!<br>"
-            "&nbsp;&nbsp;&nbsp;&nbsp;• Numbers are displayed as images (no copy-paste)<br>"
-            "&nbsp;&nbsp;&nbsp;&nbsp;• Wrong answer = start over with new problems<br>"
-            "<b>Pomodoro 🍅:</b> 25 min work / 5 min break cycles - for productivity"
+            "<b>Strict đź”:</b> Requires password to stop - prevents impulsive exits<br>"
+            "<b>Hardcore đź’Ş:</b> Must solve 2 math problems to stop - maximum commitment!<br>"
+            "&nbsp;&nbsp;&nbsp;&nbsp;â€˘ Numbers are displayed as images (no copy-paste)<br>"
+            "&nbsp;&nbsp;&nbsp;&nbsp;â€˘ Wrong answer = start over with new problems<br>"
+            "<b>Pomodoro đźŤ…:</b> 25 min work / 5 min break cycles - for productivity"
         )
         mode_info.setWordWrap(True)
         mode_info.setStyleSheet("padding: 10px; background-color: #2d2d30; color: #e0e0e0; border-radius: 5px; border: 1px solid #3e3e42;")
@@ -8885,7 +8944,7 @@ class SettingsTab(QtWidgets.QWidget):
         inner.addWidget(mode_group)
 
         # Pomodoro settings
-        pomo_group = QtWidgets.QGroupBox("🍅 Pomodoro Settings")
+        pomo_group = QtWidgets.QGroupBox("đźŤ… Pomodoro Settings")
         pomo_layout = QtWidgets.QFormLayout(pomo_group)
         self.pomo_work_spin = NoScrollSpinBox()
         self.pomo_work_spin.setRange(1, 120)
@@ -8905,14 +8964,14 @@ class SettingsTab(QtWidgets.QWidget):
         inner.addWidget(pomo_group)
 
         # Backup/Restore
-        backup_group = QtWidgets.QGroupBox("💾 Backup & Restore")
+        backup_group = QtWidgets.QGroupBox("đź’ľ Backup & Restore")
         backup_layout = QtWidgets.QVBoxLayout(backup_group)
         backup_layout.addWidget(QtWidgets.QLabel("Backup or restore all your data (settings, stats, goals)."))
         backup_btn_layout = QtWidgets.QHBoxLayout()
-        create_backup_btn = QtWidgets.QPushButton("📤 Create Backup")
+        create_backup_btn = QtWidgets.QPushButton("đź“¤ Create Backup")
         create_backup_btn.clicked.connect(self._create_backup)
         backup_btn_layout.addWidget(create_backup_btn)
-        restore_backup_btn = QtWidgets.QPushButton("📥 Restore Backup")
+        restore_backup_btn = QtWidgets.QPushButton("đź“Ą Restore Backup")
         restore_backup_btn.clicked.connect(self._restore_backup)
         backup_btn_layout.addWidget(restore_backup_btn)
         backup_btn_layout.addStretch()
@@ -8920,7 +8979,7 @@ class SettingsTab(QtWidgets.QWidget):
         
         # Export data (GDPR-compliant full export as ZIP)
         export_layout = QtWidgets.QHBoxLayout()
-        export_btn = QtWidgets.QPushButton("📦 Export All Data (ZIP)")
+        export_btn = QtWidgets.QPushButton("đź“¦ Export All Data (ZIP)")
         export_btn.setToolTip("Export all your data to a ZIP file for backup or data portability")
         export_btn.clicked.connect(self._export_all_data)
         export_layout.addWidget(export_btn)
@@ -8931,16 +8990,16 @@ class SettingsTab(QtWidgets.QWidget):
         inner.addWidget(backup_group)
 
         # Emergency cleanup
-        cleanup_group = QtWidgets.QGroupBox("⚠️ Emergency Cleanup")
+        cleanup_group = QtWidgets.QGroupBox("âš ď¸Ź Emergency Cleanup")
         cleanup_layout = QtWidgets.QVBoxLayout(cleanup_group)
         cleanup_layout.addWidget(QtWidgets.QLabel("Use if websites remain blocked after closing the app."))
-        cleanup_btn = QtWidgets.QPushButton("🧹 Remove All Blocks & Clean System")
+        cleanup_btn = QtWidgets.QPushButton("đź§ą Remove All Blocks & Clean System")
         cleanup_btn.clicked.connect(self._emergency_cleanup)
         cleanup_layout.addWidget(cleanup_btn)
         inner.addWidget(cleanup_group)
 
         # Voice Settings
-        self.voice_group = QtWidgets.QGroupBox("🎙️ Voice Settings")
+        self.voice_group = QtWidgets.QGroupBox("đźŽ™ď¸Ź Voice Settings")
         voice_layout = QtWidgets.QVBoxLayout(self.voice_group)
         voice_layout.addWidget(QtWidgets.QLabel("Select a voice for TTS (Eye Routine, Celebration quotes)."))
         
@@ -8953,7 +9012,7 @@ class SettingsTab(QtWidgets.QWidget):
         voice_layout.addLayout(voice_combo_layout)
         
         # Test voice button
-        test_voice_btn = QtWidgets.QPushButton("🔊 Test Voice")
+        test_voice_btn = QtWidgets.QPushButton("đź”Š Test Voice")
         test_voice_btn.setMaximumWidth(150)
         test_voice_btn.clicked.connect(self._test_voice)
         voice_layout.addWidget(test_voice_btn)
@@ -8964,7 +9023,7 @@ class SettingsTab(QtWidgets.QWidget):
         self._populate_voice_combo()
 
         # Global hotkey
-        hotkey_group = QtWidgets.QGroupBox("🧲 Global Hotkey")
+        hotkey_group = QtWidgets.QGroupBox("đź§˛ Global Hotkey")
         hotkey_layout = QtWidgets.QVBoxLayout(hotkey_group)
         hotkey_layout.addWidget(QtWidgets.QLabel(
             "Set a key combo to show/hide the window (minimize to tray when visible).\n"
@@ -8991,7 +9050,7 @@ class SettingsTab(QtWidgets.QWidget):
         inner.addWidget(hotkey_group)
 
         # Enforcement Mode Group - Full vs Light
-        enforce_group = QtWidgets.QGroupBox("🛡️ Enforcement Mode")
+        enforce_group = QtWidgets.QGroupBox("đź›ˇď¸Ź Enforcement Mode")
         enforce_layout = QtWidgets.QVBoxLayout(enforce_group)
         
         # Current mode status with admin indicator
@@ -9006,9 +9065,9 @@ class SettingsTab(QtWidgets.QWidget):
         enforce_layout.addWidget(enforce_desc)
         
         # Radio buttons for enforcement mode
-        self.enforce_full_radio = QtWidgets.QRadioButton("🔒 Full Mode (Recommended)")
+        self.enforce_full_radio = QtWidgets.QRadioButton("đź”’ Full Mode (Recommended)")
         self.enforce_full_radio.setToolTip("Modifies system hosts file to block sites. Requires admin privileges.")
-        self.enforce_light_radio = QtWidgets.QRadioButton("🔔 Light Mode (No Admin Required)")
+        self.enforce_light_radio = QtWidgets.QRadioButton("đź”” Light Mode (No Admin Required)")
         self.enforce_light_radio.setToolTip("Monitors browser and shows notifications. Does not modify system files.")
         
         # Set current selection
@@ -9021,18 +9080,18 @@ class SettingsTab(QtWidgets.QWidget):
         
         enforce_layout.addWidget(self.enforce_full_radio)
         full_desc = QtWidgets.QLabel(
-            "   • Blocks sites at system level - impossible to bypass\n"
-            "   • Requires running the app as Administrator\n"
-            "   • Best for serious focus sessions"
+            "   â€˘ Blocks sites at system level - impossible to bypass\n"
+            "   â€˘ Requires running the app as Administrator\n"
+            "   â€˘ Best for serious focus sessions"
         )
         full_desc.setStyleSheet("color: #9ca3af; margin-left: 20px;")
         enforce_layout.addWidget(full_desc)
         
         enforce_layout.addWidget(self.enforce_light_radio)
         light_desc = QtWidgets.QLabel(
-            "   • Shows reminder notifications when visiting blocked sites\n"
-            "   • No admin privileges needed - minimal system impact\n"
-            "   • Good for building awareness and habits"
+            "   â€˘ Shows reminder notifications when visiting blocked sites\n"
+            "   â€˘ No admin privileges needed - minimal system impact\n"
+            "   â€˘ Good for building awareness and habits"
         )
         light_desc.setStyleSheet("color: #9ca3af; margin-left: 20px;")
         enforce_layout.addWidget(light_desc)
@@ -9040,7 +9099,7 @@ class SettingsTab(QtWidgets.QWidget):
         # Reset permission prompts button
         perm_reset_layout = QtWidgets.QHBoxLayout()
         perm_reset_layout.addSpacing(20)
-        reset_perm_btn = QtWidgets.QPushButton("🔄 Reset Permission Prompts")
+        reset_perm_btn = QtWidgets.QPushButton("đź”„ Reset Permission Prompts")
         reset_perm_btn.setToolTip("Re-enable all 'Don't ask again' permission dialogs")
         reset_perm_btn.setMaximumWidth(220)
         reset_perm_btn.clicked.connect(self._reset_permission_prompts)
@@ -9053,7 +9112,7 @@ class SettingsTab(QtWidgets.QWidget):
 
         # System Tray (if available)
         if QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
-            tray_group = QtWidgets.QGroupBox("🖥️ System Tray")
+            tray_group = QtWidgets.QGroupBox("đź–Ąď¸Ź System Tray")
             tray_layout = QtWidgets.QVBoxLayout(tray_group)
             self.tray_check = QtWidgets.QCheckBox("Minimize to system tray instead of closing")
             self.tray_check.setChecked(self.blocker.minimize_to_tray)  # Load from config
@@ -9066,14 +9125,14 @@ class SettingsTab(QtWidgets.QWidget):
             
             # Startup sound setting
             tray_layout.addSpacing(10)
-            self.startup_sound_check = QtWidgets.QCheckBox("🔔 Play notification sound on startup")
+            self.startup_sound_check = QtWidgets.QCheckBox("đź”” Play notification sound on startup")
             self.startup_sound_check.setChecked(self.blocker.startup_sound_enabled)
             self.startup_sound_check.toggled.connect(self._toggle_startup_sound)
             tray_layout.addWidget(self.startup_sound_check)
             
             # Test sound button
             sound_row = QtWidgets.QHBoxLayout()
-            test_sound_btn = QtWidgets.QPushButton("🎵 Test Sound")
+            test_sound_btn = QtWidgets.QPushButton("đźŽµ Test Sound")
             test_sound_btn.setMaximumWidth(120)
             test_sound_btn.clicked.connect(self._test_startup_sound)
             sound_row.addWidget(test_sound_btn)
@@ -9102,7 +9161,7 @@ class SettingsTab(QtWidgets.QWidget):
         
         # Feedback/bug report link
         feedback_label = QtWidgets.QLabel(
-            '📧 Send feedback / report bugs: '
+            'đź“§ Send feedback / report bugs: '
             '<a href="mailto:lkacz1@gmail.com?subject=Personal Liberty Feedback" style="color: #64B5F6;">lkacz1@gmail.com</a>'
         )
         feedback_label.setTextFormat(QtCore.Qt.RichText)
@@ -9112,14 +9171,14 @@ class SettingsTab(QtWidgets.QWidget):
         
         # Show dev mode status hint if enabled
         if self.blocker.dev_mode_enabled:
-            dev_hint = QtWidgets.QLabel("🛠️ Developer mode enabled")
+            dev_hint = QtWidgets.QLabel("đź› ď¸Ź Developer mode enabled")
             dev_hint.setStyleSheet("color: #ff9800; font-style: italic;")
             about_layout.addWidget(dev_hint)
         
         inner.addWidget(about_group)
 
         # Factory Reset - DANGER ZONE
-        reset_group = QtWidgets.QGroupBox("🚨 Danger Zone")
+        reset_group = QtWidgets.QGroupBox("đźš¨ Danger Zone")
         reset_group.setStyleSheet("""
             QGroupBox {
                 border: 2px solid #e53935;
@@ -9133,17 +9192,17 @@ class SettingsTab(QtWidgets.QWidget):
         """)
         reset_layout = QtWidgets.QVBoxLayout(reset_group)
         reset_warning = QtWidgets.QLabel(
-            "⚠️ <b>Factory Reset</b> will permanently delete ALL your data including:\n"
-            "• All statistics and history\n"
-            "• Weight, sleep, activity, and water tracking data\n"
-            "• Hero progress, XP, gear, and story decisions\n"
-            "• All settings and preferences\n\n"
+            "âš ď¸Ź <b>Factory Reset</b> will permanently delete ALL your data including:\n"
+            "â€˘ All statistics and history\n"
+            "â€˘ Weight, sleep, activity, and water tracking data\n"
+            "â€˘ Hero progress, XP, gear, and story decisions\n"
+            "â€˘ All settings and preferences\n\n"
             "<b>This action cannot be undone!</b>"
         )
         reset_warning.setWordWrap(True)
         reset_warning.setStyleSheet("color: #ff8a80; padding: 10px; background-color: #2a1a1a; border-radius: 5px;")
         reset_layout.addWidget(reset_warning)
-        reset_btn = QtWidgets.QPushButton("🗑️ Factory Reset - Delete All Data")
+        reset_btn = QtWidgets.QPushButton("đź—‘ď¸Ź Factory Reset - Delete All Data")
         reset_btn.setStyleSheet("""
             QPushButton {
                 background-color: #c62828;
@@ -9167,7 +9226,7 @@ class SettingsTab(QtWidgets.QWidget):
 
     def _update_pwd_status(self) -> None:
         if self.blocker.password_hash:
-            self.pwd_status.setText("🔐 Password is set")
+            self.pwd_status.setText("đź” Password is set")
             self.pwd_status.setStyleSheet("color: green;")
         else:
             self.pwd_status.setText("No password set")
@@ -9397,14 +9456,14 @@ class SettingsTab(QtWidgets.QWidget):
             if result["success"]:
                 file_count = len(result["files"])
                 file_list = result["files"][:5]  # Show first 5
-                file_display = "\n• ".join(file_list)
-                more_msg = f"\n• ... and {file_count - 5} more" if file_count > 5 else ""
+                file_display = "\nâ€˘ ".join(file_list)
+                more_msg = f"\nâ€˘ ... and {file_count - 5} more" if file_count > 5 else ""
                 
                 show_info(
                     self, 
                     "Export Complete", 
-                    f"✅ {result['message']}\n\n"
-                    f"Exported files:\n• {file_display}{more_msg}"
+                    f"âś… {result['message']}\n\n"
+                    f"Exported files:\nâ€˘ {file_display}{more_msg}"
                 )
             else:
                 show_error(self, "Export Failed", result["message"])
@@ -9417,7 +9476,7 @@ class SettingsTab(QtWidgets.QWidget):
         mode = getattr(self.blocker, 'mode', None)
         if mode in (BlockMode.STRICT, BlockMode.HARDCORE) and self.blocker.is_blocking:
             reply = show_question(
-                self, "⚠️ Active Session Detected",
+                self, "âš ď¸Ź Active Session Detected",
                 f"You have an active {mode.upper()} session!\n\n"
                 "Emergency cleanup will bypass the protection you set.\n"
                 "This defeats the purpose of using a strict mode.\n\n"
@@ -9469,14 +9528,14 @@ class SettingsTab(QtWidgets.QWidget):
         """Factory reset - delete all user data after multiple confirmations."""
         # First confirmation
         reply1 = show_question(
-            self, "⚠️ Factory Reset Warning",
+            self, "âš ď¸Ź Factory Reset Warning",
             "You are about to DELETE ALL YOUR DATA!\n\n"
             "This includes:\n"
-            "• All statistics and session history\n"
-            "• Weight, sleep, activity, and water tracking\n"
-            "• Hero progress, XP, level, gear, and story\n"
-            "• Blocked sites and categories\n"
-            "• All settings and preferences\n\n"
+            "â€˘ All statistics and session history\n"
+            "â€˘ Weight, sleep, activity, and water tracking\n"
+            "â€˘ Hero progress, XP, level, gear, and story\n"
+            "â€˘ Blocked sites and categories\n"
+            "â€˘ All settings and preferences\n\n"
             "This action CANNOT be undone!\n\n"
             "Are you sure you want to continue?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
@@ -9497,7 +9556,7 @@ class SettingsTab(QtWidgets.QWidget):
         
         # Final warning
         reply3 = show_question(
-            self, "🚨 FINAL WARNING",
+            self, "đźš¨ FINAL WARNING",
             "THIS IS YOUR LAST CHANCE!\n\n"
             "All your progress will be permanently deleted.\n"
             "There is NO way to recover this data.\n\n"
@@ -9619,16 +9678,16 @@ class SettingsTab(QtWidgets.QWidget):
         current_mode = self.blocker.enforcement_mode
         
         if current_mode == EnforcementMode.LIGHT:
-            mode_text = "🔔 <b>Light Mode</b> active — notifications only, no system changes"
+            mode_text = "đź”” <b>Light Mode</b> active â€” notifications only, no system changes"
             status_style = "color: #F59E0B; padding: 8px; background: rgba(245, 158, 11, 0.1); border-radius: 4px;"
         else:
             if is_admin:
-                mode_text = "🔒 <b>Full Mode</b> active — sites blocked at system level ✅"
+                mode_text = "đź”’ <b>Full Mode</b> active â€” sites blocked at system level âś…"
                 status_style = "color: #10B981; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 4px;"
             else:
                 mode_text = (
-                    "🔒 <b>Full Mode</b> selected but <span style='color: #EF4444;'>NOT running as Admin</span><br>"
-                    "&nbsp;&nbsp;&nbsp;&nbsp;⚠️ Blocking will fail! Restart as Administrator or switch to Light Mode."
+                    "đź”’ <b>Full Mode</b> selected but <span style='color: #EF4444;'>NOT running as Admin</span><br>"
+                    "&nbsp;&nbsp;&nbsp;&nbsp;âš ď¸Ź Blocking will fail! Restart as Administrator or switch to Light Mode."
                 )
                 status_style = "color: #F59E0B; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 4px;"
         
@@ -9673,7 +9732,7 @@ class SettingsTab(QtWidgets.QWidget):
             "Reset Permission Prompts?",
             f"This will re-enable {count} permission dialog(s).\n\n"
             "You will be asked for approval again when the app needs to:\n"
-            "• Modify the hosts file (for Full Mode blocking)\n\n"
+            "â€˘ Modify the hosts file (for Full Mode blocking)\n\n"
             "Continue?"
         )
         
@@ -9781,11 +9840,11 @@ class SettingsTab(QtWidgets.QWidget):
             self.blocker.dev_mode_enabled = True
             self.blocker.save_config()
             
-            self._version_label.setText(f"Personal Liberty v{APP_VERSION}  🛠️")
+            self._version_label.setText(f"Personal Liberty v{APP_VERSION}  đź› ď¸Ź")
             
             # Show confirmation
             styled_info(
-                self, "🛠️ Developer Mode Enabled",
+                self, "đź› ď¸Ź Developer Mode Enabled",
                 "You've unlocked Developer Mode!\n\n"
                 "A new 'Dev' tab has been added with testing tools.\n\n"
                 "Note: This is intended for development and testing only. "
@@ -10577,13 +10636,13 @@ class WeightChartWidget(QtWidgets.QWidget):
         # Build trend text with direction and rate
         if direction == "down":
             color = QtGui.QColor(self.COLORS["trend_down"])
-            trend_text = f"↓ Losing {abs(rate)*1000:.0f}g/week"
+            trend_text = f"â†“ Losing {abs(rate)*1000:.0f}g/week"
         elif direction == "up":
             color = QtGui.QColor(self.COLORS["trend_up"])
-            trend_text = f"↑ Gaining {abs(rate)*1000:.0f}g/week"
+            trend_text = f"â†‘ Gaining {abs(rate)*1000:.0f}g/week"
         else:
             color = QtGui.QColor(self.COLORS["trend_stable"])
-            trend_text = "→ Stable"
+            trend_text = "â†’ Stable"
         
         # Add confidence indicator
         if r_sq > 0.7:
@@ -10885,7 +10944,7 @@ class WeightChartWidget(QtWidgets.QWidget):
         """Draw zoom level indicator."""
         painter.setPen(QtGui.QColor(self.COLORS["text"]))
         painter.setFont(QtGui.QFont("Segoe UI", 8))
-        zoom_text = f"🔍 {self._zoom_level:.1f}x (double-click to reset)"
+        zoom_text = f"đź”Ť {self._zoom_level:.1f}x (double-click to reset)"
         painter.drawText(chart_rect.left(), chart_rect.bottom() + 40, zoom_text)
 
 
@@ -10930,12 +10989,12 @@ class WeightTab(QtWidgets.QWidget):
         
         # Header with insights button
         header_layout = QtWidgets.QHBoxLayout()
-        header = QtWidgets.QLabel("⚖️ Weight Tracker")
+        header = QtWidgets.QLabel("âš–ď¸Ź Weight Tracker")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
         header_layout.addWidget(header)
         header_layout.addStretch()
         
-        insights_btn = QtWidgets.QPushButton("📊 Weekly Insights")
+        insights_btn = QtWidgets.QPushButton("đź“Š Weekly Insights")
         insights_btn.clicked.connect(self._show_weekly_insights)
         header_layout.addWidget(insights_btn)
         
@@ -10974,7 +11033,7 @@ class WeightTab(QtWidgets.QWidget):
         
         # Title row with entity name and tip number
         rodent_title_row = QtWidgets.QHBoxLayout()
-        self.rodent_section_title = QtWidgets.QLabel("🐀 Rodent Squad Weight Tips")
+        self.rodent_section_title = QtWidgets.QLabel("đź€ Rodent Squad Weight Tips")
         self.rodent_section_title.setStyleSheet("color: #8b7355; font-size: 10px;")
         rodent_title_row.addWidget(self.rodent_section_title)
         
@@ -10998,7 +11057,7 @@ class WeightTab(QtWidgets.QWidget):
         rodent_tips_layout.addLayout(rodent_content_col, 1)
         
         # Right: Acknowledge button (compact)
-        self.rodent_acknowledge_btn = QtWidgets.QPushButton("📖 +1🪙")
+        self.rodent_acknowledge_btn = QtWidgets.QPushButton("đź“– +1đźŞ™")
         self.rodent_acknowledge_btn.setFixedWidth(70)
         self.rodent_acknowledge_btn.setStyleSheet("""
             QPushButton {
@@ -11029,7 +11088,7 @@ class WeightTab(QtWidgets.QWidget):
         
         # Entity Perk Section (Rodent Squad) - shows when rat/mouse entities are collected
         # Positioned after tips section, before Log Weight dialog
-        self.weight_entity_section = CollapsibleSection("🐀 Rodent Squad", "weight_entity_section", parent=self)
+        self.weight_entity_section = CollapsibleSection("đź€ Rodent Squad", "weight_entity_section", parent=self)
         self.weight_entity_section.setVisible(False)
         layout.addWidget(self.weight_entity_section)
         
@@ -11037,7 +11096,7 @@ class WeightTab(QtWidgets.QWidget):
         top_layout = QtWidgets.QHBoxLayout()
         
         # Left: Weight input section
-        input_group = QtWidgets.QGroupBox("📝 Log Weight")
+        input_group = QtWidgets.QGroupBox("đź“ť Log Weight")
         input_layout = QtWidgets.QFormLayout(input_group)
         input_layout.setSpacing(8)
         
@@ -11140,7 +11199,7 @@ class WeightTab(QtWidgets.QWidget):
         profile_row.addWidget(self.profile_display_label)
         
         # Edit profile button
-        edit_profile_btn = QtWidgets.QPushButton("✏️ Edit")
+        edit_profile_btn = QtWidgets.QPushButton("âśŹď¸Ź Edit")
         edit_profile_btn.setFixedWidth(60)
         edit_profile_btn.setToolTip("Edit birth date and gender for personalized health norms")
         edit_profile_btn.clicked.connect(self._edit_user_profile)
@@ -11150,7 +11209,7 @@ class WeightTab(QtWidgets.QWidget):
         input_layout.addRow("Profile:", profile_row)
         
         # Log button
-        log_btn = QtWidgets.QPushButton("📊 Log Weight")
+        log_btn = QtWidgets.QPushButton("đź“Š Log Weight")
         log_btn.setStyleSheet("""
             QPushButton {
                 background-color: #4a90d9;
@@ -11172,7 +11231,7 @@ class WeightTab(QtWidgets.QWidget):
         right_panel = QtWidgets.QVBoxLayout()
         
         # Stats section
-        stats_group = QtWidgets.QGroupBox("📈 Statistics")
+        stats_group = QtWidgets.QGroupBox("đź“ Statistics")
         stats_layout = QtWidgets.QVBoxLayout(stats_group)
         stats_layout.setSpacing(5)
         
@@ -11190,7 +11249,7 @@ class WeightTab(QtWidgets.QWidget):
         right_panel.addWidget(stats_group)
         
         # Comparisons section
-        compare_group = QtWidgets.QGroupBox("📅 Historical")
+        compare_group = QtWidgets.QGroupBox("đź“… Historical")
         compare_layout = QtWidgets.QVBoxLayout(compare_group)
         compare_layout.setSpacing(3)
         
@@ -11205,7 +11264,7 @@ class WeightTab(QtWidgets.QWidget):
         layout.addLayout(top_layout)
         
         # Chart section
-        chart_group = QtWidgets.QGroupBox("📉 Progress Chart")
+        chart_group = QtWidgets.QGroupBox("đź“‰ Progress Chart")
         chart_layout = QtWidgets.QVBoxLayout(chart_group)
         
         self.chart = WeightChartWidget()
@@ -11217,7 +11276,7 @@ class WeightTab(QtWidgets.QWidget):
         bottom_layout = QtWidgets.QHBoxLayout()
         
         # Recent entries table
-        entries_group = QtWidgets.QGroupBox("📋 Recent Entries")
+        entries_group = QtWidgets.QGroupBox("đź“‹ Recent Entries")
         entries_layout = QtWidgets.QVBoxLayout(entries_group)
         
         self.entries_table = QtWidgets.QTableWidget()
@@ -11231,7 +11290,7 @@ class WeightTab(QtWidgets.QWidget):
         bottom_layout.addWidget(entries_group, 2)
         
         # Reminder settings
-        settings_group = QtWidgets.QGroupBox("⏰ Reminder")
+        settings_group = QtWidgets.QGroupBox("âŹ° Reminder")
         settings_layout = QtWidgets.QFormLayout(settings_group)
         settings_layout.setSpacing(5)
         
@@ -11250,12 +11309,12 @@ class WeightTab(QtWidgets.QWidget):
         layout.addLayout(bottom_layout)
         
         # Rewards info (collapsed)
-        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        rewards_group = QtWidgets.QGroupBox("đźŽ Rewards Info")
         rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
         rewards_info = QtWidgets.QLabel(
             "<b>Smart Weight Mode:</b> Rewards adapt to YOUR goals!<br>"
-            "<i>• Overweight? Rewards for weight <b>loss</b> • Underweight? Rewards for healthy <b>gain</b> • Normal? Rewards for <b>stability</b></i><br>"
-            "<span style='color:#666;'>Mode auto-detects from BMI (set height) or goal weight (±2kg threshold)</span><br>"
+            "<i>â€˘ Overweight? Rewards for weight <b>loss</b> â€˘ Underweight? Rewards for healthy <b>gain</b> â€˘ Normal? Rewards for <b>stability</b></i><br>"
+            "<span style='color:#666;'>Mode auto-detects from BMI (set height) or goal weight (Â±2kg threshold)</span><br>"
             "<table style='font-size:10px; color:#888888; margin-top:5px;'>"
             "<tr><th>Daily Progress</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
             "<tr><td>0g (stable)</td><td>75%</td><td>20%</td><td>5%</td><td>-</td><td>-</td></tr>"
@@ -11267,7 +11326,7 @@ class WeightTab(QtWidgets.QWidget):
             "</table>"
             "<br><b>Weekly:</b> 300g=Epic, 500g=Legendary | <b>Monthly:</b> 1.5kg=Epic, 2kg=Legendary | "
             "<b>Streaks:</b> 7d=Rare, 14d=Epic, 30d+=Legendary<br>"
-            "<span style='color:#88cc88;'>⚖️ Maintain mode: ±100g=Rare, ±200g=Uncommon, ±500g=Common</span>"
+            "<span style='color:#88cc88;'>âš–ď¸Ź Maintain mode: Â±100g=Rare, Â±200g=Uncommon, Â±500g=Common</span>"
         )
         rewards_info.setWordWrap(True)
         rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
@@ -11476,7 +11535,7 @@ class WeightTab(QtWidgets.QWidget):
                         resources = get_resources(self.blocker.adhd_buster)
                         total_materials = resources.get("materials", 0)
                         breakdown_str = " ".join(materials_breakdown)
-                        show_perk_toast(f"🧱 +{materials_to_add} Materials ({breakdown_str}) → {total_materials} total", "🏗️", self)
+                        show_perk_toast(f"đź§± +{materials_to_add} Materials ({breakdown_str}) â†’ {total_materials} total", "đźŹ—ď¸Ź", self)
                     except Exception:
                         pass
             except Exception:
@@ -11528,26 +11587,26 @@ class WeightTab(QtWidgets.QWidget):
         if rewards.get("streak_reward"):
             streak_data = rewards["streak_reward"]
             item = streak_data["item"]
-            items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", item))
+            items_earned.append((f"đź”Ą {streak_data['streak_days']}-Day Streak", item))
             new_milestone_ids.append(streak_data["milestone_id"])
             if not primary_source:
-                primary_source = f"🔥 {streak_data['streak_days']}-Day Streak"
+                primary_source = f"đź”Ą {streak_data['streak_days']}-Day Streak"
         
         # Milestone rewards
         for milestone in rewards.get("new_milestones", []):
             item = milestone["item"]
-            items_earned.append((f"🏆 {milestone['name']}", item))
+            items_earned.append((f"đźŹ† {milestone['name']}", item))
             new_milestone_ids.append(milestone["milestone_id"])
             if not primary_source:
-                primary_source = f"🏆 {milestone['name']}"
+                primary_source = f"đźŹ† {milestone['name']}"
         
         # Maintenance reward (only if no daily reward to avoid double-rewarding)
         if rewards.get("maintenance_reward") and not rewards.get("daily_reward"):
             maint_data = rewards["maintenance_reward"]
             item = maint_data["item"]
-            items_earned.append(("⚖️ Maintenance", item))
+            items_earned.append(("âš–ď¸Ź Maintenance", item))
             if not primary_source:
-                primary_source = "⚖️ Weight Maintenance"
+                primary_source = "âš–ď¸Ź Weight Maintenance"
 
         # If rewards will be granted, require GameState before mutating reward state.
         game_state = None
@@ -11603,8 +11662,10 @@ class WeightTab(QtWidgets.QWidget):
                 return weights
             
             primary_weights = None
+            primary_power_gating = None
             if rewards.get("daily_reward") is primary_item:
                 primary_weights = rewards.get("daily_reward_weights")
+                primary_power_gating = rewards.get("daily_power_gating")
             if not primary_weights:
                 primary_weights = _fixed_weights_for_rarity(primary_item.get("rarity", "Common"))
             
@@ -11645,6 +11706,7 @@ class WeightTab(QtWidgets.QWidget):
                 reward_source=primary_source or "Weight Tracking",
                 extra_items=extra_items,
                 tier_weights=primary_weights,
+                power_gating=primary_power_gating,
                 odds_tooltip=primary_tooltip,
                 parent=self.window()
             )
@@ -11714,8 +11776,8 @@ class WeightTab(QtWidgets.QWidget):
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
-                title="🎉 Weight Rewards!",
-                header_emoji="⚖️",
+                title="đźŽ‰ Weight Rewards!",
+                header_emoji="âš–ď¸Ź",
                 source_label="Weight Tracking Rewards",
                 items_earned=just_items,
                 equipped=equipped_before,  # What was equipped before for comparison
@@ -11782,7 +11844,7 @@ class WeightTab(QtWidgets.QWidget):
                 if self.blocker.weight_goal and stats["current"] is not None:
                     deviation = abs(stats["current"] - self.blocker.weight_goal)
                     if deviation <= 0.5:
-                        maintenance_status = "<br><b style='color:#00ff88'>⚖️ MAINTENANCE MODE</b> (within ±0.5kg of goal)"
+                        maintenance_status = "<br><b style='color:#00ff88'>âš–ď¸Ź MAINTENANCE MODE</b> (within Â±0.5kg of goal)"
                 
                 # Milestone count
                 milestone_count = len(self.blocker.weight_milestones)
@@ -11791,7 +11853,7 @@ class WeightTab(QtWidgets.QWidget):
                 # Streak display with fire emoji for active streaks
                 streak = stats['streak_days']
                 if streak >= 7:
-                    streak_display = f"🔥 {streak} days"
+                    streak_display = f"đź”Ą {streak} days"
                 else:
                     streak_display = f"{streak} days"
                 
@@ -11837,9 +11899,9 @@ class WeightTab(QtWidgets.QWidget):
                 if unit == "lbs":
                     # Convert grams to kg, then kg to lbs
                     change_lbs = (change / 1000) * 2.20462
-                    change_text = f"{change_lbs:+.2f} lbs" if abs(change_lbs) >= 0.05 else "—"
+                    change_text = f"{change_lbs:+.2f} lbs" if abs(change_lbs) >= 0.05 else "â€”"
                 else:
-                    change_text = f"{change:+.0f}g" if abs(change) >= 10 else "—"
+                    change_text = f"{change:+.0f}g" if abs(change) >= 10 else "â€”"
                 
                 change_item = QtWidgets.QTableWidgetItem(change_text)
                 if change < 0:
@@ -11848,10 +11910,10 @@ class WeightTab(QtWidgets.QWidget):
                     change_item.setForeground(QtGui.QColor("#ff6464"))  # Red = gained
                 self.entries_table.setItem(i, 3, change_item)
             else:
-                self.entries_table.setItem(i, 3, QtWidgets.QTableWidgetItem("—"))
+                self.entries_table.setItem(i, 3, QtWidgets.QTableWidgetItem("â€”"))
             
             # Delete button
-            delete_btn = QtWidgets.QPushButton("🗑")
+            delete_btn = QtWidgets.QPushButton("đź—‘")
             delete_btn.setFixedWidth(30)
             date_str = entry.get("date", "")
             delete_btn.clicked.connect(lambda checked, d=date_str: self._delete_entry(d))
@@ -12080,7 +12142,7 @@ class WeightTab(QtWidgets.QWidget):
             if prediction:
                 status = prediction.get("status", "")
                 if status == "achieved":
-                    self.prediction_label.setText("<b style='color:#00ff88'>🎯 Goal reached!</b>")
+                    self.prediction_label.setText("<b style='color:#00ff88'>đźŽŻ Goal reached!</b>")
                 elif prediction.get("predicted_date"):
                     days = prediction.get("days_remaining", 0)
                     pred_date = prediction["predicted_date"]
@@ -12090,9 +12152,9 @@ class WeightTab(QtWidgets.QWidget):
                     else:
                         date_str = str(pred_date)
                     if days and days > 0:
-                        self.prediction_label.setText(f"📅 Estimated goal: <b>{date_str}</b> ({days} days)")
+                        self.prediction_label.setText(f"đź“… Estimated goal: <b>{date_str}</b> ({days} days)")
                     else:
-                        self.prediction_label.setText(f"📅 Estimated goal: <b>{date_str}</b>")
+                        self.prediction_label.setText(f"đź“… Estimated goal: <b>{date_str}</b>")
                 else:
                     msg = prediction.get("message", "")
                     self.prediction_label.setText(f"<i>{msg}</i>" if msg else "")
@@ -12235,7 +12297,7 @@ class WeightTab(QtWidgets.QWidget):
         notification_shown = False
         if hasattr(parent_window, 'tray_icon') and parent_window.tray_icon and parent_window.tray_icon.isVisible():
             parent_window.tray_icon.showMessage(
-                "⚖️ Weight Reminder",
+                "âš–ď¸Ź Weight Reminder",
                 "Don't forget to log your weight today!",
                 QtWidgets.QSystemTrayIcon.MessageIcon.Information,
                 5000
@@ -12244,7 +12306,7 @@ class WeightTab(QtWidgets.QWidget):
         
         # Fallback: show in-app toast (non-blocking, works even if window minimized)
         if not notification_shown:
-            show_perk_toast("⚖️ Don't forget to log your weight today!", "⚖️", self)
+            show_perk_toast("âš–ď¸Ź Don't forget to log your weight today!", "âš–ď¸Ź", self)
     
     def _update_weight_entity_perk_display(self) -> None:
         """Update the entity perk display using mini-cards like ADHD Buster patrons."""
@@ -12266,7 +12328,7 @@ class WeightTab(QtWidgets.QWidget):
             
             # Show section with appropriate title
             self.weight_entity_section.setVisible(True)
-            self.weight_entity_section.set_title(f"🐀 Rodent Squad (+{legendary_bonus}% Legendary)")
+            self.weight_entity_section.set_title(f"đź€ Rodent Squad (+{legendary_bonus}% Legendary)")
             
             # Clear previous content
             self.weight_entity_section.clear_content()
@@ -12367,7 +12429,7 @@ class WeightTab(QtWidgets.QWidget):
                 
                 if is_exceptional:
                     name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
-                    prefix = "⭐ " if not icon_loaded else ""
+                    prefix = "â­ " if not icon_loaded else ""
                 else:
                     name_style = "color: #bbb; font-size: 9px;"
                     prefix = ""
@@ -12381,7 +12443,7 @@ class WeightTab(QtWidgets.QWidget):
                 
                 # Bonus value (compact)
                 bonus_val = entity_data.get("bonus", 0)
-                bonus_lbl = QtWidgets.QLabel(f"+{bonus_val}% 🎲")
+                bonus_lbl = QtWidgets.QLabel(f"+{bonus_val}% đźŽ˛")
                 bonus_lbl.setStyleSheet("color: #7986cb; font-size: 10px; font-weight: bold;")
                 bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
                 card_layout.addWidget(bonus_lbl)
@@ -12392,7 +12454,7 @@ class WeightTab(QtWidgets.QWidget):
             self.weight_entity_section.add_widget(patrons_container)
             
             # Add a tip
-            tip_lbl = QtWidgets.QLabel("💡 Collect more Rodent entities in Entitidex to boost Legendary chance when logging weight!")
+            tip_lbl = QtWidgets.QLabel("đź’ˇ Collect more Rodent entities in Entitidex to boost Legendary chance when logging weight!")
             tip_lbl.setStyleSheet("color: #888; font-style: italic; font-size: 10px; padding-top: 4px;")
             self.weight_entity_section.add_widget(tip_lbl)
             
@@ -12459,7 +12521,7 @@ class WeightTab(QtWidgets.QWidget):
         
         # Update section title and styling based on translator status
         if self.has_translator:
-            self.rodent_section_title.setText("🐁 Rodent Squad Weight Control Tips")
+            self.rodent_section_title.setText("đź Rodent Squad Weight Control Tips")
             self.rodent_section_title.setStyleSheet("color: #81c784; font-size: 11px; font-weight: bold;")
             self.rodent_tips_section.setStyleSheet("""
                 QFrame {
@@ -12469,7 +12531,7 @@ class WeightTab(QtWidgets.QWidget):
                 }
             """)
         else:
-            self.rodent_section_title.setText("🐭 Rodent Squad Tips (???)")
+            self.rodent_section_title.setText("đź­ Rodent Squad Tips (???)")
             self.rodent_section_title.setStyleSheet("color: #c4a35a; font-size: 11px; font-weight: bold;")
             self.rodent_tips_section.setStyleSheet("""
                 QFrame {
@@ -12506,7 +12568,7 @@ class WeightTab(QtWidgets.QWidget):
                             """)
         except Exception:
             # Fallback - just show text
-            self.rodent_icon_label.setText("🐭")
+            self.rodent_icon_label.setText("đź­")
         
         # Get current tip index (sequential cycling)
         tip_key = "rodent_tip_index_translated" if self.has_translator else "rodent_tip_index_squeaks"
@@ -12524,7 +12586,7 @@ class WeightTab(QtWidgets.QWidget):
             self.rodent_tip_text.setStyleSheet("color: #c5e1c5; font-size: 11px;")
         else:
             # Show rodent language with a hint
-            self.rodent_tip_text.setText(f"🐭 {tip_text}<br><br><i style='color:#888;'>💡 Telepathic skills would be necessary to understand the rodent language...</i>")
+            self.rodent_tip_text.setText(f"đź­ {tip_text}<br><br><i style='color:#888;'>đź’ˇ Telepathic skills would be necessary to understand the rodent language...</i>")
             self.rodent_tip_text.setStyleSheet("color: #d4c4a4; font-size: 11px;")
         
         # Check if already acknowledged today
@@ -12534,11 +12596,11 @@ class WeightTab(QtWidgets.QWidget):
         
         if last_acknowledged == today_str:
             # Already acknowledged today
-            self.rodent_acknowledge_btn.setText("✓ Done")
+            self.rodent_acknowledge_btn.setText("âś“ Done")
             self.rodent_acknowledge_btn.setEnabled(False)
         else:
             # Can acknowledge
-            self.rodent_acknowledge_btn.setText("📖 +1🪙")
+            self.rodent_acknowledge_btn.setText("đź“– +1đźŞ™")
             self.rodent_acknowledge_btn.setEnabled(True)
             
         # Update button styling based on translator status
@@ -12628,7 +12690,7 @@ class WeightTab(QtWidgets.QWidget):
             self.blocker.save_stats()
             
             # Update button to show collected
-            self.rodent_acknowledge_btn.setText("✓ Done")
+            self.rodent_acknowledge_btn.setText("âś“ Done")
             self.rodent_acknowledge_btn.setEnabled(False)
             
         except Exception as e:
@@ -12662,7 +12724,7 @@ class WeightTab(QtWidgets.QWidget):
         unit = self.blocker.weight_unit
         msg_parts = []
         
-        msg_parts.append("<h3>📊 Weekly Summary</h3>")
+        msg_parts.append("<h3>đź“Š Weekly Summary</h3>")
         
         if insights.get("entries_count") is not None:
             msg_parts.append(f"<b>Entries logged:</b> {insights['entries_count']}")
@@ -12703,15 +12765,15 @@ class WeightTab(QtWidgets.QWidget):
             msg_parts.append(f"<b>vs Last Week:</b> <span style='color:{color}'>{sign}{change_display:.2f} {suffix}</span>")
         
         if insights.get("streak") is not None and insights["streak"] > 0:
-            msg_parts.append(f"<b>Streak:</b> 🔥 {insights['streak']} days")
+            msg_parts.append(f"<b>Streak:</b> đź”Ą {insights['streak']} days")
         
         # Show insights list
         if insights.get("insights"):
             msg_parts.append("<br><b>Highlights:</b>")
             for insight_text in insights["insights"][:5]:  # Limit to 5
-                msg_parts.append(f"• {insight_text}")
+                msg_parts.append(f"â€˘ {insight_text}")
         
-        show_info(self, "📊 Weekly Insights", "<br>".join(msg_parts))
+        show_info(self, "đź“Š Weekly Insights", "<br>".join(msg_parts))
 
 
 class ActivityChartWidget(QtWidgets.QWidget):
@@ -13364,10 +13426,10 @@ class ActivityChartWidget(QtWidgets.QWidget):
             breakdown_text = "\n".join(breakdown_lines) if breakdown_lines else "  None"
             
             return (
-                f"📅 {date_str}\n"
-                f"⏱️ Duration: {duration} min ({sessions} session{'s' if sessions != 1 else ''})\n"
-                f"⚡ Effective: {effective:.0f} min\n"
-                f"🏃 Activities:\n{breakdown_text}"
+                f"đź“… {date_str}\n"
+                f"âŹ±ď¸Ź Duration: {duration} min ({sessions} session{'s' if sessions != 1 else ''})\n"
+                f"âšˇ Effective: {effective:.0f} min\n"
+                f"đźŹ Activities:\n{breakdown_text}"
             )
         except Exception:
             return ""
@@ -13518,13 +13580,13 @@ class ActivityChartWidget(QtWidgets.QWidget):
         
         # Trend text
         if direction == "up":
-            trend_text = f"↑ +{abs(rate):.0f}min/week"
+            trend_text = f"â†‘ +{abs(rate):.0f}min/week"
             trend_color = QtGui.QColor("#4CAF50")  # Green - more activity
         elif direction == "down":
-            trend_text = f"↓ -{abs(rate):.0f}min/week"
+            trend_text = f"â†“ -{abs(rate):.0f}min/week"
             trend_color = QtGui.QColor("#FF9800")  # Orange
         else:
-            trend_text = "→ Stable"
+            trend_text = "â†’ Stable"
             trend_color = QtGui.QColor("#2196F3")  # Blue
         
         if r_sq > 0.7:
@@ -13539,19 +13601,19 @@ class ActivityChartWidget(QtWidgets.QWidget):
         # Draw streak
         if streak > 0:
             painter.setPen(QtGui.QColor(self.COLORS["streak_glow"]))
-            streak_text = f"🔥 {streak} day streak"
+            streak_text = f"đź”Ą {streak} day streak"
             painter.drawText(self.MARGIN_LEFT + 150, 18, streak_text)
         
         # Draw weekly goal progress
         if goal_pct >= 100:
             goal_color = "#4CAF50"  # Green
-            goal_text = f"✅ Week: {this_week_total}/{self._weekly_goal}min ({goal_pct:.0f}%)"
+            goal_text = f"âś… Week: {this_week_total}/{self._weekly_goal}min ({goal_pct:.0f}%)"
         elif goal_pct >= 70:
             goal_color = "#FFC107"  # Amber
-            goal_text = f"📊 Week: {this_week_total}/{self._weekly_goal}min ({goal_pct:.0f}%)"
+            goal_text = f"đź“Š Week: {this_week_total}/{self._weekly_goal}min ({goal_pct:.0f}%)"
         else:
             goal_color = "#FF9800"  # Orange
-            goal_text = f"📊 Week: {this_week_total}/{self._weekly_goal}min ({goal_pct:.0f}%)"
+            goal_text = f"đź“Š Week: {this_week_total}/{self._weekly_goal}min ({goal_pct:.0f}%)"
         
         painter.setPen(QtGui.QColor(goal_color))
         text_width = painter.fontMetrics().horizontalAdvance(goal_text)
@@ -13769,7 +13831,7 @@ class ActivityChartWidget(QtWidgets.QWidget):
         """Draw zoom level indicator."""
         painter.setPen(QtGui.QColor(self.COLORS["text"]))
         painter.setFont(QtGui.QFont("Segoe UI", 8))
-        zoom_text = f"🔍 {self._zoom_level:.1f}x (double-click to reset)"
+        zoom_text = f"đź”Ť {self._zoom_level:.1f}x (double-click to reset)"
         painter.drawText(chart_rect.right() - 160, chart_rect.bottom() + 45, zoom_text)
 
 
@@ -13811,7 +13873,7 @@ class ActivityTab(QtWidgets.QWidget):
         
         # Header
         header_layout = QtWidgets.QHBoxLayout()
-        header = QtWidgets.QLabel("🏃 Activity Tracker")
+        header = QtWidgets.QLabel("đźŹ Activity Tracker")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
         header_layout.addWidget(header)
         header_layout.addStretch()
@@ -13819,7 +13881,7 @@ class ActivityTab(QtWidgets.QWidget):
         
         # Entity XP Perk Section - shows entities that boost XP
         # Moved to top for better visibility (friendly name: XP Physical Activists)
-        self.activity_entity_section = CollapsibleSection("⚡ XP Physical Activists", "activity_entity_section", parent=self)
+        self.activity_entity_section = CollapsibleSection("âšˇ XP Physical Activists", "activity_entity_section", parent=self)
         self.activity_entity_section.setVisible(False)
         layout.addWidget(self.activity_entity_section)
         
@@ -13886,7 +13948,7 @@ class ActivityTab(QtWidgets.QWidget):
         left_layout.addLayout(note_layout)
         
         # Log button
-        self.log_btn = QtWidgets.QPushButton("🏆 Log Activity")
+        self.log_btn = QtWidgets.QPushButton("đźŹ† Log Activity")
         self.log_btn.setStyleSheet("""
             QPushButton {
                 background-color: #4caf50;
@@ -13908,12 +13970,12 @@ class ActivityTab(QtWidgets.QWidget):
         
         presets_layout = QtWidgets.QGridLayout()
         presets = [
-            ("🚶 10min Walk", "walking", 10, "light"),
-            ("🚶 30min Walk", "walking", 30, "moderate"),
-            ("🏃 20min Jog", "jogging", 20, "moderate"),
-            ("🏋️ 45min Gym", "strength", 45, "vigorous"),
-            ("🧘 30min Yoga", "yoga", 30, "light"),
-            ("🔥 30min HIIT", "hiit", 30, "intense"),
+            ("đźš¶ 10min Walk", "walking", 10, "light"),
+            ("đźš¶ 30min Walk", "walking", 30, "moderate"),
+            ("đźŹ 20min Jog", "jogging", 20, "moderate"),
+            ("đźŹ‹ď¸Ź 45min Gym", "strength", 45, "vigorous"),
+            ("đź§ 30min Yoga", "yoga", 30, "light"),
+            ("đź”Ą 30min HIIT", "hiit", 30, "intense"),
         ]
         for i, (label, activity, duration, intensity) in enumerate(presets):
             btn = QtWidgets.QPushButton(label)
@@ -13936,7 +13998,7 @@ class ActivityTab(QtWidgets.QWidget):
         right_layout.addWidget(self.stats_label)
         
         # Progress Chart
-        chart_label = QtWidgets.QLabel("📊 Activity Progress Chart:")
+        chart_label = QtWidgets.QLabel("đź“Š Activity Progress Chart:")
         chart_label.setStyleSheet("font-weight: bold; margin-top: 8px;")
         right_layout.addWidget(chart_label)
         
@@ -13976,12 +14038,12 @@ class ActivityTab(QtWidgets.QWidget):
         layout.addLayout(reminder_layout)
         
         # Rewards info section
-        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        rewards_group = QtWidgets.QGroupBox("đźŽ Rewards Info")
         rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
         rewards_info = QtWidgets.QLabel(
             "<b>How it works:</b> Log activity (10+ min) to earn 1 item. Rarity based on effective minutes.<br>"
-            "<i>Effective min = duration × activity multiplier × intensity multiplier</i><br>"
-            "<i>Example: 30min jog (2.0×) at moderate (1.0×) = 60 effective min</i><br>"
+            "<i>Effective min = duration Ă— activity multiplier Ă— intensity multiplier</i><br>"
+            "<i>Example: 30min jog (2.0Ă—) at moderate (1.0Ă—) = 60 effective min</i><br>"
             "<table style='font-size:10px; color:#888888; margin-top:5px;'>"
             "<tr><th>Eff. Min</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
             "<tr><td>&lt;8</td><td colspan='5' style='text-align:center;'>No reward</td></tr>"
@@ -14050,7 +14112,8 @@ class ActivityTab(QtWidgets.QWidget):
                 intensity_id,
                 date_str,
                 self.blocker.activity_milestones,
-                story_id
+                story_id,
+                adhd_buster=self.blocker.adhd_buster,
             )
             
             # Get effective minutes and rarity for lottery animation
@@ -14066,6 +14129,7 @@ class ActivityTab(QtWidgets.QWidget):
             pre_awarded_item = rewards.get("reward") if isinstance(rewards, dict) else None
             rarity_roll = rewards.get("rarity_roll") if isinstance(rewards, dict) else None
             rarity_weights = rewards.get("rarity_weights") if isinstance(rewards, dict) else None
+            rarity_power_gating = rewards.get("power_gating") if isinstance(rewards, dict) else None
             lottery = ActivityLotteryDialog(
                 effective_minutes=effective_mins,
                 pre_rolled_rarity=rarity,
@@ -14074,6 +14138,7 @@ class ActivityTab(QtWidgets.QWidget):
                 item=pre_awarded_item,
                 tier_roll=rarity_roll,
                 tier_weights=rarity_weights,
+                power_gating=rarity_power_gating,
             )
             lottery.exec()
             lottery.hide()  # Explicitly hide before deletion
@@ -14107,7 +14172,7 @@ class ActivityTab(QtWidgets.QWidget):
         except Exception:
             pass
         
-        # Award city activity resource based on EFFECTIVE minutes (duration × intensity)
+        # Award city activity resource based on EFFECTIVE minutes (duration Ă— intensity)
         # This rewards more intense and longer activities proportionally
         # Formula: Base +1 per activity, plus +1 per 20 effective minutes
         city_activity_earned = 0
@@ -14239,13 +14304,13 @@ class ActivityTab(QtWidgets.QWidget):
         if rewards.get("streak_reward"):
             streak_data = rewards["streak_reward"]
             item = streak_data["item"]
-            items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", item))
+            items_earned.append((f"đź”Ą {streak_data['streak_days']}-Day Streak", item))
             new_milestone_ids.append(streak_data["milestone_id"])
         
         # Milestone rewards
         for milestone in rewards.get("new_milestones", []):
             item = milestone["item"]
-            items_earned.append((f"🏆 {milestone['name']}", item))
+            items_earned.append((f"đźŹ† {milestone['name']}", item))
             new_milestone_ids.append(milestone["milestone_id"])
 
         # If rewards/coins will be granted, require GameState before mutating reward state.
@@ -14298,9 +14363,15 @@ class ActivityTab(QtWidgets.QWidget):
             # Build extra messages
             extra_msgs = []
             if rewards.get("effective_minutes"):
-                extra_msgs.append(f"Effective minutes: {rewards['effective_minutes']:.0f}")
+                effective_raw = rewards["effective_minutes"]
+                try:
+                    effective_val = float(effective_raw)
+                except (TypeError, ValueError):
+                    effective_val = 0.0
+                effective_text = f"{effective_val:.1f}".rstrip("0").rstrip(".")
+                extra_msgs.append(f"Effective minutes: {effective_text}")
             if rewards.get("current_streak", 0) > 0:
-                extra_msgs.append(f"Streak: {rewards['current_streak']} days 🔥")
+                extra_msgs.append(f"Streak: {rewards['current_streak']} days đź”Ą")
             
             # Show city building contribution using stored progress info
             if city_construction_progress:
@@ -14311,16 +14382,16 @@ class ActivityTab(QtWidgets.QWidget):
                 not_needed = city_construction_progress.get("not_needed", False)
                 
                 if completed:
-                    extra_msgs.append(f"🎉 +{invested} Activity → {building_name} COMPLETE!")
+                    extra_msgs.append(f"đźŽ‰ +{invested} Activity â†’ {building_name} COMPLETE!")
                 elif not_needed:
-                    extra_msgs.append(f"ℹ️ {building_name} doesn't need Activity (use Focus)")
+                    extra_msgs.append(f"â„ąď¸Ź {building_name} doesn't need Activity (use Focus)")
                 else:
-                    extra_msgs.append(f"🏗️ +{invested} Activity → {building_name} ({progress_pct:.0f}%)")
+                    extra_msgs.append(f"đźŹ—ď¸Ź +{invested} Activity â†’ {building_name} ({progress_pct:.0f}%)")
             # Note: Don't show warning when no construction - it's not actionable info
             
             # Show Goldmine coins if earned (from moderate+ intensity exercise)
             if city_goldmine_coins > 0:
-                extra_msgs.append(f"⛏️ +{city_goldmine_coins} Goldmine Coins (moderate+ exercise)")
+                extra_msgs.append(f"â›Źď¸Ź +{city_goldmine_coins} Goldmine Coins (moderate+ exercise)")
             
             # Get entity perk contributors for luck/rarity bonuses
             entity_perk_contributors = []
@@ -14336,7 +14407,7 @@ class ActivityTab(QtWidgets.QWidget):
             dialog = ItemRewardDialog(
                 parent=self,
                 title="Activity Rewards!",
-                header_emoji="🏆",
+                header_emoji="đźŹ†",
                 source_label="Great workout!",
                 items_earned=just_items,
                 equipped=equipped_before,  # What was equipped before for comparison
@@ -14351,7 +14422,7 @@ class ActivityTab(QtWidgets.QWidget):
             dialog.hide()  # Explicitly hide before deletion
             dialog.deleteLater()  # Ensure dialog is cleaned up
             
-            # 🎉 Show building complete celebration if construction just finished
+            # đźŽ‰ Show building complete celebration if construction just finished
             if city_construction_progress and city_construction_progress.get("completed"):
                 try:
                     from city_tab import show_building_complete_dialog
@@ -14448,14 +14519,14 @@ class ActivityTab(QtWidgets.QWidget):
                     today_html += f"{aname}: {mins} min<br>"
             
             stats_html = f"""
-<b>📊 Your Activity Stats</b><br><br>
+<b>đź“Š Your Activity Stats</b><br><br>
 <b>Total Time:</b> {format_activity_duration(stats['total_minutes']) if format_activity_duration else f"{stats['total_minutes']} min"}<br>
 <b>Sessions:</b> {stats['total_sessions']}<br>
 <b>This Week:</b> {format_activity_duration(stats['this_week_minutes']) if format_activity_duration else f"{stats['this_week_minutes']} min"}<br>
 <b>This Month:</b> {format_activity_duration(stats['this_month_minutes']) if format_activity_duration else f"{stats['this_month_minutes']} min"}<br>
 <b>Avg Duration:</b> {stats['avg_duration']:.0f} min<br>
 <b>Favorite:</b> {fav_name}<br>
-<b>Streak:</b> 🔥 {stats['current_streak']} days<br>
+<b>Streak:</b> đź”Ą {stats['current_streak']} days<br>
 {today_html}
 """
             self.stats_label.setText(stats_html)
@@ -14493,7 +14564,7 @@ class ActivityTab(QtWidgets.QWidget):
             self.entries_table.setItem(i, 3, QtWidgets.QTableWidgetItem(intensity_name))
             
             # Delete button - pass original index for correct deletion
-            del_btn = QtWidgets.QPushButton("🗑")
+            del_btn = QtWidgets.QPushButton("đź—‘")
             del_btn.setMaximumWidth(30)
             del_btn.clicked.connect(
                 lambda _, idx=orig_idx: self._delete_entry(idx)
@@ -14547,7 +14618,7 @@ class ActivityTab(QtWidgets.QWidget):
                 notification_shown = False
                 if hasattr(parent_window, 'tray_icon') and parent_window.tray_icon and parent_window.tray_icon.isVisible():
                     parent_window.tray_icon.showMessage(
-                        "🏃 Activity Reminder",
+                        "đźŹ Activity Reminder",
                         "Time to get moving! Even a 10-minute walk earns rewards.",
                         QtWidgets.QSystemTrayIcon.MessageIcon.Information,
                         5000
@@ -14556,7 +14627,7 @@ class ActivityTab(QtWidgets.QWidget):
                 
                 # Fallback: show in-app toast (non-blocking)
                 if not notification_shown:
-                    show_perk_toast("🏃 Time to get moving! Log your activity for rewards.", "🏃", self)
+                    show_perk_toast("đźŹ Time to get moving! Log your activity for rewards.", "đźŹ", self)
     
     def _update_reminder_setting(self) -> None:
         """Update reminder settings."""
@@ -14585,7 +14656,7 @@ class ActivityTab(QtWidgets.QWidget):
             
             # Show section with appropriate title
             self.activity_entity_section.setVisible(True)
-            self.activity_entity_section.set_title(f"⚡ XP Physical Activists (+{total_xp_bonus}% XP)")
+            self.activity_entity_section.set_title(f"âšˇ XP Physical Activists (+{total_xp_bonus}% XP)")
             
             # Clear previous content
             self.activity_entity_section.clear_content()
@@ -14686,7 +14757,7 @@ class ActivityTab(QtWidgets.QWidget):
                 
                 if is_exceptional:
                     name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
-                    prefix = "⭐ " if not icon_loaded else ""
+                    prefix = "â­ " if not icon_loaded else ""
                 else:
                     name_style = "color: #bbb; font-size: 9px;"
                     prefix = ""
@@ -14700,7 +14771,7 @@ class ActivityTab(QtWidgets.QWidget):
                 
                 # Bonus value (compact)
                 bonus_val = entity_data.get("value", 0)
-                bonus_lbl = QtWidgets.QLabel(f"+{bonus_val}% ⚡")
+                bonus_lbl = QtWidgets.QLabel(f"+{bonus_val}% âšˇ")
                 bonus_lbl.setStyleSheet("color: #4caf50; font-size: 10px; font-weight: bold;")
                 bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
                 card_layout.addWidget(bonus_lbl)
@@ -14711,7 +14782,7 @@ class ActivityTab(QtWidgets.QWidget):
             self.activity_entity_section.add_widget(patrons_container)
             
             # Add a tip
-            tip_lbl = QtWidgets.QLabel("💡 Collect more entities in Entitidex to boost XP gains!")
+            tip_lbl = QtWidgets.QLabel("đź’ˇ Collect more entities in Entitidex to boost XP gains!")
             tip_lbl.setStyleSheet("color: #888; font-style: italic; font-size: 10px; padding-top: 4px;")
             self.activity_entity_section.add_widget(tip_lbl)
             
@@ -15106,12 +15177,12 @@ class SleepScheduleChartWidget(QtWidgets.QWidget):
             score = entry.get("score", 0)
             
             return (
-                f"📅 {date_str}\n"
-                f"🛏️ Bedtime: {bedtime}\n"
-                f"⏰ Wake: {wake}\n"
-                f"💤 Duration: {hours:.1f}h\n"
-                f"⭐ Quality: {quality.title()}\n"
-                f"📊 Score: {score}/100"
+                f"đź“… {date_str}\n"
+                f"đź›Źď¸Ź Bedtime: {bedtime}\n"
+                f"âŹ° Wake: {wake}\n"
+                f"đź’¤ Duration: {hours:.1f}h\n"
+                f"â­ Quality: {quality.title()}\n"
+                f"đź“Š Score: {score}/100"
             )
         except Exception:
             return ""
@@ -15239,14 +15310,14 @@ class SleepScheduleChartWidget(QtWidgets.QWidget):
         """Draw header with title and time range info."""
         painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Weight.Bold))
         painter.setPen(QtGui.QColor("#a5b4fc"))
-        painter.drawText(self.MARGIN_LEFT, 20, "🛏️ Sleep Schedule")
+        painter.drawText(self.MARGIN_LEFT, 20, "đź›Źď¸Ź Sleep Schedule")
         
         # Time range info
         painter.setFont(QtGui.QFont("Segoe UI", 9))
         painter.setPen(QtGui.QColor(self.COLORS["text"]))
         start_str = self._mins_to_time_str(self._time_range_start)
         end_str = self._mins_to_time_str(self._time_range_end)
-        range_text = f"Time range: {start_str} → {end_str}"
+        range_text = f"Time range: {start_str} â†’ {end_str}"
         text_width = painter.fontMetrics().horizontalAdvance(range_text)
         painter.drawText(chart_rect.right() - text_width, 20, range_text)
         
@@ -15254,7 +15325,7 @@ class SleepScheduleChartWidget(QtWidgets.QWidget):
         if self._sleep_data:
             avg_bed = sum(e["bed_mins"] for e in self._sleep_data) / len(self._sleep_data)
             avg_wake = sum(e["wake_mins"] for e in self._sleep_data) / len(self._sleep_data)
-            avg_text = f"Avg: {self._mins_to_time_str(int(avg_bed))} → {self._mins_to_time_str(int(avg_wake))}"
+            avg_text = f"Avg: {self._mins_to_time_str(int(avg_bed))} â†’ {self._mins_to_time_str(int(avg_wake))}"
             painter.setPen(QtGui.QColor("#9c27b0"))
             painter.drawText(self.MARGIN_LEFT + 140, 20, avg_text)
     
@@ -15535,7 +15606,7 @@ class SleepScheduleChartWidget(QtWidgets.QWidget):
         """Draw zoom level indicator."""
         painter.setPen(QtGui.QColor(self.COLORS["text"]))
         painter.setFont(QtGui.QFont("Segoe UI", 8))
-        zoom_text = f"🔍 {self._zoom_level:.1f}x"
+        zoom_text = f"đź”Ť {self._zoom_level:.1f}x"
         painter.drawText(chart_rect.right() - 50, chart_rect.top() + 15, zoom_text)
 
 
@@ -16145,11 +16216,11 @@ class SleepChartWidget(QtWidgets.QWidget):
                 disruption_text = "None"
             
             return (
-                f"📅 {date}\n"
-                f"💤 {hours:.1f}h ({bedtime} → {wake})\n"
-                f"⭐ Quality: {quality.title()}\n"
-                f"📊 Score: {score}/100\n"
-                f"⚠️ Disruptions: {disruption_text}"
+                f"đź“… {date}\n"
+                f"đź’¤ {hours:.1f}h ({bedtime} â†’ {wake})\n"
+                f"â­ Quality: {quality.title()}\n"
+                f"đź“Š Score: {score}/100\n"
+                f"âš ď¸Ź Disruptions: {disruption_text}"
             )
         except Exception:
             return ""
@@ -16331,13 +16402,13 @@ class SleepChartWidget(QtWidgets.QWidget):
         
         # Trend text
         if direction == "up":
-            trend_text = f"↑ +{abs(rate)*60:.0f}min/week"
+            trend_text = f"â†‘ +{abs(rate)*60:.0f}min/week"
             trend_color = QtGui.QColor("#4CAF50")  # Green - more sleep is usually good
         elif direction == "down":
-            trend_text = f"↓ -{abs(rate)*60:.0f}min/week"
+            trend_text = f"â†“ -{abs(rate)*60:.0f}min/week"
             trend_color = QtGui.QColor("#FF9800")  # Orange - less sleep needs attention
         else:
-            trend_text = "→ Stable"
+            trend_text = "â†’ Stable"
             trend_color = QtGui.QColor("#2196F3")  # Blue
         
         if r_sq > 0.7:
@@ -16665,7 +16736,7 @@ class SleepChartWidget(QtWidgets.QWidget):
         """Draw zoom level indicator."""
         painter.setPen(QtGui.QColor(self.COLORS["text"]))
         painter.setFont(QtGui.QFont("Segoe UI", 8))
-        zoom_text = f"🔍 {self._zoom_level:.1f}x (double-click to reset)"
+        zoom_text = f"đź”Ť {self._zoom_level:.1f}x (double-click to reset)"
         painter.drawText(chart_rect.right() - 160, chart_rect.bottom() + 45, zoom_text)
 
 
@@ -16706,7 +16777,7 @@ class SleepTab(QtWidgets.QWidget):
         
         # Header
         header_layout = QtWidgets.QHBoxLayout()
-        header = QtWidgets.QLabel("😴 Sleep Tracker")
+        header = QtWidgets.QLabel("đź´ Sleep Tracker")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
         header_layout.addWidget(header)
         header_layout.addStretch()
@@ -16714,7 +16785,7 @@ class SleepTab(QtWidgets.QWidget):
         
         # User Profile display for age-specific sleep norms
         profile_row = QtWidgets.QHBoxLayout()
-        profile_row.addWidget(QtWidgets.QLabel("👤 Profile:"))
+        profile_row.addWidget(QtWidgets.QLabel("đź‘¤ Profile:"))
         
         # Profile display label
         self.sleep_profile_display = QtWidgets.QLabel("")
@@ -16727,7 +16798,7 @@ class SleepTab(QtWidgets.QWidget):
         profile_row.addWidget(self.sleep_targets_label)
         
         # Edit profile button
-        edit_profile_btn = QtWidgets.QPushButton("✏️ Edit")
+        edit_profile_btn = QtWidgets.QPushButton("âśŹď¸Ź Edit")
         edit_profile_btn.setFixedWidth(60)
         edit_profile_btn.setToolTip("Edit birth date and gender for personalized sleep targets")
         edit_profile_btn.clicked.connect(self._edit_user_profile)
@@ -16784,7 +16855,7 @@ class SleepTab(QtWidgets.QWidget):
         left_layout.addLayout(wake_layout)
         
         # Calculated sleep duration
-        self.duration_label = QtWidgets.QLabel("💤 Sleep duration: 8h 0m")
+        self.duration_label = QtWidgets.QLabel("đź’¤ Sleep duration: 8h 0m")
         self.duration_label.setStyleSheet("font-weight: bold; color: #4caf50;")
         left_layout.addWidget(self.duration_label)
         
@@ -16821,12 +16892,12 @@ class SleepTab(QtWidgets.QWidget):
         left_layout.addLayout(note_layout)
         
         # Screen-Off Bonus (Nighty-Night Gift)
-        screenoff_group = QtWidgets.QGroupBox("🌙 Nighty-Night Bonus")
+        screenoff_group = QtWidgets.QGroupBox("đźŚ™ Nighty-Night Bonus")
         screenoff_main_layout = QtWidgets.QVBoxLayout(screenoff_group)
         
         # Go to Sleep NOW button - immediate reward
         sleep_now_layout = QtWidgets.QHBoxLayout()
-        self.sleep_now_btn = QtWidgets.QPushButton("🛏️ Go to Sleep NOW!")
+        self.sleep_now_btn = QtWidgets.QPushButton("đź›Źď¸Ź Go to Sleep NOW!")
         self.sleep_now_btn.setToolTip(
             "Click when going to sleep right now to get an immediate reward!\n"
             "Rewards available 21:00 - 01:00."
@@ -16912,7 +16983,7 @@ class SleepTab(QtWidgets.QWidget):
         left_layout.addWidget(screenoff_group)
         
         # Log button
-        self.log_btn = QtWidgets.QPushButton("🌙 Log Sleep")
+        self.log_btn = QtWidgets.QPushButton("đźŚ™ Log Sleep")
         self.log_btn.setStyleSheet("""
             QPushButton {
                 background-color: #673ab7;
@@ -16934,10 +17005,10 @@ class SleepTab(QtWidgets.QWidget):
         
         presets_layout = QtWidgets.QGridLayout()
         presets = [
-            ("🌙 Early (21:00-5:00)", "21:00", "05:00"),
-            ("😴 Standard (23:00-7:00)", "23:00", "07:00"),
-            ("🦉 Night Owl (01:00-9:00)", "01:00", "09:00"),
-            ("🌃 Late Night (02:00-10:00)", "02:00", "10:00"),
+            ("đźŚ™ Early (21:00-5:00)", "21:00", "05:00"),
+            ("đź´ Standard (23:00-7:00)", "23:00", "07:00"),
+            ("đź¦‰ Night Owl (01:00-9:00)", "01:00", "09:00"),
+            ("đźŚ Late Night (02:00-10:00)", "02:00", "10:00"),
         ]
         for i, (label, bed, wake) in enumerate(presets):
             btn = QtWidgets.QPushButton(label)
@@ -16956,7 +17027,7 @@ class SleepTab(QtWidgets.QWidget):
         # =====================================================================
         # 1. SLEEP SCHEDULE CHART (clock-time view) - FIRST
         # =====================================================================
-        schedule_group = QtWidgets.QGroupBox("🛏️ Sleep Schedule Chart")
+        schedule_group = QtWidgets.QGroupBox("đź›Źď¸Ź Sleep Schedule Chart")
         schedule_layout = QtWidgets.QVBoxLayout(schedule_group)
         schedule_layout.setContentsMargins(6, 6, 6, 6)
         
@@ -16981,14 +17052,14 @@ class SleepTab(QtWidgets.QWidget):
         range_layout.addWidget(QtWidgets.QLabel("  Y-axis:"))
         
         self.yaxis_orientation_combo = QtWidgets.QComboBox()
-        self.yaxis_orientation_combo.addItem("🌙 Bedtime Top", True)
-        self.yaxis_orientation_combo.addItem("☀️ Wake Top", False)
+        self.yaxis_orientation_combo.addItem("đźŚ™ Bedtime Top", True)
+        self.yaxis_orientation_combo.addItem("â€ď¸Ź Wake Top", False)
         self.yaxis_orientation_combo.currentIndexChanged.connect(self._update_yaxis_orientation)
         range_layout.addWidget(self.yaxis_orientation_combo)
         
         range_layout.addStretch()
         
-        reset_btn = QtWidgets.QPushButton("↺")
+        reset_btn = QtWidgets.QPushButton("â†ş")
         reset_btn.setToolTip("Reset view")
         reset_btn.setFixedWidth(30)
         reset_btn.clicked.connect(self._reset_schedule_view)
@@ -17009,7 +17080,7 @@ class SleepTab(QtWidgets.QWidget):
         # =====================================================================
         # 2. SLEEP PROGRESS CHART (duration over time) - SECOND
         # =====================================================================
-        progress_group = QtWidgets.QGroupBox("📊 Sleep Progress Chart")
+        progress_group = QtWidgets.QGroupBox("đź“Š Sleep Progress Chart")
         progress_layout = QtWidgets.QVBoxLayout(progress_group)
         progress_layout.setContentsMargins(6, 6, 6, 6)
         
@@ -17022,7 +17093,7 @@ class SleepTab(QtWidgets.QWidget):
         # =====================================================================
         # 3. STATS & RECOMMENDATIONS - THIRD (at bottom)
         # =====================================================================
-        stats_group = QtWidgets.QGroupBox("📈 Stats & Recommendations")
+        stats_group = QtWidgets.QGroupBox("đź“ Stats & Recommendations")
         stats_layout = QtWidgets.QVBoxLayout(stats_group)
         stats_layout.setContentsMargins(6, 6, 6, 6)
         
@@ -17069,7 +17140,7 @@ class SleepTab(QtWidgets.QWidget):
         # 4. HISTORY LIST
         # =====================================================================
         # History list
-        history_label = QtWidgets.QLabel("📋 Recent Sleep History:")
+        history_label = QtWidgets.QLabel("đź“‹ Recent Sleep History:")
         history_label.setStyleSheet("font-weight: bold;")
         right_layout.addWidget(history_label)
         
@@ -17080,7 +17151,7 @@ class SleepTab(QtWidgets.QWidget):
         right_layout.addWidget(self.history_list)
         
         # Reminder settings
-        reminder_box = QtWidgets.QGroupBox("⏰ Bedtime Reminder")
+        reminder_box = QtWidgets.QGroupBox("âŹ° Bedtime Reminder")
         reminder_layout = QtWidgets.QHBoxLayout(reminder_box)
         self.reminder_checkbox = QtWidgets.QCheckBox("Enable reminder")
         self.reminder_checkbox.setChecked(self.blocker.sleep_reminder_enabled)
@@ -17105,7 +17176,7 @@ class SleepTab(QtWidgets.QWidget):
         layout.addLayout(content_layout)
         
         # Rewards info section
-        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        rewards_group = QtWidgets.QGroupBox("đźŽ Rewards Info")
         rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
         rewards_info = QtWidgets.QLabel(
             "<b>How it works:</b> Log sleep to earn 1 item. Rarity based on your sleep score (0-100).<br>"
@@ -17119,8 +17190,8 @@ class SleepTab(QtWidgets.QWidget):
             "<tr><td>90+</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
             "<tr><td>97+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
             "</table>"
-            "<br><b>🛏️ Go to Sleep NOW:</b> Immediate reward for going to sleep! (1x per night)<br>"
-            "<b>🌙 Nighty-Night Bonus:</b> Extra item when logging past sleep with screen-off time.<br>"
+            "<br><b>đź›Źď¸Ź Go to Sleep NOW:</b> Immediate reward for going to sleep! (1x per night)<br>"
+            "<b>đźŚ™ Nighty-Night Bonus:</b> Extra item when logging past sleep with screen-off time.<br>"
             "<table style='font-size:10px; color:#888888; margin-top:3px;'>"
             "<tr><th>Time</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
             "<tr><td>21:00-21:30</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
@@ -17173,16 +17244,16 @@ class SleepTab(QtWidgets.QWidget):
         # Color based on duration relative to age-specific targets
         if min_target <= total_hours <= max_target:
             color = "#4caf50"  # Green - optimal
-            emoji = "🌟"
+            emoji = "đźŚź"
         elif min_target - 1 <= total_hours < min_target:
             color = "#ff9800"  # Orange - slightly low
-            emoji = "⚠️"
+            emoji = "âš ď¸Ź"
         elif total_hours > max_target:
             color = "#2196f3"  # Blue - long
-            emoji = "💤"
+            emoji = "đź’¤"
         else:
             color = "#f44336"  # Red - too short
-            emoji = "😴"
+            emoji = "đź´"
         
         self.duration_label.setText(f"{emoji} Sleep duration: {hours}h {mins}m")
         self.duration_label.setStyleSheet(f"font-weight: bold; color: {color};")
@@ -17270,9 +17341,9 @@ class SleepTab(QtWidgets.QWidget):
         
         self.recommendations_label.setText(
             f"<b>{rec['emoji']} {rec['chronotype']}</b><br><br>"
-            f"🛏️ Optimal bedtime: {rec['optimal_bedtime']}<br>"
-            f"☀️ Recommended wake: {rec['recommended_wake']}<br>"
-            f"⏰ Target: {rec['target_hours']}<br><br>"
+            f"đź›Źď¸Ź Optimal bedtime: {rec['optimal_bedtime']}<br>"
+            f"â€ď¸Ź Recommended wake: {rec['recommended_wake']}<br>"
+            f"âŹ° Target: {rec['target_hours']}<br><br>"
             f"<b>Tips:</b><br>{tips_html}"
         )
     
@@ -17285,7 +17356,10 @@ class SleepTab(QtWidgets.QWidget):
             self.sleep_now_info.setText(f"Now: {current_time}")
             return
         
-        base_rarity = get_screen_off_bonus_rarity(current_time)
+        base_rarity = get_screen_off_bonus_rarity(
+            current_time,
+            adhd_buster=self.blocker.adhd_buster,
+        )
         if base_rarity:
             # Apply entity perk tier bonus for preview
             from gamification import get_entity_sleep_perks, get_boosted_rarity
@@ -17306,8 +17380,8 @@ class SleepTab(QtWidgets.QWidget):
             color = rarity_colors.get(rarity, "#888")
             
             # Show bonus indicator if tier is boosted
-            bonus_text = f" (+{tier_bonus}🦉)" if tier_bonus > 0 else ""
-            self.sleep_now_info.setText(f"Now: {current_time} → <b style='color:{color}'>{rarity}</b>{bonus_text} item!")
+            bonus_text = f" (+{tier_bonus}đź¦‰)" if tier_bonus > 0 else ""
+            self.sleep_now_info.setText(f"Now: {current_time} â†’ <b style='color:{color}'>{rarity}</b>{bonus_text} item!")
             self.sleep_now_btn.setEnabled(True)
         else:
             # Check if it is too early (between 06:00 and 21:00)
@@ -17341,7 +17415,7 @@ class SleepTab(QtWidgets.QWidget):
             description = sleep_perks.get("description", f"+{tier_bonus} Sleep Tier")
             
             perk_text = (
-                f"<b>🦉 {entity_name}</b><br>"
+                f"<b>đź¦‰ {entity_name}</b><br>"
                 f"<span style='color:#9fa8da;'>{description}</span>"
             )
             self.sleep_entity_perk_label.setText(perk_text)
@@ -17420,7 +17494,10 @@ class SleepTab(QtWidgets.QWidget):
         # Get current time and calculate reward
         now = QtCore.QTime.currentTime()
         current_time = now.toString("HH:mm")
-        base_rarity = get_screen_off_bonus_rarity(current_time)
+        base_rarity = get_screen_off_bonus_rarity(
+            current_time,
+            adhd_buster=self.blocker.adhd_buster,
+        )
         
         if not base_rarity:
             show_info(
@@ -17428,11 +17505,11 @@ class SleepTab(QtWidgets.QWidget):
                 "It's outside the Nighty-Night bonus window.\n"
                 "Sleep between 21:00 and 01:00 to earn rewards!\n\n"
                 "Rewards:\n"
-                "• 21:00 - 21:30: Legendary (Best!)\n"
-                "• 21:30 - 22:30: Legendary/Epic\n"
-                "• 22:30 - 23:30: Epic/Rare\n"
-                "• 23:30 - 00:30: Rare/Uncommon\n"
-                "• 00:30 - 01:00: Uncommon"
+                "â€˘ 21:00 - 21:30: Legendary (Best!)\n"
+                "â€˘ 21:30 - 22:30: Legendary/Epic\n"
+                "â€˘ 22:30 - 23:30: Epic/Rare\n"
+                "â€˘ 23:30 - 00:30: Rare/Uncommon\n"
+                "â€˘ 00:30 - 01:00: Uncommon"
             )
             return
         
@@ -17459,21 +17536,21 @@ class SleepTab(QtWidgets.QWidget):
         
         # Confirmation dialog before claiming bonus
         rarity_emojis = {
-            "Legendary": "🌟✨",
-            "Epic": "💎",
-            "Rare": "💙",
-            "Uncommon": "💚",
-            "Common": "⚪",
+            "Legendary": "đźŚźâś¨",
+            "Epic": "đź’Ž",
+            "Rare": "đź’™",
+            "Uncommon": "đź’š",
+            "Common": "âšŞ",
         }
-        emoji = rarity_emojis.get(rarity, "🎁")
+        emoji = rarity_emojis.get(rarity, "đźŽ")
         
         # Build bonus info for confirmation
         bonus_info = ""
         if tier_bonus > 0:
-            bonus_info = f"\n\n🦉 <i>{sleep_perks.get('entity_name', 'Owl')} boosts your reward by +{tier_bonus} tier!</i>"
+            bonus_info = f"\n\nđź¦‰ <i>{sleep_perks.get('entity_name', 'Owl')} boosts your reward by +{tier_bonus} tier!</i>"
         
         reply = show_question(
-            self, "🌙 Claim Nighty-Night Bonus?",
+            self, "đźŚ™ Claim Nighty-Night Bonus?",
             f"{emoji} <b>Ready for bed?</b>\n\n"
             f"Claiming your Nighty-Night bonus at {current_time}\n"
             f"will earn you a <b>{rarity}</b> reward!{bonus_info}\n\n"
@@ -17517,21 +17594,21 @@ class SleepTab(QtWidgets.QWidget):
         from styled_dialog import ItemRewardDialog
         dialog = ItemRewardDialog(
             parent=self,
-            title="🛏️ Sweet Dreams!",
-            header_emoji="🛏️",
+            title="đź›Źď¸Ź Sweet Dreams!",
+            header_emoji="đź›Źď¸Ź",
             source_label=f"Nighty-Night Bonus at {current_time}",
             items_earned=[item],
             equipped=equipped_before,  # What was equipped before for comparison
             equipped_after=equipped_after,  # Current equipped state
             auto_equipped_slots=auto_equipped_slots,  # Slots that were actually auto-equipped
             game_state=game_state,  # For click-to-equip
-            extra_messages=["Now turn off that screen and get some rest! 😴"]
+            extra_messages=["Now turn off that screen and get some rest! đź´"]
         )
         dialog.exec()
         
         # Update preview to show it's been used
         self.sleep_now_btn.setEnabled(False)
-        self.sleep_now_info.setText(f"✓ Claimed at {current_time}! Sweet dreams!")
+        self.sleep_now_info.setText(f"âś“ Claimed at {current_time}! Sweet dreams!")
         
         # Refresh Hero tab inventory if available
         if hasattr(self.parent(), 'adhd_tab') and self.parent().adhd_tab:
@@ -17584,6 +17661,7 @@ class SleepTab(QtWidgets.QWidget):
                 self.blocker.sleep_chronotype,
                 story_id=active_story,
                 age=user_age,
+                adhd_buster=self.blocker.adhd_buster,
             )
         
         # Create new entry
@@ -17640,6 +17718,7 @@ class SleepTab(QtWidgets.QWidget):
                     "item": item,
                     "source": "Sleep Logged!",
                     "weights": reward_info.get("reward_weights"),
+                    "power_gating": reward_info.get("power_gating"),
                     "context": context,
                 })
             
@@ -17650,7 +17729,7 @@ class SleepTab(QtWidgets.QWidget):
                 streak_days = reward_info["streak_reward"].get("streak_days", 0)
                 items_meta.append({
                     "item": streak_item,
-                    "source": f"🌙 {streak_days}-Night Streak" if streak_days else "🌙 Sleep Streak",
+                    "source": f"đźŚ™ {streak_days}-Night Streak" if streak_days else "đźŚ™ Sleep Streak",
                     "weights": None,
                     "context": "Streak reward",
                 })
@@ -17663,7 +17742,7 @@ class SleepTab(QtWidgets.QWidget):
                 items_earned.append(item)
                 items_meta.append({
                     "item": item,
-                    "source": f"🏆 {milestone.get('name', 'Sleep Milestone')}",
+                    "source": f"đźŹ† {milestone.get('name', 'Sleep Milestone')}",
                     "weights": None,
                     "context": "Milestone reward",
                 })
@@ -17676,7 +17755,10 @@ class SleepTab(QtWidgets.QWidget):
             screenoff_bonus_item = None
             if self.screenoff_checkbox.isChecked() and get_screen_off_bonus_rarity:
                 screenoff_time = self.screenoff_time.time().toString("HH:mm")
-                screenoff_rarity = get_screen_off_bonus_rarity(screenoff_time)
+                screenoff_rarity = get_screen_off_bonus_rarity(
+                    screenoff_time,
+                    adhd_buster=self.blocker.adhd_buster,
+                )
                 if screenoff_rarity:
                     active_story = self.blocker.adhd_buster.get("active_story", "warrior")
                     screenoff_bonus_item = generate_item(rarity=screenoff_rarity, story_id=active_story)
@@ -17689,7 +17771,7 @@ class SleepTab(QtWidgets.QWidget):
                         screenoff_weights = get_screen_off_bonus_weights(screenoff_time)
                     items_meta.append({
                         "item": screenoff_bonus_item,
-                        "source": "🌙 Nighty-Night Bonus",
+                        "source": "đźŚ™ Nighty-Night Bonus",
                         "weights": screenoff_weights,
                         "context": f"Screen-off: {screenoff_time}",
                     })
@@ -17750,7 +17832,7 @@ class SleepTab(QtWidgets.QWidget):
         
         # Show feedback
         score = new_entry.get("score", 0)
-        base_msg = f"🌙 Sleep logged for {date_str}\n\n"
+        base_msg = f"đźŚ™ Sleep logged for {date_str}\n\n"
         base_msg += f"Duration: {format_sleep_duration(sleep_hours) if format_sleep_duration else f'{sleep_hours:.1f}h'}\n"
         base_msg += f"Score: {score}/100\n"
         
@@ -17775,6 +17857,7 @@ class SleepTab(QtWidgets.QWidget):
                 primary_item = primary_meta["item"]
                 primary_source = primary_meta.get("source", "Sleep Logged!")
                 primary_weights = primary_meta.get("weights")
+                primary_power_gating = primary_meta.get("power_gating")
                 primary_context = primary_meta.get("context")
             else:
                 primary_item = max(
@@ -17783,6 +17866,7 @@ class SleepTab(QtWidgets.QWidget):
                 )
                 primary_source = "Sleep Logged!"
                 primary_weights = None
+                primary_power_gating = None
                 primary_context = None
             extra_items = [i for i in items_earned if i is not primary_item]
             
@@ -17817,6 +17901,7 @@ class SleepTab(QtWidgets.QWidget):
                 reward_source=primary_source,
                 extra_items=extra_items,
                 tier_weights=primary_weights,
+                power_gating=primary_power_gating,
                 odds_tooltip=primary_tooltip,
                 parent=self.window()
             )
@@ -17827,7 +17912,7 @@ class SleepTab(QtWidgets.QWidget):
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
-                title="😴 Sleep Logged!",
+                title="đź´ Sleep Logged!",
                 source_label=base_msg.replace("\n", "<br>"),
                 items_earned=items_earned,
                 equipped=equipped_before,  # What was equipped before for comparison
@@ -17841,7 +17926,7 @@ class SleepTab(QtWidgets.QWidget):
         else:
             # No items earned - use basic styled info dialog
             from styled_dialog import styled_info
-            styled_info(self, "😴 Sleep Logged!", base_msg)
+            styled_info(self, "đź´ Sleep Logged!", base_msg)
         
         # Clear form
         self.note_input.clear()
@@ -17894,21 +17979,21 @@ class SleepTab(QtWidgets.QWidget):
         if get_sleep_stats:
             stats = get_sleep_stats(self.blocker.sleep_entries)
             streak = stats.get("current_streak", 0)
-            streak_emoji = "🔥" if streak >= 3 else "📊"
+            streak_emoji = "đź”Ą" if streak >= 3 else "đź“Š"
             
             self.stats_label.setText(
-                f"<b>📊 Your Sleep Stats</b><br><br>"
-                f"🌙 Total nights tracked: {stats.get('total_nights', 0)}<br>"
-                f"⏰ Average sleep: {stats.get('avg_hours', 0):.1f}h<br>"
-                f"📈 This week average: {stats.get('this_week_avg', 0):.1f}h<br>"
-                f"🏆 Best score: {stats.get('best_score', 0):.0f}/100<br>"
-                f"✅ Nights on target (7+h): {stats.get('nights_on_target', 0)} "
+                f"<b>đź“Š Your Sleep Stats</b><br><br>"
+                f"đźŚ™ Total nights tracked: {stats.get('total_nights', 0)}<br>"
+                f"âŹ° Average sleep: {stats.get('avg_hours', 0):.1f}h<br>"
+                f"đź“ This week average: {stats.get('this_week_avg', 0):.1f}h<br>"
+                f"đźŹ† Best score: {stats.get('best_score', 0):.0f}/100<br>"
+                f"âś… Nights on target (7+h): {stats.get('nights_on_target', 0)} "
                 f"({stats.get('target_rate', 0):.0f}%)<br>"
                 f"{streak_emoji} Current streak: {streak} nights"
             )
         else:
             entries = self.blocker.sleep_entries
-            self.stats_label.setText(f"📊 {len(entries)} sleep entries logged")
+            self.stats_label.setText(f"đź“Š {len(entries)} sleep entries logged")
         
         # Update chart
         user_age = self._get_user_age()
@@ -17927,7 +18012,7 @@ class SleepTab(QtWidgets.QWidget):
             quality = entry.get("quality", "unknown")
             
             # Find quality emoji
-            quality_emoji = "😴"
+            quality_emoji = "đź´"
             for q_id, _, emoji, _ in SLEEP_QUALITY_FACTORS:
                 if q_id == quality:
                     quality_emoji = emoji
@@ -17935,15 +18020,15 @@ class SleepTab(QtWidgets.QWidget):
             
             # Score color
             if score >= 80:
-                score_color = "🟢"
+                score_color = "đźź˘"
             elif score >= 60:
-                score_color = "🟡"
+                score_color = "đźźˇ"
             else:
-                score_color = "🔴"
+                score_color = "đź”´"
             
             text = f"{date}: {hours:.1f}h {quality_emoji} {score_color} {score}pts"
             if entry.get("note"):
-                text += f" 📝"
+                text += f" đź“ť"
             
             item = QtWidgets.QListWidgetItem(text)
             item.setData(QtCore.Qt.UserRole, entry)
@@ -17961,8 +18046,8 @@ class SleepTab(QtWidgets.QWidget):
         entry_index = self.history_list.row(item)
         menu = QtWidgets.QMenu(self)
         
-        view_action = menu.addAction("📋 View Details")
-        delete_action = menu.addAction("🗑️ Delete Entry")
+        view_action = menu.addAction("đź“‹ View Details")
+        delete_action = menu.addAction("đź—‘ď¸Ź Delete Entry")
         
         action = menu.exec(self.history_list.mapToGlobal(pos))
         
@@ -17988,16 +18073,16 @@ class SleepTab(QtWidgets.QWidget):
             disruption_text = "  None\n"
         
         details = (
-            f"📅 Date: {entry.get('date', 'Unknown')}\n"
-            f"🛏️ Bedtime: {entry.get('bedtime', 'Unknown')}\n"
-            f"☀️ Wake time: {entry.get('wake_time', 'Unknown')}\n"
-            f"⏰ Duration: {entry.get('sleep_hours', 0):.1f} hours\n"
-            f"⭐ Quality: {entry.get('quality', 'Unknown')}\n"
-            f"📊 Score: {entry.get('score', 0)}/100\n"
-            f"\n📋 Disruptions:\n{disruption_text}"
+            f"đź“… Date: {entry.get('date', 'Unknown')}\n"
+            f"đź›Źď¸Ź Bedtime: {entry.get('bedtime', 'Unknown')}\n"
+            f"â€ď¸Ź Wake time: {entry.get('wake_time', 'Unknown')}\n"
+            f"âŹ° Duration: {entry.get('sleep_hours', 0):.1f} hours\n"
+            f"â­ Quality: {entry.get('quality', 'Unknown')}\n"
+            f"đź“Š Score: {entry.get('score', 0)}/100\n"
+            f"\nđź“‹ Disruptions:\n{disruption_text}"
         )
         if entry.get("note"):
-            details += f"\n📝 Note: {entry['note']}"
+            details += f"\nđź“ť Note: {entry['note']}"
         
         show_info(self, "Sleep Entry Details", details)
     
@@ -18069,7 +18154,7 @@ class SleepTab(QtWidgets.QWidget):
             notification_shown = False
             if hasattr(parent_window, 'tray_icon') and parent_window.tray_icon and parent_window.tray_icon.isVisible():
                 parent_window.tray_icon.showMessage(
-                    "🌙 Bedtime Reminder",
+                    "đźŚ™ Bedtime Reminder",
                     f"Time to wind down! Optimal bedtime: {bedtime_rec}",
                     QtWidgets.QSystemTrayIcon.MessageIcon.Information,
                     5000
@@ -18078,7 +18163,7 @@ class SleepTab(QtWidgets.QWidget):
             
             # Fallback: show in-app toast (non-blocking)
             if not notification_shown:
-                show_perk_toast(f"🌙 Time to wind down! Optimal bedtime: {bedtime_rec}", "🌙", self)
+                show_perk_toast(f"đźŚ™ Time to wind down! Optimal bedtime: {bedtime_rec}", "đźŚ™", self)
     
     def _update_reminder_setting(self) -> None:
         """Update reminder settings."""
@@ -18244,29 +18329,29 @@ class AITab(QtWidgets.QWidget):
         inner = QtWidgets.QVBoxLayout(container)
 
         # AI Status
-        status_group = QtWidgets.QGroupBox("🤖 AI Status")
+        status_group = QtWidgets.QGroupBox("đź¤– AI Status")
         status_layout = QtWidgets.QVBoxLayout(status_group)
         if AI_AVAILABLE:
-            status_layout.addWidget(QtWidgets.QLabel("✅ AI features available"))
+            status_layout.addWidget(QtWidgets.QLabel("âś… AI features available"))
         else:
-            status_layout.addWidget(QtWidgets.QLabel("⚠️ AI not available - install with: pip install -r requirements_ai.txt"))
+            status_layout.addWidget(QtWidgets.QLabel("âš ď¸Ź AI not available - install with: pip install -r requirements_ai.txt"))
         inner.addWidget(status_group)
 
         # Productivity Insights
-        insights_group = QtWidgets.QGroupBox("💡 Productivity Insights")
+        insights_group = QtWidgets.QGroupBox("đź’ˇ Productivity Insights")
         insights_layout = QtWidgets.QVBoxLayout(insights_group)
         self.insights_text = QtWidgets.QTextEdit()
         self.insights_text.setReadOnly(True)
         self.insights_text.setMaximumHeight(150)
         insights_layout.addWidget(self.insights_text)
-        refresh_btn = QtWidgets.QPushButton("🔄 Get AI Insights")
+        refresh_btn = QtWidgets.QPushButton("đź”„ Get AI Insights")
         refresh_btn.clicked.connect(self._get_insights)
         refresh_btn.setEnabled(AI_AVAILABLE)
         insights_layout.addWidget(refresh_btn)
         inner.addWidget(insights_group)
 
         # Achievements
-        achievements_group = QtWidgets.QGroupBox("🏆 Achievements & Challenges")
+        achievements_group = QtWidgets.QGroupBox("đźŹ† Achievements & Challenges")
         achievements_layout = QtWidgets.QVBoxLayout(achievements_group)
         
         # Intro label challenging the user
@@ -18276,7 +18361,7 @@ class AITab(QtWidgets.QWidget):
         achievements_layout.addWidget(self.achievements_intro)
         
         # Unlocked trophies section
-        unlocked_label = QtWidgets.QLabel("✅ Trophies Earned:")
+        unlocked_label = QtWidgets.QLabel("âś… Trophies Earned:")
         unlocked_label.setStyleSheet("font-weight: bold; margin-top: 5px;")
         achievements_layout.addWidget(unlocked_label)
         self.unlocked_achievements_list = QtWidgets.QListWidget()
@@ -18285,7 +18370,7 @@ class AITab(QtWidgets.QWidget):
         achievements_layout.addWidget(self.unlocked_achievements_list)
         
         # Active challenges section
-        challenges_label = QtWidgets.QLabel("🎯 Your Next Challenges — Can You Complete Them?")
+        challenges_label = QtWidgets.QLabel("đźŽŻ Your Next Challenges â€” Can You Complete Them?")
         challenges_label.setStyleSheet("font-weight: bold; margin-top: 10px; color: #FF5722;")
         achievements_layout.addWidget(challenges_label)
         self.achievements_list = QtWidgets.QListWidget()
@@ -18296,29 +18381,29 @@ class AITab(QtWidgets.QWidget):
         inner.addWidget(achievements_group)
 
         # Daily Challenge
-        challenge_group = QtWidgets.QGroupBox("🎯 Daily Challenge")
+        challenge_group = QtWidgets.QGroupBox("đźŽŻ Daily Challenge")
         challenge_layout = QtWidgets.QVBoxLayout(challenge_group)
         self.challenge_label = QtWidgets.QLabel()
         challenge_layout.addWidget(self.challenge_label)
         self.challenge_progress = QtWidgets.QProgressBar()
         self.challenge_progress.setMaximum(100)
         challenge_layout.addWidget(self.challenge_progress)
-        new_challenge_btn = QtWidgets.QPushButton("🎲 New Challenge")
+        new_challenge_btn = QtWidgets.QPushButton("đźŽ˛ New Challenge")
         new_challenge_btn.clicked.connect(self._new_challenge)
         challenge_layout.addWidget(new_challenge_btn)
         inner.addWidget(challenge_group)
 
         # Goals
-        goals_group = QtWidgets.QGroupBox("📋 Goals")
+        goals_group = QtWidgets.QGroupBox("đź“‹ Goals")
         goals_layout = QtWidgets.QVBoxLayout(goals_group)
         self.goals_list = QtWidgets.QListWidget()
         self.goals_list.setMaximumHeight(120)
         goals_layout.addWidget(self.goals_list)
         goals_btn_layout = QtWidgets.QHBoxLayout()
-        add_goal_btn = QtWidgets.QPushButton("➕ Add Goal")
+        add_goal_btn = QtWidgets.QPushButton("âž• Add Goal")
         add_goal_btn.clicked.connect(self._add_goal)
         goals_btn_layout.addWidget(add_goal_btn)
-        rem_goal_btn = QtWidgets.QPushButton("✓ Complete Goal")
+        rem_goal_btn = QtWidgets.QPushButton("âś“ Complete Goal")
         rem_goal_btn.clicked.connect(self._complete_goal)
         goals_btn_layout.addWidget(rem_goal_btn)
         goals_btn_layout.addStretch()
@@ -18326,7 +18411,7 @@ class AITab(QtWidgets.QWidget):
         inner.addWidget(goals_group)
 
         # AI-powered statistics
-        stats_group = QtWidgets.QGroupBox("📈 AI-Powered Statistics")
+        stats_group = QtWidgets.QGroupBox("đź“ AI-Powered Statistics")
         stats_layout = QtWidgets.QVBoxLayout(stats_group)
         self.ai_stats_text = QtWidgets.QTextEdit()
         self.ai_stats_text.setReadOnly(True)
@@ -18359,8 +18444,8 @@ class AITab(QtWidgets.QWidget):
                 if prog.get("unlocked"):
                     # Unlocked achievement - show as trophy
                     unlocked_count += 1
-                    item = QtWidgets.QListWidgetItem(f"{data['icon']} {data['name']} — COMPLETE! 🎉")
-                    item.setToolTip(f"✅ {data['name']}\n{data.get('description', '')}\nYou did it!")
+                    item = QtWidgets.QListWidgetItem(f"{data['icon']} {data['name']} â€” COMPLETE! đźŽ‰")
+                    item.setToolTip(f"âś… {data['name']}\n{data.get('description', '')}\nYou did it!")
                     self.unlocked_achievements_list.addItem(item)
                 else:
                     # Locked achievement - show as challenge with encouraging text
@@ -18371,7 +18456,7 @@ class AITab(QtWidgets.QWidget):
                     display_current = min(current_val, target_val)
                     remaining = max(0, target_val - current_val)
                     
-                    challenge_text = f"{data['icon']} {data['name']}: {data.get('description', '')} — {display_current}/{target_val} ({remaining} to go!)"
+                    challenge_text = f"{data['icon']} {data['name']}: {data.get('description', '')} â€” {display_current}/{target_val} ({remaining} to go!)"
                     locked_items.append((pct, challenge_text, data))
             
             # Sort challenges by progress (closest to completion first)
@@ -18381,33 +18466,33 @@ class AITab(QtWidgets.QWidget):
                 item = QtWidgets.QListWidgetItem(challenge_text)
                 # Add motivational tooltip
                 if pct >= 75:
-                    tip = f"🔥 SO CLOSE! You're {pct}% there!\n{data.get('description', '')}"
+                    tip = f"đź”Ą SO CLOSE! You're {pct}% there!\n{data.get('description', '')}"
                 elif pct >= 50:
-                    tip = f"💪 Halfway there! Keep pushing!\n{data.get('description', '')}"
+                    tip = f"đź’Ş Halfway there! Keep pushing!\n{data.get('description', '')}"
                 elif pct >= 25:
-                    tip = f"📈 Good progress! Don't stop now!\n{data.get('description', '')}"
+                    tip = f"đź“ Good progress! Don't stop now!\n{data.get('description', '')}"
                 else:
-                    tip = f"🚀 Challenge yourself: {data.get('description', '')}"
+                    tip = f"đźš€ Challenge yourself: {data.get('description', '')}"
                 item.setToolTip(tip)
                 self.achievements_list.addItem(item)
             
             # Update intro label with personalized challenge
             total = len(achievements_def)
             if unlocked_count == 0:
-                intro = "🎮 You haven't unlocked any achievements yet! Complete focus sessions to earn your first trophy!"
+                intro = "đźŽ® You haven't unlocked any achievements yet! Complete focus sessions to earn your first trophy!"
             elif unlocked_count == total:
-                intro = "🏆 LEGENDARY! You've unlocked ALL achievements! You are a focus master!"
+                intro = "đźŹ† LEGENDARY! You've unlocked ALL achievements! You are a focus master!"
             elif unlocked_count >= total * 0.75:
-                intro = f"🔥 Almost there! {unlocked_count}/{total} achievements unlocked. Can you get them all?"
+                intro = f"đź”Ą Almost there! {unlocked_count}/{total} achievements unlocked. Can you get them all?"
             else:
-                intro = f"💪 {unlocked_count}/{total} trophies earned! Take on the challenges below to unlock more!"
+                intro = f"đź’Ş {unlocked_count}/{total} trophies earned! Take on the challenges below to unlock more!"
             self.achievements_intro.setText(intro)
             
             # Show message if no unlocked achievements
             if unlocked_count == 0:
-                self.unlocked_achievements_list.addItem("No trophies yet — complete your first focus session!")
+                self.unlocked_achievements_list.addItem("No trophies yet â€” complete your first focus session!")
         else:
-            self.achievements_intro.setText("🔧 AI module not installed")
+            self.achievements_intro.setText("đź”§ AI module not installed")
             self.achievements_list.addItem("Install requirements_ai.txt to unlock achievements and challenges!")
 
         # Challenge
@@ -18434,7 +18519,7 @@ class AITab(QtWidgets.QWidget):
                     progress_val = goal.get("progress", 0)
                     pct = min(100, int((progress_val / target) * 100)) if target else 0
                     self.goals_list.addItem(
-                        f"🎯 {goal.get('title', 'Goal')} — {pct}% ({progress_val/3600:.1f}h/{target/3600:.1f}h)"
+                        f"đźŽŻ {goal.get('title', 'Goal')} â€” {pct}% ({progress_val/3600:.1f}h/{target/3600:.1f}h)"
                     )
             except Exception:
                 pass
@@ -18469,7 +18554,7 @@ class AITab(QtWidgets.QWidget):
                     lines.append(f"{ins.get('title', 'Insight')}: {ins.get('message', '')}")
                 lines.append("\nRecommendations:")
                 for rec in recs:
-                    lines.append(f"• {rec.get('suggestion', '')} ({rec.get('reason', '')})")
+                    lines.append(f"â€˘ {rec.get('suggestion', '')} ({rec.get('reason', '')})")
                 self.insights_text.setPlainText("\n".join(lines))
                 return
             except Exception:
@@ -18513,7 +18598,7 @@ class AITab(QtWidgets.QWidget):
                 if 0 <= row < len(active):
                     goal_id = active[row]["id"]
                     self.focus_goals.complete_goal(goal_id)
-                    show_info(self, "Goal Completed!", "🎉 Goal marked as complete!")
+                    show_info(self, "Goal Completed!", "đźŽ‰ Goal marked as complete!")
                     self._refresh_data()
             except Exception:
                 show_warning(self, "Error", "Failed to update goal status.")
@@ -18577,7 +18662,7 @@ class CollapsibleSection(QtWidgets.QWidget):
         self._title = title
     
     def _update_header(self, title: str):
-        arrow = "▼" if not self._collapsed else "▶"
+        arrow = "â–Ľ" if not self._collapsed else "â–¶"
         self.toggle_btn.setText(f"{arrow} {title}")
     
     def _on_toggle(self):
@@ -18680,9 +18765,173 @@ class CharacterCanvas(QtWidgets.QWidget):
         self._last_repaint_ms = 0
         self._repaint_clock = QtCore.QElapsedTimer()
         self._repaint_clock.start()
+        
+        # WebEngine setup for full SVG animation support (fallback to QSvgRenderer if unavailable)
+        self.web_view: Optional[QWebEngineView] = None
+        self._web_content_loaded = False
+        self._web_content_dirty = False
+        if HAS_WEBENGINE and self._manage_svg_animations:
+            self._setup_web_engine()
 
         # Initialize the visible state in one place.
         self.set_character_state(equipped, power, story_theme, queue_update=False)
+
+    def _setup_web_engine(self) -> None:
+        """Initialize QWebEngineView layer for full SMIL/CSS animations."""
+        self.web_view = QWebEngineView(self)
+        # Initially hidden until content is loaded
+        self.web_view.hide()
+        self.web_view.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, True)
+        self._web_content_loaded = False
+        
+        # Configure for transparent background
+        self.web_view.page().setBackgroundColor(QtCore.Qt.transparent)
+        self.web_view.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        
+        # Disable scrollbars and interactions
+        settings = self.web_view.settings()
+        settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
+        settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+        self.web_view.loadFinished.connect(self._on_web_view_load_finished)
+        
+        # Match widget geometry
+        self.web_view.resize(self.size())
+        
+    def _update_web_engine_content(self) -> None:
+        """Update WebEngine HTML content based on current hero state."""
+        if not self.web_view:
+            return
+            
+        html = generate_hero_composed_html(
+            story_theme=self.story_theme,
+            equipped=self.equipped,
+            power_tier=self.tier,
+            canvas_width=self.BASE_W,
+            canvas_height=self.BASE_H,
+        )
+        if not html:
+            self._set_web_page_active(False)
+            self.web_view.hide()
+            self._web_content_loaded = False
+            self._web_content_dirty = False
+            if self._manage_svg_animations:
+                self._svg_bindings_dirty = True
+                self._sync_svg_renderer_bindings(force=True)
+            self._mark_render_dirty()
+            return
+
+        # Avoid loading HTML while hidden. Hidden initial loads can start in
+        # throttled state; mark dirty and inject when visible again.
+        if not self.isVisible():
+            self._web_content_dirty = True
+            return
+
+        self._web_content_dirty = False
+        self._inject_scaled_html(html)
+
+    def _inject_scaled_html(self, raw_html: str) -> None:
+        """Inject HTML with dynamic scaling script/styles."""
+        if not self.web_view:
+            return
+            
+        # We need a base URL for local file access
+        base_url = QtCore.QUrl.fromLocalFile(str(get_app_dir()) + '/')
+        self._web_content_loaded = False
+        self._web_content_dirty = False
+        self.web_view.setHtml(raw_html, base_url)
+
+    def _update_web_view_scale(self) -> None:
+        if not self.web_view:
+            return
+        width = max(0, int(self.width()))
+        height = max(0, int(self.height()))
+        self.web_view.resize(self.size())
+        if width <= 0 or height <= 0 or not self._web_content_loaded:
+            return
+        
+        # Calculate scale
+        sx = width / self.BASE_W
+        sy = height / self.BASE_H
+        scale = min(sx, sy)
+        offset_x = (width - self.BASE_W * scale) / 2.0
+        offset_y = (height - self.BASE_H * scale) / 2.0
+        
+        # Keep aspect ratio and center content inside the canvas widget.
+        script = f"""
+            (function() {{
+                var b = document.body;
+                if (!b) return;
+                b.style.transform = 'translate({offset_x:.6f}px, {offset_y:.6f}px) scale({scale:.6f})';
+                b.style.transformOrigin = 'top left';
+                b.style.width = '{self.BASE_W}px';
+                b.style.height = '{self.BASE_H}px';
+            }})();
+        """
+        self.web_view.page().runJavaScript(script)
+
+    def _on_web_view_load_finished(self, ok: bool) -> None:
+        self._web_content_loaded = bool(ok)
+        if not ok:
+            self._set_web_page_active(False)
+            if self.web_view:
+                self.web_view.hide()
+            if self._manage_svg_animations:
+                self._svg_bindings_dirty = True
+                self._sync_svg_renderer_bindings(force=True)
+            self._mark_render_dirty()
+            self.update()
+            return
+        if self.web_view:
+            self.web_view.show()
+        self._suspend_svg_renderer_bindings()
+        self._set_web_page_active(self._animations_requested and self.isVisible())
+        self._update_web_view_scale()
+
+    def _is_web_renderer_active(self) -> bool:
+        return bool(self.web_view and self.web_view.isVisible())
+
+    def _set_web_page_active(self, active: bool) -> None:
+        """Pause/resume WebEngine SVG/CSS animations via visibility lifecycle APIs."""
+        if not self.web_view or not HAS_WEBENGINE:
+            return
+        page = self.web_view.page()
+        page.setVisible(bool(active))
+        if QWebEnginePage is not None:
+            try:
+                if active:
+                    page.setLifecycleState(QWebEnginePage.LifecycleState.Active)
+                else:
+                    page.setLifecycleState(QWebEnginePage.LifecycleState.Frozen)
+            except Exception:
+                pass
+        if not self._web_content_loaded:
+            return
+        if active:
+            page.runJavaScript(
+                "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = '');"
+            )
+        else:
+            page.runJavaScript(
+                "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = 'paused');"
+            )
+
+    def _suspend_svg_renderer_bindings(self) -> None:
+        if not self._manage_svg_animations:
+            return
+
+        for renderer in self._bound_renderer_map.values():
+            try:
+                renderer.repaintNeeded.disconnect(self._on_svg_repaint_needed)
+            except (TypeError, RuntimeError):
+                pass
+
+        if self._retained_renderer_paths:
+            release_hero_svg_renderer_paths(self._retained_renderer_paths)
+
+        self._bound_renderer_map.clear()
+        self._retained_renderer_paths.clear()
+        self._has_animated_svg_layers = False
+        self._svg_bindings_dirty = True
 
     def _resolve_tier(self, power: int) -> str:
         if GAMIFICATION_AVAILABLE:
@@ -18759,8 +19008,12 @@ class CharacterCanvas(QtWidgets.QWidget):
         self.tier = tier
         self._reseed_particles()
         self._mark_render_dirty()
+        
+        # Update WebEngine content if enabled
+        if self.web_view:
+            self._update_web_engine_content()
 
-        if self._manage_svg_animations:
+        if self._manage_svg_animations and not self._is_web_renderer_active():
             self._svg_bindings_dirty = True
             self._sync_svg_renderer_bindings()
 
@@ -18769,6 +19022,8 @@ class CharacterCanvas(QtWidgets.QWidget):
 
     def _sync_svg_renderer_bindings(self, force: bool = False) -> None:
         if not self._manage_svg_animations:
+            return
+        if self._is_web_renderer_active():
             return
         if not force and not self._svg_bindings_dirty:
             self._update_svg_animation_activity()
@@ -18821,6 +19076,8 @@ class CharacterCanvas(QtWidgets.QWidget):
     def _update_svg_animation_activity(self) -> None:
         if not self._manage_svg_animations:
             return
+        if self._is_web_renderer_active():
+            return
 
         should_run = (
             self._animations_requested
@@ -18846,15 +19103,21 @@ class CharacterCanvas(QtWidgets.QWidget):
             return
         self._animations_requested = False
         self._update_svg_animation_activity()
+        if self.web_view:
+            self._set_web_page_active(False)
 
     def resume_animations(self) -> None:
         if not self._manage_svg_animations:
             return
         if self._animations_requested:
             self._sync_svg_renderer_bindings()
+            if self._is_web_renderer_active() and self.isVisible():
+                self._set_web_page_active(True)
             return
         self._animations_requested = True
         self._sync_svg_renderer_bindings()
+        if self._is_web_renderer_active() and self.isVisible():
+            self._set_web_page_active(True)
         self._mark_render_dirty()
         self.update()
 
@@ -18863,6 +19126,8 @@ class CharacterCanvas(QtWidgets.QWidget):
             return
 
         self.pause_animations()
+        if self.web_view:
+            self._set_web_page_active(False)
 
         for renderer in self._bound_renderer_map.values():
             try:
@@ -18882,6 +19147,8 @@ class CharacterCanvas(QtWidgets.QWidget):
     def _on_svg_repaint_needed(self) -> None:
         if not self._manage_svg_animations:
             return
+        if self._is_web_renderer_active():
+            return
         if not self._animations_requested or not self.isVisible():
             return
         now_ms = self._repaint_clock.elapsed()
@@ -18894,11 +19161,21 @@ class CharacterCanvas(QtWidgets.QWidget):
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         super().showEvent(event)
-        self._sync_svg_renderer_bindings()
+        if self.web_view and self._web_content_dirty:
+            self._update_web_engine_content()
+        if self._is_web_renderer_active():
+            if self._web_content_loaded:
+                self._set_web_page_active(self._animations_requested)
+            self._update_web_view_scale()
+        else:
+            self._sync_svg_renderer_bindings()
 
     def hideEvent(self, event: QtGui.QHideEvent) -> None:
         super().hideEvent(event)
-        self._update_svg_animation_activity()
+        if self._is_web_renderer_active():
+            self._set_web_page_active(False)
+        else:
+            self._update_svg_animation_activity()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         try:
@@ -18922,6 +19199,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         """Maintain aspect ratio on resize."""
         super().resizeEvent(event)
         self._mark_render_dirty()
+        
         # Force aspect ratio by adjusting height based on width
         new_width = event.size().width()
         ideal_height = self.heightForWidth(new_width)
@@ -18929,9 +19207,17 @@ class CharacterCanvas(QtWidgets.QWidget):
             # Only adjust if significantly different to avoid infinite loops
             if abs(event.size().height() - ideal_height) > 5:
                 self.setFixedHeight(ideal_height)
+        
+        # Update WebEngine scale if active
+        if self.web_view:
+            self._update_web_view_scale()
 
     def paintEvent(self, event) -> None:
         """Dispatch to theme-specific drawing method."""
+        # If WebEngine view is active, we don't need to paint anything manually
+        if self.web_view and self.web_view.isVisible():
+            return
+
         if self._manage_svg_animations:
             self._sync_svg_renderer_bindings()
 
@@ -19809,7 +20095,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         # Draw single clean power text
         painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"⚔ {self.power}")
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"âš” {self.power}")
 
     def _draw_scholar_character(self, painter: QtGui.QPainter) -> None:
         """Draw the academic/scholar themed character."""
@@ -20397,7 +20683,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         # Draw single clean power text
         painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"📚 {self.power}")
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"đź“š {self.power}")
 
     def _draw_wanderer_character(self, painter: QtGui.QPainter) -> None:
         """Draw the mystical/dreamweaver themed character."""
@@ -21060,7 +21346,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         # Draw single clean power text
         painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🌙 {self.power}")
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"đźŚ™ {self.power}")
 
     def _draw_underdog_character(self, painter: QtGui.QPainter) -> None:
         """Draw the modern office/corporate themed character."""
@@ -21679,7 +21965,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         # Draw single clean power text
         painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"đźŹ˘ {self.power}")
 
     def _draw_robot_character(self, painter: QtGui.QPainter) -> None:
         """Draw the factory-forged robot character."""
@@ -22658,8 +22944,8 @@ class CharacterCanvas(QtWidgets.QWidget):
             painter.drawRect(w - 90, cy - 50, 70, 50)
             # Formulas written on board
             painter.setPen(QtGui.QPen(QtGui.QColor("#1e88e5"), 1))
-            painter.drawText(w - 85, cy - 40, "E=mc²")
-            painter.drawText(w - 85, cy - 30, "ΔG=ΔH-TΔS")
+            painter.drawText(w - 85, cy - 40, "E=mcÂ˛")
+            painter.drawText(w - 85, cy - 30, "Î”G=Î”H-TÎ”S")
             painter.setPen(QtGui.QPen(QtGui.QColor("#d32f2f"), 1))
             painter.drawLine(w - 85, cy - 20, w - 35, cy - 22)
             painter.drawLine(w - 85, cy - 15, w - 50, cy - 16)
@@ -22737,7 +23023,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         if particles:
             p_color, p_count = particles
             # Chemical formulas and periodic elements
-            elements = ["H₂O", "CO₂", "NaCl", "Au", "Fe", "C", "O₂", "N₂", "CH₄", "H₂SO₄"]
+            elements = ["Hâ‚‚O", "COâ‚‚", "NaCl", "Au", "Fe", "C", "Oâ‚‚", "Nâ‚‚", "CHâ‚„", "Hâ‚‚SOâ‚„"]
             element_colors = ["#4fc3f7", "#66bb6a", "#ffa726", "#ffd700", "#ef5350", 
                             "#9e9e9e", "#42a5f5", "#ba68c8", "#26c6da", "#ffeb3b"]
             
@@ -23731,7 +24017,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         # Draw single clean power text
         painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🔬 {self.power}")
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"đź”¬ {self.power}")
 
 
 class HydrationChartWidget(QtWidgets.QWidget):
@@ -24319,13 +24605,13 @@ class HydrationChartWidget(QtWidgets.QWidget):
             else:
                 times_text = "No times recorded"
             
-            status = "✅ Goal met!" if goal_met else f"❌ Need {self._daily_goal - glasses} more"
+            status = "âś… Goal met!" if goal_met else f"âťŚ Need {self._daily_goal - glasses} more"
             
             return (
-                f"📅 {date_str}\n"
-                f"💧 {glasses} / {self._daily_goal} glasses\n"
+                f"đź“… {date_str}\n"
+                f"đź’§ {glasses} / {self._daily_goal} glasses\n"
                 f"{status}\n"
-                f"⏰ Times: {times_text}"
+                f"âŹ° Times: {times_text}"
             )
         except Exception:
             return ""
@@ -24478,13 +24764,13 @@ class HydrationChartWidget(QtWidgets.QWidget):
         
         # Trend text
         if direction == "up":
-            trend_text = f"↑ +{abs(rate):.1f}/week"
+            trend_text = f"â†‘ +{abs(rate):.1f}/week"
             trend_color = QtGui.QColor("#4CAF50")  # Green - more water
         elif direction == "down":
-            trend_text = f"↓ -{abs(rate):.1f}/week"
+            trend_text = f"â†“ -{abs(rate):.1f}/week"
             trend_color = QtGui.QColor("#FF9800")  # Orange
         else:
-            trend_text = "→ Stable"
+            trend_text = "â†’ Stable"
             trend_color = QtGui.QColor("#4fc3f7")  # Blue
         
         if r_sq > 0.7:
@@ -24499,7 +24785,7 @@ class HydrationChartWidget(QtWidgets.QWidget):
         # Draw streak
         if streak > 0:
             painter.setPen(QtGui.QColor(self.COLORS["streak_glow"]))
-            streak_text = f"🔥 {streak} day streak"
+            streak_text = f"đź”Ą {streak} day streak"
             painter.drawText(self.MARGIN_LEFT + 130, 18, streak_text)
         
         # Draw average stats
@@ -24654,7 +24940,7 @@ class HydrationChartWidget(QtWidgets.QWidget):
             if bin_data["goal_days"] > 0:
                 painter.setPen(QtGui.QColor(self.COLORS["streak_glow"]))
                 painter.setFont(QtGui.QFont("Segoe UI", 7))
-                painter.drawText(int(x) - 8, int(y) - 5, f"{bin_data['goal_days']}✓")
+                painter.drawText(int(x) - 8, int(y) - 5, f"{bin_data['goal_days']}âś“")
         
         # Legend
         painter.setPen(QtGui.QColor(self.COLORS["text"]))
@@ -24748,7 +25034,7 @@ class HydrationChartWidget(QtWidgets.QWidget):
         """Draw zoom level indicator."""
         painter.setPen(QtGui.QColor(self.COLORS["text"]))
         painter.setFont(QtGui.QFont("Segoe UI", 8))
-        zoom_text = f"🔍 {self._zoom_level:.1f}x (double-click to reset)"
+        zoom_text = f"đź”Ť {self._zoom_level:.1f}x (double-click to reset)"
         painter.drawText(chart_rect.right() - 160, chart_rect.bottom() + 45, zoom_text)
 
 
@@ -24784,7 +25070,7 @@ class HydrationTab(QtWidgets.QWidget):
         
         # Header
         header_layout = QtWidgets.QHBoxLayout()
-        header = QtWidgets.QLabel("💧 Hydration Tracker")
+        header = QtWidgets.QLabel("đź’§ Hydration Tracker")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
         header_layout.addWidget(header)
         header_layout.addStretch()
@@ -24805,7 +25091,7 @@ class HydrationTab(QtWidgets.QWidget):
         left_layout = QtWidgets.QVBoxLayout(left_panel)
         
         # Big water button
-        self.water_btn = QtWidgets.QPushButton("💧 Log Glass of Water")
+        self.water_btn = QtWidgets.QPushButton("đź’§ Log Glass of Water")
         self.water_btn.setMinimumHeight(60)
         self.water_btn.setStyleSheet("""
             QPushButton {
@@ -24834,7 +25120,7 @@ class HydrationTab(QtWidgets.QWidget):
         left_layout.addWidget(self.water_btn)
         
         # Status/countdown label
-        self.status_label = QtWidgets.QLabel("🕐 Ready to log!")
+        self.status_label = QtWidgets.QLabel("đź• Ready to log!")
         self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #4caf50;")
         self.status_label.setAlignment(QtCore.Qt.AlignCenter)
         left_layout.addWidget(self.status_label)
@@ -24870,7 +25156,7 @@ class HydrationTab(QtWidgets.QWidget):
         left_layout.addWidget(progress_group)
         
         # Timeline graph
-        timeline_group = QtWidgets.QGroupBox("📊 Today's Timeline")
+        timeline_group = QtWidgets.QGroupBox("đź“Š Today's Timeline")
         timeline_layout = QtWidgets.QVBoxLayout(timeline_group)
         
         self.timeline_widget = HydrationTimelineWidget()
@@ -24880,14 +25166,14 @@ class HydrationTab(QtWidgets.QWidget):
         left_layout.addWidget(timeline_group)
         
         # Rewards info
-        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        rewards_group = QtWidgets.QGroupBox("đźŽ Rewards Info")
         rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
         rewards_info = QtWidgets.QLabel(
             "<b>How it works:</b><br>"
-            "• Max 5 glasses/day (safe hydration)<br>"
-            "• Wait 2 hours between glasses<br>"
-            "• Each glass increases reward tier!<br><br>"
-            "<b>💧 Per-Glass Reward:</b><br>"
+            "â€˘ Max 5 glasses/day (safe hydration)<br>"
+            "â€˘ Wait 2 hours between glasses<br>"
+            "â€˘ Each glass increases reward tier!<br><br>"
+            "<b>đź’§ Per-Glass Reward:</b><br>"
             "<table style='font-size:10px; color:#888888;'>"
             "<tr><th>Glass</th><th>Center Tier</th></tr>"
             "<tr><td>1st</td><td>Common-centered</td></tr>"
@@ -24896,7 +25182,7 @@ class HydrationTab(QtWidgets.QWidget):
             "<tr><td>4th</td><td>Epic-centered</td></tr>"
             "<tr><td>5th</td><td>100% Legendary!</td></tr>"
             "</table>"
-            "<br><b>🔥 Streaks (5 glasses/day):</b><br>"
+            "<br><b>đź”Ą Streaks (5 glasses/day):</b><br>"
             "3d=Uncommon, 7d=Rare, 14d=Epic, 30d=Legendary"
         )
         rewards_info.setWordWrap(True)
@@ -24917,7 +25203,7 @@ class HydrationTab(QtWidgets.QWidget):
         right_layout.addWidget(self.stats_label)
         
         # Progress Chart
-        chart_label = QtWidgets.QLabel("📊 Hydration Progress Chart:")
+        chart_label = QtWidgets.QLabel("đź“Š Hydration Progress Chart:")
         chart_label.setStyleSheet("font-weight: bold; margin-top: 8px;")
         right_layout.addWidget(chart_label)
         
@@ -24951,7 +25237,7 @@ class HydrationTab(QtWidgets.QWidget):
         
         # Reminder Settings Section
         reminder_layout = QtWidgets.QHBoxLayout()
-        self.reminder_checkbox = QtWidgets.QCheckBox("🔔 Remind me every")
+        self.reminder_checkbox = QtWidgets.QCheckBox("đź”” Remind me every")
         self.reminder_checkbox.setChecked(getattr(self.blocker, 'water_reminder_enabled', False))
         self.reminder_checkbox.stateChanged.connect(self._update_reminder_setting)
         reminder_layout.addWidget(self.reminder_checkbox)
@@ -25046,7 +25332,10 @@ class HydrationTab(QtWidgets.QWidget):
             pre_rolled_item = None
             try:
                 from gamification import roll_water_reward_outcome
-                pre_rolled_outcome = roll_water_reward_outcome(glass_number=glass_number)
+                pre_rolled_outcome = roll_water_reward_outcome(
+                    glass_number=glass_number,
+                    adhd_buster=self.blocker.adhd_buster,
+                )
                 if pre_rolled_outcome.get("won"):
                     rolled_tier = pre_rolled_outcome.get("rolled_tier")
                     if rolled_tier:
@@ -25061,6 +25350,7 @@ class HydrationTab(QtWidgets.QWidget):
                 story_id=active_story,
                 pre_rolled_outcome=pre_rolled_outcome,
                 pre_rolled_item=pre_rolled_item,
+                adhd_buster=self.blocker.adhd_buster,
                 parent=self
             )
             
@@ -25110,8 +25400,8 @@ class HydrationTab(QtWidgets.QWidget):
                     from styled_dialog import ItemRewardDialog
                     dialog = ItemRewardDialog(
                         parent=self,
-                        title="💧 Hydration Reward!",
-                        header_emoji="💧",
+                        title="đź’§ Hydration Reward!",
+                        header_emoji="đź’§",
                         source_label=f"Glass #{glass_number} Lottery Win!",
                         items_earned=[item],
                         equipped=equipped_before,
@@ -25147,9 +25437,9 @@ class HydrationTab(QtWidgets.QWidget):
                             from styled_dialog import ItemRewardDialog
                             dialog = ItemRewardDialog(
                                 parent=self,
-                                title="💧 Hydration Streak Bonus!",
-                                header_emoji="💧",
-                                source_label=f"🔥 {streak_days + 1}-day Hydration Streak!",
+                                title="đź’§ Hydration Streak Bonus!",
+                                header_emoji="đź’§",
+                                source_label=f"đź”Ą {streak_days + 1}-day Hydration Streak!",
                                 items_earned=[streak_item],
                                 equipped=equipped_before,
                                 equipped_after=equipped_after,
@@ -25171,7 +25461,7 @@ class HydrationTab(QtWidgets.QWidget):
                 if cap > HYDRATION_MAX_DAILY_GLASSES:
                     perk_parts.append(f"+{cap - HYDRATION_MAX_DAILY_GLASSES} daily glasses")
                 if perk_parts:
-                    show_perk_toast(f"Hydration Perks: {', '.join(perk_parts)}", "💧", self)
+                    show_perk_toast(f"Hydration Perks: {', '.join(perk_parts)}", "đź’§", self)
             
             # Award city water resource
             if CITY_AVAILABLE:
@@ -25182,7 +25472,7 @@ class HydrationTab(QtWidgets.QWidget):
                     # Show city stockpile toast (water is always stockpiled, never flows to buildings)
                     resources = get_resources(self.blocker.adhd_buster)
                     total_water = resources.get("water", 0)
-                    show_perk_toast(f"🏗️ +1 Water stockpiled ({total_water} total)", "💧", self)
+                    show_perk_toast(f"đźŹ—ď¸Ź +1 Water stockpiled ({total_water} total)", "đź’§", self)
                 except Exception:
                     pass
 
@@ -25218,7 +25508,7 @@ class HydrationTab(QtWidgets.QWidget):
             except Exception:
                 pass
             
-            show_info(self, "Water Logged! 💧", f"💧 Glass #{glass_number} logged!")
+            show_info(self, "Water Logged! đź’§", f"đź’§ Glass #{glass_number} logged!")
         
         self._refresh_display()
 
@@ -25281,7 +25571,7 @@ class HydrationTab(QtWidgets.QWidget):
         # Update progress display (use perk-modified cap)
         cap_label = f"{glasses_today} / {daily_cap} glasses"
         if daily_cap > HYDRATION_MAX_DAILY_GLASSES:
-            cap_label += " ✨"  # Entity perk indicator
+            cap_label += " âś¨"  # Entity perk indicator
         self.glasses_label.setText(cap_label)
         self.progress_bar.setMaximum(daily_cap)
         self.progress_bar.setValue(min(glasses_today, daily_cap))
@@ -25296,21 +25586,21 @@ class HydrationTab(QtWidgets.QWidget):
             check = can_log_water(self.blocker.water_entries, adhd_buster=self.blocker.adhd_buster)
             if check["can_log"]:
                 self.water_btn.setEnabled(True)
-                self.status_label.setText("✅ Ready to log!")
+                self.status_label.setText("âś… Ready to log!")
                 self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #4caf50;")
             else:
                 if check.get("minutes_remaining", 0) > 0:
                     mins = check["minutes_remaining"]
                     next_time = check.get("next_available_time", "")
-                    status_text = f"⏳ Wait {mins} min (next at {next_time})"
+                    status_text = f"âŹł Wait {mins} min (next at {next_time})"
                     if check.get("perk_bonus_applied"):
-                        status_text = status_text.replace("⏳", "⏳✨")  # Perk indicator
+                        status_text = status_text.replace("âŹł", "âŹłâś¨")  # Perk indicator
                     self.water_btn.setEnabled(False)
                     self.status_label.setText(status_text)
                     self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #ff9800;")
                 else:
                     self.water_btn.setEnabled(False)
-                    self.status_label.setText("🎯 Daily goal complete!")
+                    self.status_label.setText("đźŽŻ Daily goal complete!")
                     self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #4caf50;")
         
         # Update timeline
@@ -25321,14 +25611,14 @@ class HydrationTab(QtWidgets.QWidget):
         if get_hydration_stats:
             stats = get_hydration_stats(self.blocker.water_entries, daily_goal=daily_cap)
             streak = stats.get("current_streak", 0)
-            streak_emoji = "🔥" if streak >= 3 else "📊"
+            streak_emoji = "đź”Ą" if streak >= 3 else "đź“Š"
             
             self.stats_label.setText(
-                f"<b>📊 Your Hydration Stats</b><br><br>"
-                f"💧 Total glasses: {stats.get('total_glasses', 0)}<br>"
-                f"📅 Days tracked: {stats.get('total_days', 0)}<br>"
-                f"⏰ Average daily: {stats.get('avg_daily', 0):.1f} glasses<br>"
-                f"🎯 Days on target ({daily_cap}+): {stats.get('days_on_target', 0)} "
+                f"<b>đź“Š Your Hydration Stats</b><br><br>"
+                f"đź’§ Total glasses: {stats.get('total_glasses', 0)}<br>"
+                f"đź“… Days tracked: {stats.get('total_days', 0)}<br>"
+                f"âŹ° Average daily: {stats.get('avg_daily', 0):.1f} glasses<br>"
+                f"đźŽŻ Days on target ({daily_cap}+): {stats.get('days_on_target', 0)} "
                 f"({stats.get('target_rate', 0):.0f}%)<br>"
                 f"{streak_emoji} Current streak: {streak} days"
             )
@@ -25351,7 +25641,7 @@ class HydrationTab(QtWidgets.QWidget):
         # Show last 10 days
         for date in sorted(daily_totals.keys(), reverse=True)[:10]:
             glasses = daily_totals[date]
-            icon = "✅" if glasses >= HYDRATION_MAX_DAILY_GLASSES else "💧"
+            icon = "âś…" if glasses >= HYDRATION_MAX_DAILY_GLASSES else "đź’§"
             item = QtWidgets.QListWidgetItem(f"{icon} {date}: {glasses} glasses")
             self.history_list.addItem(item)
         
@@ -25394,7 +25684,7 @@ class HydrationTab(QtWidgets.QWidget):
                 parts.append(f"-{total_cd}min cooldown")
             if total_cap > 0:
                 parts.append(f"+{total_cap} cap")
-            title_text = f"✨ Entity Patrons ({', '.join(parts)})" if parts else "✨ Entity Patrons"
+            title_text = f"âś¨ Entity Patrons ({', '.join(parts)})" if parts else "âś¨ Entity Patrons"
             
             title = QtWidgets.QLabel(title_text)
             title.setStyleSheet("color: #888; font-size: 10px; font-weight: bold;")
@@ -25403,8 +25693,8 @@ class HydrationTab(QtWidgets.QWidget):
             # Create mini-cards using shared function
             from merge_dialog import create_entity_perk_mini_cards
             perk_labels = {
-                "cooldown": "⏱️",
-                "cap": "🥛",
+                "cooldown": "âŹ±ď¸Ź",
+                "cap": "đźĄ›",
             }
             cards_widget = create_entity_perk_mini_cards(contributors, perk_labels)
             if cards_widget:
@@ -25538,7 +25828,7 @@ class PowerAnalysisDialog(StyledDialog):
         self.potential_sets = potential_sets or []
         self.style_discovered = style_discovered
         self._story_id = story_id  # For themed slot names
-        super().__init__(parent, "⚔️ Power Analysis", "📊", 750, 850, closable=True)
+        super().__init__(parent, "âš”ď¸Ź Power Analysis", "đź“Š", 750, 850, closable=True)
         self.setMinimumSize(700, 600)
 
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
@@ -25639,16 +25929,16 @@ class PowerAnalysisDialog(StyledDialog):
         
         # Power formula breakdown
         formula_parts = []
-        formula_parts.append(f"<span style='color:#64b5f6;'>⚔️ Gear: {base}</span>")
+        formula_parts.append(f"<span style='color:#64b5f6;'>âš”ď¸Ź Gear: {base}</span>")
         if set_bonus > 0:
-            formula_parts.append(f"<span style='color:#81c784;'>🎯 Sets: +{set_bonus}</span>")
+            formula_parts.append(f"<span style='color:#81c784;'>đźŽŻ Sets: +{set_bonus}</span>")
         if style_bonus > 0 and style_info and style_info.get("style"):
             style_name = style_info['style'].get('name', 'Style')
-            formula_parts.append(f"<span style='color:#FFD700;'>👑 {style_name}: +{style_bonus}</span>")
+            formula_parts.append(f"<span style='color:#FFD700;'>đź‘‘ {style_name}: +{style_bonus}</span>")
         if entity_bonus > 0:
-            formula_parts.append(f"<span style='color:#ce93d8;'>🐾 Patrons: +{entity_bonus}</span>")
+            formula_parts.append(f"<span style='color:#ce93d8;'>đźľ Patrons: +{entity_bonus}</span>")
         if city_power_bonus > 0:
-            formula_parts.append(f"<span style='color:#ff7043;'>🏋️ Training Ground: +{city_power_bonus}</span>")
+            formula_parts.append(f"<span style='color:#ff7043;'>đźŹ‹ď¸Ź Training Ground: +{city_power_bonus}</span>")
         
         formula = QtWidgets.QLabel(" + ".join(formula_parts))
         formula.setTextFormat(QtCore.Qt.RichText)
@@ -25693,7 +25983,7 @@ class PowerAnalysisDialog(StyledDialog):
     
     def _build_equipment_section(self, layout: QtWidgets.QVBoxLayout) -> None:
         """Build the equipment breakdown table."""
-        layout.addWidget(self._create_section_header("Equipment Breakdown", "🛡️"))
+        layout.addWidget(self._create_section_header("Equipment Breakdown", "đź›ˇď¸Ź"))
         
         equipped = self.equipped
         slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
@@ -25783,7 +26073,7 @@ class PowerAnalysisDialog(StyledDialog):
         card_layout.addLayout(grid)
         
         # Summary line
-        summary = QtWidgets.QLabel(f"📦 {total_equipped}/8 slots equipped")
+        summary = QtWidgets.QLabel(f"đź“¦ {total_equipped}/8 slots equipped")
         summary.setStyleSheet("color: #888; font-size: 10px; margin-top: 4px;")
         card_layout.addWidget(summary)
         
@@ -25798,7 +26088,7 @@ class PowerAnalysisDialog(StyledDialog):
         if total_power == 0 and not contributors:
             return  # Don't show section if no entity patrons
         
-        layout.addWidget(self._create_section_header(f"Entity Patrons (+{total_power} Power)", "🐾"))
+        layout.addWidget(self._create_section_header(f"Entity Patrons (+{total_power} Power)", "đźľ"))
         
         card, card_layout = self._create_info_card("rgba(156,39,176,0.1)", "#9c27b0")
         
@@ -25809,9 +26099,9 @@ class PowerAnalysisDialog(StyledDialog):
                 row = QtWidgets.QHBoxLayout()
                 
                 # Entity icon and name
-                name_part = f"{contrib.get('icon', '✨')} {contrib.get('name', 'Unknown')}"
+                name_part = f"{contrib.get('icon', 'âś¨')} {contrib.get('name', 'Unknown')}"
                 if contrib.get("is_exceptional"):
-                    name_part += " ⭐"
+                    name_part += " â­"
                 name_lbl = QtWidgets.QLabel(name_part)
                 name_lbl.setStyleSheet("color: #ce93d8; font-size: 11px; background: transparent;")
                 
@@ -25845,7 +26135,7 @@ class PowerAnalysisDialog(StyledDialog):
             return  # Don't show if no set info
         
         header_text = f"Set Bonuses (+{set_bonus} Power)" if set_bonus > 0 else "Set Bonuses"
-        layout.addWidget(self._create_section_header(header_text, "🎯"))
+        layout.addWidget(self._create_section_header(header_text, "đźŽŻ"))
         
         card, card_layout = self._create_info_card("rgba(76,175,80,0.1)", "#4caf50" if set_bonus > 0 else "transparent")
         
@@ -25853,7 +26143,7 @@ class PowerAnalysisDialog(StyledDialog):
         if active_sets:
             for s in active_sets:
                 row = QtWidgets.QHBoxLayout()
-                set_name = QtWidgets.QLabel(f"{s.get('emoji', '🎯')} {s.get('name', 'Unknown Set')}")
+                set_name = QtWidgets.QLabel(f"{s.get('emoji', 'đźŽŻ')} {s.get('name', 'Unknown Set')}")
                 set_name.setStyleSheet("color: #81c784; font-size: 11px; background: transparent;")
                 
                 set_info = QtWidgets.QLabel(f"{s.get('count', 0)} items = +{s.get('bonus', 0)}")
@@ -25872,17 +26162,17 @@ class PowerAnalysisDialog(StyledDialog):
         if potential_sets:
             potential_with_upside = [p for p in potential_sets if p.get("potential_bonus", 0) > p.get("current_bonus", 0)]
             if potential_with_upside:
-                divider = QtWidgets.QLabel("─" * 30)
+                divider = QtWidgets.QLabel("â”€" * 30)
                 divider.setStyleSheet("color: #444; font-size: 8px; background: transparent;")
                 card_layout.addWidget(divider)
                 
-                header = QtWidgets.QLabel("💡 Potential Sets (in inventory):")
+                header = QtWidgets.QLabel("đź’ˇ Potential Sets (in inventory):")
                 header.setStyleSheet("color: #888; font-size: 10px; margin-top: 4px; background: transparent;")
                 card_layout.addWidget(header)
                 
                 for ps in potential_with_upside[:3]:  # Limit to top 3
                     row = QtWidgets.QHBoxLayout()
-                    name = QtWidgets.QLabel(f"  {ps.get('emoji', '🎯')} {ps.get('name', 'Set')}")
+                    name = QtWidgets.QLabel(f"  {ps.get('emoji', 'đźŽŻ')} {ps.get('name', 'Set')}")
                     name.setStyleSheet("color: #aaa; font-size: 10px; background: transparent;")
                     
                     potential = ps.get("potential_bonus", 0)
@@ -25898,7 +26188,7 @@ class PowerAnalysisDialog(StyledDialog):
                     card_layout.addLayout(row)
         
         if not active_sets and set_bonus == 0:
-            tip = QtWidgets.QLabel("💡 Equip 2+ items with matching themes for set bonuses!")
+            tip = QtWidgets.QLabel("đź’ˇ Equip 2+ items with matching themes for set bonuses!")
             tip.setStyleSheet("color: #888; font-size: 10px; font-style: italic; background: transparent;")
             card_layout.addWidget(tip)
         
@@ -25922,7 +26212,7 @@ class PowerAnalysisDialog(StyledDialog):
         except ImportError:
             display_empty_slot = empty_slot
         
-        layout.addWidget(self._create_section_header(f"Style Bonus (+{style_bonus} Power)", "👑"))
+        layout.addWidget(self._create_section_header(f"Style Bonus (+{style_bonus} Power)", "đź‘‘"))
         
         card = QtWidgets.QWidget()
         card.setStyleSheet("""
@@ -25936,7 +26226,7 @@ class PowerAnalysisDialog(StyledDialog):
         card_layout.setSpacing(4)
         
         # Style name
-        style_name = QtWidgets.QLabel(f"{style_data.get('emoji', '👑')} {style_data.get('name', 'Style Bonus')}")
+        style_name = QtWidgets.QLabel(f"{style_data.get('emoji', 'đź‘‘')} {style_data.get('name', 'Style Bonus')}")
         style_name.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFD700; background: transparent;")
         style_name.setAlignment(QtCore.Qt.AlignCenter)
         card_layout.addWidget(style_name)
@@ -25948,7 +26238,7 @@ class PowerAnalysisDialog(StyledDialog):
         card_layout.addWidget(desc)
         
         # Bonus details - use themed slot name
-        bonus_text = QtWidgets.QLabel(f"+{style_bonus} Power • 7 Legendary items • {display_empty_slot} slot empty")
+        bonus_text = QtWidgets.QLabel(f"+{style_bonus} Power â€˘ 7 Legendary items â€˘ {display_empty_slot} slot empty")
         bonus_text.setStyleSheet("font-size: 12px; color: #4CAF50; font-weight: bold; background: transparent;")
         bonus_text.setAlignment(QtCore.Qt.AlignCenter)
         card_layout.addWidget(bonus_text)
@@ -25966,7 +26256,7 @@ class PowerAnalysisDialog(StyledDialog):
         if coin == 0 and xp == 0 and merge == 0:
             return  # Don't show if no lucky bonuses
         
-        layout.addWidget(self._create_section_header("Lucky Bonuses (from Gear)", "🍀"))
+        layout.addWidget(self._create_section_header("Lucky Bonuses (from Gear)", "đźŤ€"))
         
         card, card_layout = self._create_info_card("rgba(245,158,11,0.1)", "#f59e0b")
         
@@ -25974,24 +26264,24 @@ class PowerAnalysisDialog(StyledDialog):
         bonuses_row.setSpacing(20)
         
         if coin > 0:
-            coin_lbl = QtWidgets.QLabel(f"💰 {coin}% Merge Discount")
+            coin_lbl = QtWidgets.QLabel(f"đź’° {coin}% Merge Discount")
             coin_lbl.setStyleSheet("color: #fcd34d; font-size: 11px; background: transparent;")
             bonuses_row.addWidget(coin_lbl)
         
         if xp > 0:
-            xp_lbl = QtWidgets.QLabel(f"⭐ +{xp}% XP")
+            xp_lbl = QtWidgets.QLabel(f"â­ +{xp}% XP")
             xp_lbl.setStyleSheet("color: #a78bfa; font-size: 11px; background: transparent;")
             bonuses_row.addWidget(xp_lbl)
         
         if merge > 0:
-            merge_lbl = QtWidgets.QLabel(f"🎲 +{merge}% Merge Luck")
+            merge_lbl = QtWidgets.QLabel(f"đźŽ˛ +{merge}% Merge Luck")
             merge_lbl.setStyleSheet("color: #60a5fa; font-size: 11px; background: transparent;")
             bonuses_row.addWidget(merge_lbl)
         
         bonuses_row.addStretch()
         card_layout.addLayout(bonuses_row)
         
-        tip = QtWidgets.QLabel("💡 Lucky bonuses come from special attributes on your gear")
+        tip = QtWidgets.QLabel("đź’ˇ Lucky bonuses come from special attributes on your gear")
         tip.setStyleSheet("color: #888; font-size: 10px; font-style: italic; background: transparent;")
         card_layout.addWidget(tip)
         
@@ -26008,11 +26298,11 @@ class PowerAnalysisDialog(StyledDialog):
         
         if empty_slots:
             if len(empty_slots) == 1:
-                tips.append(f"⚔️ Equip your <b>{empty_slots[0]}</b> slot for +10 to +250 power")
+                tips.append(f"âš”ď¸Ź Equip your <b>{empty_slots[0]}</b> slot for +10 to +250 power")
             elif len(empty_slots) <= 3:
-                tips.append(f"⚔️ Fill empty slots: {', '.join(empty_slots)}")
+                tips.append(f"âš”ď¸Ź Fill empty slots: {', '.join(empty_slots)}")
             else:
-                tips.append(f"⚔️ {len(empty_slots)} empty slots - equip gear for more power!")
+                tips.append(f"âš”ď¸Ź {len(empty_slots)} empty slots - equip gear for more power!")
         
         # Check for upgrade opportunities
         low_rarity_slots = []
@@ -26022,26 +26312,26 @@ class PowerAnalysisDialog(StyledDialog):
                 low_rarity_slots.append(slot)
         
         if low_rarity_slots and len(low_rarity_slots) <= 3:
-            tips.append(f"🔄 Merge to upgrade: {', '.join(low_rarity_slots[:3])}")
+            tips.append(f"đź”„ Merge to upgrade: {', '.join(low_rarity_slots[:3])}")
         elif low_rarity_slots:
-            tips.append(f"🔄 {len(low_rarity_slots)} slots have Common/Uncommon gear - merge to upgrade!")
+            tips.append(f"đź”„ {len(low_rarity_slots)} slots have Common/Uncommon gear - merge to upgrade!")
         
         # Check for potential sets
         if self.potential_sets:
             best_potential = max(self.potential_sets, key=lambda x: x.get("potential_bonus", 0) - x.get("current_bonus", 0), default=None)
             if best_potential and best_potential.get("potential_bonus", 0) > best_potential.get("current_bonus", 0):
                 upside = best_potential["potential_bonus"] - best_potential["current_bonus"]
-                tips.append(f"🎯 Equip {best_potential.get('emoji', '')} {best_potential.get('name', 'set')} items for +{upside} set bonus")
+                tips.append(f"đźŽŻ Equip {best_potential.get('emoji', '')} {best_potential.get('name', 'set')} items for +{upside} set bonus")
         
         # Entity tip
         entity_bonus = self.breakdown.get("entity_bonus", 0)
         if entity_bonus == 0:
-            tips.append("🐾 Collect entities during focus sessions for patron power bonuses!")
+            tips.append("đźľ Collect entities during focus sessions for patron power bonuses!")
         
         if not tips:
             return  # No tips needed - player is doing great!
         
-        layout.addWidget(self._create_section_header("Tips for Improvement", "💡"))
+        layout.addWidget(self._create_section_header("Tips for Improvement", "đź’ˇ"))
         
         card, card_layout = self._create_info_card("rgba(96,165,250,0.1)")
         
@@ -26063,7 +26353,7 @@ class LegendaryMinimalistDialog(StyledDialog):
         super().__init__(
             parent,
             "STYLE BONUS UNLOCKED!",
-            "👑",
+            "đź‘‘",
             min_width=450,
             max_width=550,
             modal=True,
@@ -26076,13 +26366,13 @@ class LegendaryMinimalistDialog(StyledDialog):
         bonus = self.style_info.get("bonus", 350)
         
         # Trophy/celebration visual
-        trophy = QtWidgets.QLabel("🏆")
+        trophy = QtWidgets.QLabel("đźŹ†")
         trophy.setStyleSheet("font-size: 72px; background: transparent;")
         trophy.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(trophy)
         
         # Style name with emoji
-        style_name = QtWidgets.QLabel(f"{style.get('emoji', '✨')} {style.get('name', 'Minimalist Master')}")
+        style_name = QtWidgets.QLabel(f"{style.get('emoji', 'âś¨')} {style.get('name', 'Minimalist Master')}")
         style_name.setStyleSheet("""
             font-size: 28px;
             font-weight: bold;
@@ -26221,9 +26511,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 power_parts.append(f"+{power_info['entity_bonus']} patrons")
             
             if len(power_parts) > 1:
-                power_txt = f"⚔ Power: {power_info['total_power']} ({' '.join(power_parts)})"
+                power_txt = f"âš” Power: {power_info['total_power']} ({' '.join(power_parts)})"
             else:
-                power_txt = f"⚔ Power: {power_info['total_power']}"
+                power_txt = f"âš” Power: {power_info['total_power']}"
             self.power_lbl.setText(power_txt)
         # Also update character display
         if hasattr(self, 'char_widget'):
@@ -26308,15 +26598,15 @@ class ADHDBusterTab(QtWidgets.QWidget):
             if optimize_perk["has_perk"]:
                 if cost == 0:
                     # Robo Rat: FREE
-                    self._optimize_btn.setText("⚡ Optimize Gear (FREE 🤖)")
+                    self._optimize_btn.setText("âšˇ Optimize Gear (FREE đź¤–)")
                     self._optimize_btn.setToolTip(f"{optimize_perk['description']}")
                 else:
                     # Hobo Rat: 1 coin
-                    self._optimize_btn.setText(f"⚡ Optimize Gear ({cost}🪙 🐀)")
+                    self._optimize_btn.setText(f"âšˇ Optimize Gear ({cost}đźŞ™ đź€)")
                     self._optimize_btn.setToolTip(f"{optimize_perk['description']}")
             else:
                 # Default: 10 coins
-                self._optimize_btn.setText(f"⚡ Optimize Gear ({cost}🪙)")
+                self._optimize_btn.setText(f"âšˇ Optimize Gear ({cost}đźŞ™)")
                 self._optimize_btn.setToolTip("Automatically equip the best gear for maximum power")
         except Exception as e:
             print(f"[GamificationTab] Error updating optimize button: {e}")
@@ -26353,6 +26643,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
     def _resume_all_animations(self) -> None:
         """Resume hero canvas animations when tab becomes active."""
+        if not self.isVisible():
+            return
         if hasattr(self, 'char_canvas') and self.char_canvas:
             self.char_canvas.resume_animations()
 
@@ -26401,7 +26693,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
         # Session active warning banner (hidden by default)
         self.session_banner = QtWidgets.QLabel(
-            "🔒 Focus session active - Equipment changes disabled until session ends"
+            "đź”’ Focus session active - Equipment changes disabled until session ends"
         )
         self.session_banner.setStyleSheet(
             "background-color: #ff9800; color: white; padding: 10px; "
@@ -26427,7 +26719,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         header = QtWidgets.QHBoxLayout()
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         hero_name = get_story_main_character_name(active_story)
-        self.hero_title_lbl = QtWidgets.QLabel(f"<b style='font-size:18px;'>🦸 {hero_name}</b>")
+        self.hero_title_lbl = QtWidgets.QLabel(f"<b style='font-size:18px;'>đź¦¸ {hero_name}</b>")
         header.addWidget(self.hero_title_lbl)
         header.addStretch()
 
@@ -26446,16 +26738,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
             power_parts.append(f"+{power_info['entity_bonus']} patrons")
         
         if len(power_parts) > 1:
-            power_txt = f"⚔ Power: {power_info['total_power']} ({' '.join(power_parts)})"
+            power_txt = f"âš” Power: {power_info['total_power']} ({' '.join(power_parts)})"
         else:
-            power_txt = f"⚔ Power: {power_info['total_power']}"
+            power_txt = f"âš” Power: {power_info['total_power']}"
         self.power_lbl = QtWidgets.QLabel(power_txt)
         self.power_lbl.setStyleSheet("font-weight: bold; color: #e65100;")
         header.addWidget(self.power_lbl)
         
         # Details Button
         if GAMIFICATION_AVAILABLE:
-            self.details_btn = QtWidgets.QPushButton("🔍 Analysis")
+            self.details_btn = QtWidgets.QPushButton("đź”Ť Analysis")
             self.details_btn.setCursor(QtCore.Qt.PointingHandCursor)
             self.details_btn.setToolTip("View detailed power calculation path")
             self.details_btn.setStyleSheet("""
@@ -26488,7 +26780,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self, story_theme=active_story)
         self.char_equip_splitter.addWidget(self.char_canvas)
 
-        equip_group = QtWidgets.QGroupBox("⚔ Equipped Gear (change with dropdown)")
+        equip_group = QtWidgets.QGroupBox("âš” Equipped Gear (change with dropdown)")
         equip_layout = QtWidgets.QFormLayout(equip_group)
         slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
         inventory = self.blocker.adhd_buster.get("inventory", [])
@@ -26520,7 +26812,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     try:
                         lucky_text = format_lucky_options(lucky_options)
                         if lucky_text:
-                            display += f" ✨{lucky_text}"
+                            display += f" âś¨{lucky_text}"
                     except Exception:
                         pass  # Skip if formatting fails
                 
@@ -26535,12 +26827,12 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 item_type = item.get("item_type", "")
                 if item_type:
                     tooltip_parts.append(f"<br><i>{item_type}</i>")
-                tooltip_parts.append(f"<br>⚔️ Power: +{power}")
-                tooltip_parts.append(f"<br>🎭 Rarity: {item_rarity}")
-                tooltip_parts.append(f"<br>🎯 Slot: {slot_display}")
+                tooltip_parts.append(f"<br>âš”ď¸Ź Power: +{power}")
+                tooltip_parts.append(f"<br>đźŽ­ Rarity: {item_rarity}")
+                tooltip_parts.append(f"<br>đźŽŻ Slot: {slot_display}")
                 item_set = item.get("set")
                 if item_set:
-                    tooltip_parts.append(f"<br>🏷️ Set: {item_set}")
+                    tooltip_parts.append(f"<br>đźŹ·ď¸Ź Set: {item_set}")
                 
                 # Special attributes section
                 has_special = False
@@ -26550,13 +26842,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     try:
                         lucky_text = format_lucky_options(lucky_options)
                         if lucky_text:
-                            special_parts.append(f"✨ Lucky Options: {lucky_text}")
+                            special_parts.append(f"âś¨ Lucky Options: {lucky_text}")
                             has_special = True
                     except Exception:
                         pass
                 
                 if has_special:
-                    tooltip_parts.append("<br><br><b>✨ Special Attributes:</b>")
+                    tooltip_parts.append("<br><br><b>âś¨ Special Attributes:</b>")
                     for sp in special_parts:
                         tooltip_parts.append(f"<br>  {sp}")
                 
@@ -26623,7 +26915,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
         # Active set bonuses (collapsible section)
         self.sets_section = CollapsibleSection(
-            "🎯 Active Set Bonuses", "sets",
+            "đźŽŻ Active Set Bonuses", "sets",
             collapsed=self._collapsed_sections.get("sets", False)
         )
         self.sets_section.collapsed_changed.connect(self._on_section_collapsed)
@@ -26632,7 +26924,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
         # Entity Patrons - entities boosting hero power (collapsible section)
         self.entity_patrons_section = CollapsibleSection(
-            "🐉 Entity Patrons", "entity_patrons",
+            "đź‰ Entity Patrons", "entity_patrons",
             collapsed=self._collapsed_sections.get("entity_patrons", False)
         )
         self.entity_patrons_section.collapsed_changed.connect(self._on_section_collapsed)
@@ -26641,7 +26933,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
         # Potential set bonuses from inventory (collapsible section)
         self.potential_sets_section = CollapsibleSection(
-            "💡 Potential Set Bonuses (in your inventory)", "potential_sets",
+            "đź’ˇ Potential Set Bonuses (in your inventory)", "potential_sets",
             collapsed=self._collapsed_sections.get("potential_sets", False)
         )
         self.potential_sets_section.collapsed_changed.connect(self._on_section_collapsed)
@@ -26650,7 +26942,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Gear bonuses (collapsible section)
         self.lucky_bonuses_section = CollapsibleSection(
-            "✨ Gear Bonuses & Effects", "lucky_bonuses",
+            "âś¨ Gear Bonuses & Effects", "lucky_bonuses",
             collapsed=self._collapsed_sections.get("lucky_bonuses", False)
         )
         self.lucky_bonuses_section.collapsed_changed.connect(self._on_section_collapsed)
@@ -26661,7 +26953,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         total_items = len(self.blocker.adhd_buster.get("inventory", []))
         total_collected = self.blocker.adhd_buster.get("total_collected", total_items)
         streak = self.blocker.stats.get("streak_days", 0)
-        self.stats_lbl = QtWidgets.QLabel(f"📦 {total_items} in bag  |  🎁 {total_collected} collected  |  🔥 {streak} day streak")
+        self.stats_lbl = QtWidgets.QLabel(f"đź“¦ {total_items} in bag  |  đźŽ {total_collected} collected  |  đź”Ą {streak} day streak")
         self.stats_lbl.setStyleSheet("color: gray;")
         self.inner_layout.addWidget(self.stats_lbl)
 
@@ -26704,7 +26996,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
             story_indicator_layout.addStretch()
             
-            self.go_to_story_btn = QtWidgets.QPushButton("📖 Go to Story Tab")
+            self.go_to_story_btn = QtWidgets.QPushButton("đź“– Go to Story Tab")
             self.go_to_story_btn.setStyleSheet("padding: 5px 15px;")
             self.go_to_story_btn.setToolTip("Open the Story tab to change stories, read chapters, and track progress")
             self.go_to_story_btn.clicked.connect(self._go_to_story_tab)
@@ -26723,9 +27015,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Speech bubble header with button
         bubble_header = QtWidgets.QHBoxLayout()
-        bubble_header.addWidget(QtWidgets.QLabel("<b>💬 Latest Adventure:</b>"))
+        bubble_header.addWidget(QtWidgets.QLabel("<b>đź’¬ Latest Adventure:</b>"))
         bubble_header.addStretch()
-        self.diary_history_btn = QtWidgets.QPushButton("📖 View All Entries")
+        self.diary_history_btn = QtWidgets.QPushButton("đź“– View All Entries")
         self.diary_history_btn.setStyleSheet("font-size: 11px; padding: 3px 8px;")
         self.diary_history_btn.clicked.connect(self._open_diary)
         bubble_header.addWidget(self.diary_history_btn)
@@ -26750,7 +27042,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             entry_text = latest.get("story", "No adventures yet...")
             date_str = latest.get("short_date", latest.get("date", ""))
             tier = latest.get("tier", "unknown")
-            self.speech_bubble.setText(f'"{entry_text}"\n\n— {date_str} | Tier: {tier.title()}')
+            self.speech_bubble.setText(f'"{entry_text}"\n\nâ€” {date_str} | Tier: {tier.title()}')
         else:
             self.speech_bubble.setText("No adventures yet... Start a focus session to write your story!")
         
@@ -26767,7 +27059,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         inv_container_layout.setContentsMargins(5, 0, 5, 0)
         
         # Inventory with split view (list + details panel)
-        inv_group = QtWidgets.QGroupBox("📦 Inventory (click items to select for merge)")
+        inv_group = QtWidgets.QGroupBox("đź“¦ Inventory (click items to select for merge)")
         inv_main_layout = QtWidgets.QVBoxLayout(inv_group)
         
         # Inventory stats header
@@ -26841,24 +27133,24 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Set up columns: Merge checkbox, Eq, Name, Slot, Tier, Power, Set, +3 bonuses
         columns = [
-            "🔀", "Eq", "Name", "Slot", "Tier", "Pwr", "Set", 
-            "💰", "⭐", "🎲"
+            "đź”€", "Eq", "Name", "Slot", "Tier", "Pwr", "Set", 
+            "đź’°", "â­", "đźŽ˛"
         ]
         self.inv_table.setColumnCount(len(columns))
         self.inv_table.setHorizontalHeaderLabels(columns)
         
         # Tooltips for headers - detailed explanations
         header_tooltips = [
-            "Select for Merge\n☑ = Selected for merging\nClick to toggle selection",
-            "Equipped Status\n✓ = Currently equipped on your hero\nEquipped items cannot be merged",
+            "Select for Merge\nâ‘ = Selected for merging\nClick to toggle selection",
+            "Equipped Status\nâś“ = Currently equipped on your hero\nEquipped items cannot be merged",
             "Item Name\nThe name of the item including its rarity adjective\nHigher tier items have more impressive names",
-            "Equipment Slot\nWhere this item is equipped:\n• Helmet, Chestplate, Gauntlets, Boots\n• Shield, Weapon, Ring, Necklace",
+            "Equipment Slot\nWhere this item is equipped:\nâ€˘ Helmet, Chestplate, Gauntlets, Boots\nâ€˘ Shield, Weapon, Ring, Necklace",
             "Rarity Tier\nItem quality from Common to Legendary:\nC=Common, U=Uncommon, R=Rare, E=Epic, L=Legendary\nHigher tiers have better stats and bonuses",
             "Power Level\nThe item's combat power contribution\nHigher power = stronger hero\nTotal power from all equipped items is shown in hero stats",
             "Item Set\nItems from the same set provide bonus effects\nCollect matching set pieces for additional power",
-            "💰 Coin Discount\nReduces costs for merge operations\nHigher % = cheaper merges (up to 90% off)\nGreat for saving coins while upgrading gear",
-            "⭐ XP Bonus\nBonus experience points from focus sessions\nHigher % = faster leveling\nLevel up to unlock new features and rewards",
-            "🎲 Merge Luck\nIncreases success chance in Lucky Merge\nBase merge success is 25%, this adds to it\nVery valuable for upgrading your gear!"
+            "đź’° Coin Discount\nReduces costs for merge operations\nHigher % = cheaper merges (up to 90% off)\nGreat for saving coins while upgrading gear",
+            "â­ XP Bonus\nBonus experience points from focus sessions\nHigher % = faster leveling\nLevel up to unlock new features and rewards",
+            "đźŽ˛ Merge Luck\nIncreases success chance in Lucky Merge\nBase merge success is 25%, this adds to it\nVery valuable for upgrading your gear!"
         ]
         for i, tooltip in enumerate(header_tooltips):
             item = self.inv_table.horizontalHeaderItem(i)
@@ -26884,17 +27176,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
         inv_container_layout.addWidget(inv_group, 1)  # stretch factor 1
 
         # Lucky Merge (below inventory)
-        merge_group = QtWidgets.QGroupBox("🎲 Lucky Merge")
+        merge_group = QtWidgets.QGroupBox("đźŽ˛ Lucky Merge")
         merge_layout = QtWidgets.QHBoxLayout(merge_group)
-        self.merge_warn_lbl = QtWidgets.QLabel("⚠️ 25% base success (items lost on fail!) • Cost: 50🪙")
+        self.merge_warn_lbl = QtWidgets.QLabel("âš ď¸Ź 25% base success (items lost on fail!) â€˘ Cost: 50đźŞ™")
         self.merge_warn_lbl.setStyleSheet("color: #d32f2f; font-size: 10px;")
         merge_layout.addWidget(self.merge_warn_lbl)
-        self.merge_btn = QtWidgets.QPushButton("🎲 Merge Selected (0)")
+        self.merge_btn = QtWidgets.QPushButton("đźŽ˛ Merge Selected (0)")
         self.merge_btn.setEnabled(False)
         self.merge_btn.setToolTip("Combine items for a chance at a higher rarity item (costs 50 coins)")
         self.merge_btn.clicked.connect(self._do_merge)
         merge_layout.addWidget(self.merge_btn)
-        self.merge_rate_lbl = QtWidgets.QLabel("← Select 2+ items above")
+        self.merge_rate_lbl = QtWidgets.QLabel("â† Select 2+ items above")
         self.merge_rate_lbl.setStyleSheet("font-size: 10px;")
         merge_layout.addWidget(self.merge_rate_lbl)
         merge_layout.addStretch()
@@ -26926,18 +27218,18 @@ class ADHDBusterTab(QtWidgets.QWidget):
         btn_layout = QtWidgets.QHBoxLayout()
         
         # Refresh button for manual refresh
-        refresh_btn = QtWidgets.QPushButton("🔄 Refresh")
+        refresh_btn = QtWidgets.QPushButton("đź”„ Refresh")
         refresh_btn.setToolTip("Refresh all displays to show current state")
         refresh_btn.clicked.connect(self.refresh_all)
         btn_layout.addWidget(refresh_btn)
         
-        diary_btn = QtWidgets.QPushButton("📖 Adventure Diary")
+        diary_btn = QtWidgets.QPushButton("đź“– Adventure Diary")
         diary_btn.clicked.connect(self._open_diary)
         btn_layout.addWidget(diary_btn)
-        sell_btn = QtWidgets.QPushButton("💰 Sell Items")
+        sell_btn = QtWidgets.QPushButton("đź’° Sell Items")
         sell_btn.clicked.connect(self._sell_items)
         btn_layout.addWidget(sell_btn)
-        self._optimize_btn = QtWidgets.QPushButton("⚡ Optimize Gear (10🪙)")
+        self._optimize_btn = QtWidgets.QPushButton("âšˇ Optimize Gear (10đźŞ™)")
         self._optimize_btn.setToolTip("Automatically equip the best gear for maximum power")
         self._optimize_btn.clicked.connect(self._optimize_gear)
         btn_layout.addWidget(self._optimize_btn)
@@ -27029,12 +27321,12 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     
                     if item_names:
                         items_str = ", ".join(item_names)
-                        items_lbl = QtWidgets.QLabel(f"    └ {items_str}")
+                        items_lbl = QtWidgets.QLabel(f"    â”” {items_str}")
                         items_lbl.setStyleSheet("color: #888; font-size: 10px; padding-left: 15px;")
                         self.sets_section.add_widget(items_lbl)
             
             # Update title with count
-            self.sets_section.set_title(f"🎯 Active Set Bonuses ({len(active_sets)})")
+            self.sets_section.set_title(f"đźŽŻ Active Set Bonuses ({len(active_sets)})")
         else:
             self.sets_section.setVisible(False)
 
@@ -27054,7 +27346,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         if contributors:
             self.entity_patrons_section.setVisible(True)
-            self.entity_patrons_section.set_title(f"🐉 Entity Patrons (+{total_power} Power)")
+            self.entity_patrons_section.set_title(f"đź‰ Entity Patrons (+{total_power} Power)")
             
             # Try to import entity icon resolver
             try:
@@ -27152,7 +27444,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 
                 if is_exceptional:
                     name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
-                    prefix = "⭐ " if not icon_loaded else ""
+                    prefix = "â­ " if not icon_loaded else ""
                 else:
                     name_style = "color: #bbb; font-size: 9px;"
                     prefix = ""
@@ -27166,7 +27458,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 
                 # Power value (compact)
                 power_val = entity_data.get("power", 0)
-                power_lbl = QtWidgets.QLabel(f"+{power_val} ⚔")
+                power_lbl = QtWidgets.QLabel(f"+{power_val} âš”")
                 power_lbl.setStyleSheet("color: #e65100; font-size: 10px; font-weight: bold;")
                 power_lbl.setAlignment(QtCore.Qt.AlignCenter)
                 card_layout.addWidget(power_lbl)
@@ -27177,7 +27469,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.entity_patrons_section.add_widget(patrons_container)
             
             # Add a tip
-            tip_lbl = QtWidgets.QLabel("💡 Collect more Warrior entities in Entitidex to boost your hero's power!")
+            tip_lbl = QtWidgets.QLabel("đź’ˇ Collect more Warrior entities in Entitidex to boost your hero's power!")
             tip_lbl.setStyleSheet("color: #888; font-style: italic; font-size: 10px; padding-top: 4px;")
             self.entity_patrons_section.add_widget(tip_lbl)
         else:
@@ -27271,14 +27563,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
             bonus_items = []
             
             if lucky_bonuses.get("xp_bonus", 0) > 0:
-                bonus_items.append(("⭐", f"+{lucky_bonuses['xp_bonus']}% XP", "#8b5cf6", "Level faster"))
+                bonus_items.append(("â­", f"+{lucky_bonuses['xp_bonus']}% XP", "#8b5cf6", "Level faster"))
             
             self.lucky_bonuses_section.setVisible(True)
-            self.lucky_bonuses_section.set_title(f"✨ Gear Bonuses ({len(bonus_items)})")
+            self.lucky_bonuses_section.set_title(f"âś¨ Gear Bonuses ({len(bonus_items)})")
             
             # Compact list with colored items
             for icon, title, color, tooltip in bonus_items:
-                lbl = QtWidgets.QLabel(f"<b>{icon} {title}</b> <span style='color:#888;'>— {tooltip}</span>")
+                lbl = QtWidgets.QLabel(f"<b>{icon} {title}</b> <span style='color:#888;'>â€” {tooltip}</span>")
                 lbl.setTextFormat(QtCore.Qt.RichText)
                 lbl.setStyleSheet(f"color: {color}; font-size: 11px; padding: 2px 0;")
                 self.lucky_bonuses_section.add_widget(lbl)
@@ -27289,7 +27581,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 summary_parts.append(f"+{lucky_bonuses['xp_bonus']}% XP")
             
             if summary_parts:
-                summary_lbl = QtWidgets.QLabel(f"📊 <b>Overall:</b> {' | '.join(summary_parts)}")
+                summary_lbl = QtWidgets.QLabel(f"đź“Š <b>Overall:</b> {' | '.join(summary_parts)}")
                 summary_lbl.setTextFormat(QtCore.Qt.RichText)
                 summary_lbl.setStyleSheet("color: #a78bfa; font-size: 11px; padding: 4px; background: rgba(139,92,246,0.1); border-radius: 4px;")
                 self.lucky_bonuses_section.add_widget(summary_lbl)
@@ -27318,21 +27610,21 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         if improvable_sets:
             self.potential_sets_section.setVisible(True)
-            self.potential_sets_section.set_title(f"💡 Potential Set Bonuses ({len(improvable_sets)})")
+            self.potential_sets_section.set_title(f"đź’ˇ Potential Set Bonuses ({len(improvable_sets)})")
             
             for s in improvable_sets[:5]:  # Show top 5 potential sets
                 if s["current_bonus"] > 0:
                     # Already have some items equipped for this set
                     lbl = QtWidgets.QLabel(
                         f"{s['emoji']} {s['name']}: <b>{s['equipped_count']} equipped</b> + "
-                        f"{s['inventory_count']} in bag → could be <b>+{s['potential_bonus']} power</b>"
+                        f"{s['inventory_count']} in bag â†’ could be <b>+{s['potential_bonus']} power</b>"
                     )
                     lbl.setTextFormat(QtCore.Qt.RichText)
                     lbl.setStyleSheet("color: #ff9800; font-size: 11px; padding: 2px 0;")
                 else:
                     # No items equipped yet
                     lbl = QtWidgets.QLabel(
-                        f"{s['emoji']} {s['name']}: {s['inventory_count']} in bag → "
+                        f"{s['emoji']} {s['name']}: {s['inventory_count']} in bag â†’ "
                         f"could be <b>+{s['potential_bonus']} power</b> (need {s['max_equippable']} equipped)"
                     )
                     lbl.setTextFormat(QtCore.Qt.RichText)
@@ -27340,7 +27632,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 
                 self.potential_sets_section.add_widget(lbl)
             
-            tip_lbl = QtWidgets.QLabel("💡 Use 'Optimize Gear' to automatically equip the best items!")
+            tip_lbl = QtWidgets.QLabel("đź’ˇ Use 'Optimize Gear' to automatically equip the best items!")
             tip_lbl.setStyleSheet("color: #888; font-style: italic; font-size: 10px;")
             self.potential_sets_section.add_widget(tip_lbl)
         else:
@@ -27374,16 +27666,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
             power_parts.append(f"+{power_info['entity_bonus']} patrons")
         
         if len(power_parts) > 1:
-            power_txt = f"⚔ Power: {power_info['total_power']} ({' '.join(power_parts)})"
+            power_txt = f"âš” Power: {power_info['total_power']} ({' '.join(power_parts)})"
         else:
-            power_txt = f"⚔ Power: {power_info['total_power']}"
+            power_txt = f"âš” Power: {power_info['total_power']}"
         self.power_lbl.setText(power_txt)
         
         # Update stats label
         total_items = len(self.blocker.adhd_buster.get("inventory", []))
         total_collected = self.blocker.adhd_buster.get("total_collected", total_items)
         streak = self.blocker.stats.get("streak_days", 0)
-        self.stats_lbl.setText(f"📦 {total_items} in bag  |  🎁 {total_collected} collected  |  🔥 {streak} day streak")
+        self.stats_lbl.setText(f"đź“¦ {total_items} in bag  |  đźŽ {total_collected} collected  |  đź”Ą {streak} day streak")
         
         # XP display is now handled by the XP ring widget in the timeline header
         # (Removed the large horizontal XP bar)
@@ -27411,7 +27703,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 entry_text = latest.get("story", "No adventures yet...")
                 date_str = latest.get("short_date", latest.get("date", ""))
                 tier = latest.get("tier", "unknown")
-                self.speech_bubble.setText(f'"{entry_text}"\n\n— {date_str} | Tier: {tier.title()}')
+                self.speech_bubble.setText(f'"{entry_text}"\n\nâ€” {date_str} | Tier: {tier.title()}')
             else:
                 self.speech_bubble.setText("No adventures yet... Start a focus session to write your story!")
 
@@ -27463,11 +27755,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 item_type = item.get("item_type", "")
                 if item_type:
                     tooltip_parts.append(f"<i>{item_type}</i>")
-                tooltip_parts.append(f"<br>⚔️ Power: +{power}")
-                tooltip_parts.append(f"<br>🎭 Rarity: {item_rarity}")
+                tooltip_parts.append(f"<br>âš”ď¸Ź Power: +{power}")
+                tooltip_parts.append(f"<br>đźŽ­ Rarity: {item_rarity}")
                 item_set = item.get("set")
                 if item_set:
-                    tooltip_parts.append(f"<br>🏷️ Set: {item_set}")
+                    tooltip_parts.append(f"<br>đźŹ·ď¸Ź Set: {item_set}")
                 
                 # Neighbor system removed - no longer showing neighbor slots
                 
@@ -27480,13 +27772,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     try:
                         lucky_text = format_lucky_options(lucky_options)
                         if lucky_text:
-                            special_parts.append(f"✨ Lucky: {lucky_text}")
+                            special_parts.append(f"âś¨ Lucky: {lucky_text}")
                             has_special = True
                     except Exception:
                         pass
                 
                 if has_special:
-                    tooltip_parts.append("<br><br><b>✨ Special Attributes:</b>")
+                    tooltip_parts.append("<br><br><b>âś¨ Special Attributes:</b>")
                     for sp in special_parts:
                         tooltip_parts.append(f"<br>  {sp}")
                 
@@ -27725,11 +28017,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
             bonus_slots = max_capacity - base_capacity
             
             if bonus_slots > 0:
-                stats_text = f"📦 {total_items}/{max_capacity} (base 500 + 🐾 {bonus_slots} entity bonus)"
+                stats_text = f"đź“¦ {total_items}/{max_capacity} (base 500 + đźľ {bonus_slots} entity bonus)"
             else:
-                stats_text = f"📦 {total_items}/{max_capacity} capacity"
+                stats_text = f"đź“¦ {total_items}/{max_capacity} capacity"
             if lucky_items_count > 0:
-                stats_text += f" | ✨ Lucky: {lucky_items_count} ({lucky_items_count*100//total_items if total_items > 0 else 0}%)"
+                stats_text += f" | âś¨ Lucky: {lucky_items_count} ({lucky_items_count*100//total_items if total_items > 0 else 0}%)"
             self.inv_stats_label.setText(stats_text)
 
         self.inv_table.setRowCount(len(indexed))
@@ -27761,11 +28053,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
             # 0: Merge checkbox - clickable for non-equipped items
             if is_eq:
-                merge_check = create_item("🔒", QtCore.Qt.AlignCenter)
+                merge_check = create_item("đź”’", QtCore.Qt.AlignCenter)
                 merge_check.setToolTip("Equipped items cannot be merged")
                 merge_check.setForeground(QtGui.QColor("#666666"))
             else:
-                merge_check = create_item("☐", QtCore.Qt.AlignCenter)
+                merge_check = create_item("â", QtCore.Qt.AlignCenter)
                 merge_check.setToolTip("Click to select for merge")
                 merge_check.setForeground(QtGui.QColor("#888888"))
             merge_check.setData(QtCore.Qt.UserRole, orig_idx)
@@ -27774,14 +28066,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.inv_table.setItem(row, 0, merge_check)
 
             # 1: Equipped
-            eq_item = create_item("✓" if is_eq else "", QtCore.Qt.AlignCenter)
+            eq_item = create_item("âś“" if is_eq else "", QtCore.Qt.AlignCenter)
             if is_eq:
                 eq_item.setForeground(QtGui.QColor("#4caf50"))
             eq_item.setToolTip("Equipped" if is_eq else "Not Equipped")
             self.inv_table.setItem(row, 1, eq_item)
             
             # 2: Name
-            name_prefix = "✨ " if lucky_options else ""
+            name_prefix = "âś¨ " if lucky_options else ""
             name_item = create_item(f"{name_prefix}{item_name}")
             name_item.setForeground(QtGui.QColor(rarity_color))
             name_item.setData(QtCore.Qt.UserRole, orig_idx)
@@ -27878,7 +28170,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 has_svg_support = False
             
             # Add perk icon and summary label
-            summary_lbl = QtWidgets.QLabel(f"📦 +{total_slots} slots from:")
+            summary_lbl = QtWidgets.QLabel(f"đź“¦ +{total_slots} slots from:")
             summary_lbl.setStyleSheet("color: #7986cb; font-size: 10px; font-weight: bold;")
             summary_lbl.setToolTip(f"Entity perks provide +{total_slots} bonus inventory slots")
             self.inv_entity_perk_layout.addWidget(summary_lbl)
@@ -27938,7 +28230,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 
                 if is_exceptional:
                     name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
-                    prefix = "⭐ " if not icon_loaded else ""
+                    prefix = "â­ " if not icon_loaded else ""
                 else:
                     name_style = "color: #ccc; font-size: 9px;"
                     prefix = ""
@@ -27985,7 +28277,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Update visual appearance
         if new_checked:
-            check_item.setText("✅")
+            check_item.setText("âś…")
             check_item.setForeground(QtGui.QColor("#00ff00"))
             check_item.setToolTip("Selected for merge - click to deselect")
             # Highlight the entire row
@@ -27994,7 +28286,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 if cell:
                     cell.setBackground(QtGui.QColor("#2a4a2a"))  # Green tint
         else:
-            check_item.setText("☐")
+            check_item.setText("â")
             check_item.setForeground(QtGui.QColor("#888888"))
             check_item.setToolTip("Click to select for merge")
             # Remove row highlight
@@ -28023,12 +28315,12 @@ class ADHDBusterTab(QtWidgets.QWidget):
         valid_indices = [idx for idx in self.merge_selected if 0 <= idx < len(inventory)]
         count = len(valid_indices)
         
-        self.merge_btn.setText(f"🎲 Merge Selected ({count})")
+        self.merge_btn.setText(f"đźŽ˛ Merge Selected ({count})")
         
         # Never enable merge during active session
         if self._session_active:
             self.merge_btn.setEnabled(False)
-            self.merge_rate_lbl.setText("🔒 Merging disabled during focus session")
+            self.merge_rate_lbl.setText("đź”’ Merging disabled during focus session")
             return
         
         if count >= 2 and GAMIFICATION_AVAILABLE:
@@ -28038,13 +28330,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
             equipped_selected = [i for i in items if self._is_item_equipped(i, equipped)]
             if equipped_selected:
                 self.merge_btn.setEnabled(False)
-                self.merge_rate_lbl.setText("⚠️ Cannot merge equipped items!")
+                self.merge_rate_lbl.setText("âš ď¸Ź Cannot merge equipped items!")
                 return
             
             worthwhile, reason = is_merge_worthwhile(items)
             if not worthwhile:
                 self.merge_btn.setEnabled(False)
-                self.merge_rate_lbl.setText(f"⚠️ {reason}")
+                self.merge_rate_lbl.setText(f"âš ď¸Ź {reason}")
             else:
                 # Calculate the discounted merge cost to check affordability
                 from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors
@@ -28076,17 +28368,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 
                 # Update cost warning label to show discounted price
                 if discounted_cost < base_cost:
-                    discount_info = f" (Base: {base_cost}🪙)"
-                    self.merge_warn_lbl.setText(f"⚠️ 25% base success (items lost on fail!) • Cost: {discounted_cost}🪙{discount_info}")
+                    discount_info = f" (Base: {base_cost}đźŞ™)"
+                    self.merge_warn_lbl.setText(f"âš ď¸Ź 25% base success (items lost on fail!) â€˘ Cost: {discounted_cost}đźŞ™{discount_info}")
                     self.merge_warn_lbl.setStyleSheet("color: #4caf50; font-size: 10px;")  # Green for discount
                 else:
-                    self.merge_warn_lbl.setText(f"⚠️ 25% base success (items lost on fail!) • Cost: {discounted_cost}🪙")
+                    self.merge_warn_lbl.setText(f"âš ď¸Ź 25% base success (items lost on fail!) â€˘ Cost: {discounted_cost}đźŞ™")
                     self.merge_warn_lbl.setStyleSheet("color: #d32f2f; font-size: 10px;")  # Red for regular
                 
                 # Check if player can afford the merge
                 if current_coins < discounted_cost:
                     self.merge_btn.setEnabled(False)
-                    self.merge_rate_lbl.setText(f"⚠️ Need {discounted_cost} coins (you have {current_coins})")
+                    self.merge_rate_lbl.setText(f"âš ď¸Ź Need {discounted_cost} coins (you have {current_coins})")
                     return
                 
                 self.merge_btn.setEnabled(True)
@@ -28122,22 +28414,22 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     # Top-tier-only merges act as a reroll to a new top-tier item/slot.
                     if items_merge_luck > 0:
                         self.merge_rate_lbl.setText(
-                            f"{max_obtainable_rarity} reroll: {rate*100:.0f}% (+{items_merge_luck}% from items) → {max_obtainable_rarity} item"
+                            f"{max_obtainable_rarity} reroll: {rate*100:.0f}% (+{items_merge_luck}% from items) â†’ {max_obtainable_rarity} item"
                         )
                     else:
                         self.merge_rate_lbl.setText(
-                            f"{max_obtainable_rarity} reroll: {rate*100:.0f}% → {max_obtainable_rarity} item"
+                            f"{max_obtainable_rarity} reroll: {rate*100:.0f}% â†’ {max_obtainable_rarity} item"
                         )
                 else:
                     if items_merge_luck > 0:
-                        self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% (+{items_merge_luck}% from items) → {result_rarity} item")
+                        self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% (+{items_merge_luck}% from items) â†’ {result_rarity} item")
                     else:
-                        self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% → {result_rarity} item")
+                        self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% â†’ {result_rarity} item")
         else:
             self.merge_btn.setEnabled(False)
             self.merge_rate_lbl.setText("Select 2+ items to merge")
             # Reset cost label to base cost when no items selected
-            self.merge_warn_lbl.setText("⚠️ 25% base success (items lost on fail!) • Cost: 50🪙")
+            self.merge_warn_lbl.setText("âš ď¸Ź 25% base success (items lost on fail!) â€˘ Cost: 50đźŞ™")
             self.merge_warn_lbl.setStyleSheet("color: #d32f2f; font-size: 10px;")
 
     def _do_merge(self) -> None:
@@ -28351,7 +28643,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             if entity_perks.get("total_merge_luck", 0) > 0:
                 perk_parts.append(f"+{entity_perks['total_merge_luck']}% luck")
             if perk_parts:
-                show_perk_toast(f"Entity Perks: {', '.join(perk_parts)}", "✨", self)
+                show_perk_toast(f"Entity Perks: {', '.join(perk_parts)}", "âś¨", self)
         
         # Only do manual refresh if GameState not available
         if not self._game_state:
@@ -28455,10 +28747,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
         hero_name = get_story_main_character_name(current_story)
 
         if hasattr(self, 'hero_title_lbl'):
-            self.hero_title_lbl.setText(f"<b style='font-size:18px;'>🦸 {hero_name}</b>")
+            self.hero_title_lbl.setText(f"<b style='font-size:18px;'>đź¦¸ {hero_name}</b>")
 
         if hasattr(self, 'story_indicator_lbl'):
-            self.story_indicator_lbl.setText(f"📜 Story: <b>{story_info.get('title', current_story)}</b>")
+            self.story_indicator_lbl.setText(f"đź“ś Story: <b>{story_info.get('title', current_story)}</b>")
 
         if hasattr(self, 'story_switch_combo'):
             self.story_switch_combo.blockSignals(True)
@@ -28523,13 +28815,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
         if not result["changes"]:
             show_info(
                 self, "Optimize Gear",
-                "Your gear is already optimized for this strategy! ⚔️\n\n"
+                "Your gear is already optimized for this strategy! âš”ď¸Ź\n\n"
                 f"Current power: {result['old_power']}"
             )
             return
         
         # Show preview of changes
-        changes_text = "\n".join(f"  • {c}" for c in result["changes"]) if result["changes"] else "  No changes needed"
+        changes_text = "\n".join(f"  â€˘ {c}" for c in result["changes"]) if result["changes"] else "  No changes needed"
         
         # Calculate lucky bonuses difference
         lucky_summary = ""
@@ -28546,10 +28838,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
                         diff = new_val - old_val
                         sign = "+" if diff > 0 else ""
                         names = {"coin_discount": "Merge Discount", "xp_bonus": "XP", "merge_luck": "Merge Success"}
-                        bonus_changes.append(f"{names[bonus_type]}: {old_val}% → {new_val}% ({sign}{diff}%)")
+                        bonus_changes.append(f"{names[bonus_type]}: {old_val}% â†’ {new_val}% ({sign}{diff}%)")
                 
                 if bonus_changes:
-                    lucky_summary = "\n\nBonuses Changes:\n" + "\n".join(f"  • {c}" for c in bonus_changes)
+                    lucky_summary = "\n\nBonuses Changes:\n" + "\n".join(f"  â€˘ {c}" for c in bonus_changes)
             except Exception:
                 # Silently ignore if calculation fails
                 pass
@@ -28563,16 +28855,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Show cost based on entity perk (Robo Rat = FREE)
         if OPTIMIZE_COST == 0:
-            cost_str = "🤖 FREE (Robo Rat)"
+            cost_str = "đź¤– FREE (Robo Rat)"
         elif OPTIMIZE_COST == 1:
-            cost_str = "🐀 1 coin (Hobo Rat)"
+            cost_str = "đź€ 1 coin (Hobo Rat)"
         else:
-            cost_str = f"💰 {OPTIMIZE_COST} coins"
+            cost_str = f"đź’° {OPTIMIZE_COST} coins"
             
         msg = (
             f"Found a better gear configuration!\n"
             f"Strategy: {strategy_desc}\n\n"
-            f"Power Gain: {result['power_gain']:+d} ({result['old_power']} → {result['new_power']})\n\n"
+            f"Power Gain: {result['power_gain']:+d} ({result['old_power']} â†’ {result['new_power']})\n\n"
             f"Changes:\n{changes_text}"
             f"{lucky_summary}\n\n"
             f"{cost_str}\n\n"
@@ -28617,13 +28909,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
             # Show result message
             if result["power_gain"] > 0:
                 show_info(
-                    self, "Gear Optimized! ⚡",
+                    self, "Gear Optimized! âšˇ",
                     f"Power increased from {result['old_power']} to {result['new_power']}!\n"
                     f"(+{result['power_gain']} power)"
                 )
             else:
                 show_info(
-                    self, "Gear Updated! ⚔️",
+                    self, "Gear Updated! âš”ď¸Ź",
                     f"Gear configuration updated.\nPower: {result['new_power']}"
                 )
             
@@ -28654,7 +28946,7 @@ class SellItemsDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title="Sell Items",
-            header_icon="💰",
+            header_icon="đź’°",
             min_width=450,
             max_width=550,
         )
@@ -28694,7 +28986,7 @@ class SellItemsDialog(StyledDialog):
         layout.addWidget(tier_group)
 
         # Selection mode button
-        select_btn = QtWidgets.QPushButton("📋 Select Specific Items to Sell")
+        select_btn = QtWidgets.QPushButton("đź“‹ Select Specific Items to Sell")
         select_btn.setStyleSheet("""
             QPushButton {
                 background-color: #607d8b;
@@ -28710,11 +29002,11 @@ class SellItemsDialog(StyledDialog):
         select_btn.clicked.connect(self._sell_by_selection)
         layout.addWidget(select_btn)
 
-        # 🪑 Entity Perk Card (Office Chair sell bonus)
+        # đźŞ‘ Entity Perk Card (Office Chair sell bonus)
         self._add_sell_perk_display(layout)
 
         # Info label
-        info_label = QtWidgets.QLabel("💡 Earn 1 coin per item + all % from lucky options")
+        info_label = QtWidgets.QLabel("đź’ˇ Earn 1 coin per item + all % from lucky options")
         info_label.setStyleSheet("color: #666; font-style: italic; font-size: 10px;")
         info_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(info_label)
@@ -28796,10 +29088,10 @@ class SellItemsDialog(StyledDialog):
                         painter.end()
                         svg_label.setPixmap(pixmap)
                 except Exception:
-                    svg_label.setText("🪑")
+                    svg_label.setText("đźŞ‘")
                     svg_label.setStyleSheet("font-size: 24px; background: transparent;")
             else:
-                svg_label.setText("🪑")
+                svg_label.setText("đźŞ‘")
                 svg_label.setStyleSheet("font-size: 24px; background: transparent;")
             card_layout.addWidget(svg_label)
             
@@ -28833,7 +29125,7 @@ class SellItemsDialog(StyledDialog):
         coins += lucky_options.get("xp_bonus", 0)
         coins += lucky_options.get("merge_luck", 0)
         
-        # ✨ ENTITY PERK BONUS: Add salvage bonus from collected entities
+        # âś¨ ENTITY PERK BONUS: Add salvage bonus from collected entities
         try:
             from gamification import get_entity_coin_perks
             coin_perks = get_entity_coin_perks(self.blocker.adhd_buster, source="salvage")
@@ -28842,7 +29134,7 @@ class SellItemsDialog(StyledDialog):
         except Exception:
             pass  # Silently ignore if perks unavailable
         
-        # 🪑 OFFICE CHAIR PERK: Apply rarity multiplier for Epic/Legendary items
+        # đźŞ‘ OFFICE CHAIR PERK: Apply rarity multiplier for Epic/Legendary items
         try:
             # Use pre-fetched perks if available (more efficient)
             if sell_perks is None:
@@ -28923,7 +29215,7 @@ class SellItemsDialog(StyledDialog):
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
 
-        show_info(self, "Sold!", f"✨ Sold {len(to_sell)} items!\n💰 Coins earned: +{total_coins} (Total: {new_coins})")
+        show_info(self, "Sold!", f"âś¨ Sold {len(to_sell)} items!\nđź’° Coins earned: +{total_coins} (Total: {new_coins})")
         
         # Refresh parent UI
         if self.parent():
@@ -28998,7 +29290,7 @@ class SellItemsDialog(StyledDialog):
             rarity = item.get("rarity", "Common")
             coin_value = self._calculate_coin_value(item, sell_perks)
             
-            cb.setText(f"{name} [{rarity} {display_slot}] +{power} Power → {coin_value} coins")
+            cb.setText(f"{name} [{rarity} {display_slot}] +{power} Power â†’ {coin_value} coins")
             cb.setStyleSheet(f"color: {rarity_color}; font-weight: bold;")
             cb.item_data = item
             checkboxes.append(cb)
@@ -29008,7 +29300,7 @@ class SellItemsDialog(StyledDialog):
         layout.addWidget(scroll)
 
         # Coin preview with breakdown tooltip
-        coin_preview = QtWidgets.QLabel("Selected: 0 items → 0 coins")
+        coin_preview = QtWidgets.QLabel("Selected: 0 items â†’ 0 coins")
         coin_preview.setStyleSheet("font-weight: bold; color: #ff9800; font-size: 12px;")
         layout.addWidget(coin_preview)
         
@@ -29018,7 +29310,7 @@ class SellItemsDialog(StyledDialog):
         def update_preview():
             selected = [cb for cb in checkboxes if cb.isChecked()]
             total_coins = sum(self._calculate_coin_value(cb.item_data, sell_perks) for cb in selected)
-            coin_preview.setText(f"Selected: {len(selected)} items → +{total_coins} 🪙")
+            coin_preview.setText(f"Selected: {len(selected)} items â†’ +{total_coins} đźŞ™")
             
             # Build breakdown tooltip
             if selected:
@@ -29028,13 +29320,13 @@ class SellItemsDialog(StyledDialog):
                     rarity = cb.item_data.get("rarity", "Common")
                     rarity_counts[rarity] = rarity_counts.get(rarity, 0) + 1
                 
-                breakdown = ["💰 Sell Breakdown:", "─" * 20]
+                breakdown = ["đź’° Sell Breakdown:", "â”€" * 20]
                 for rarity in reversed(_get_item_rarity_order(include_unreleased=True)):
                     if rarity in rarity_counts:
                         breakdown.append(f"{rarity}: {rarity_counts[rarity]} items")
-                breakdown.append("─" * 20)
+                breakdown.append("â”€" * 20)
                 breakdown.append(f"Total: +{total_coins} coins")
-                breakdown.append(f"After sale: {current_coins + total_coins} 🪙")
+                breakdown.append(f"After sale: {current_coins + total_coins} đźŞ™")
                 
                 coin_preview.setToolTip("\n".join(breakdown))
             else:
@@ -29099,7 +29391,7 @@ class SellItemsDialog(StyledDialog):
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
 
-        show_info(self, "Sold!", f"✨ Sold {len(items)} items!\n💰 Coins earned: +{total_coins} (Total: {new_coins})")
+        show_info(self, "Sold!", f"âś¨ Sold {len(items)} items!\nđź’° Coins earned: +{total_coins} (Total: {new_coins})")
         
         # Close selection dialog
         dialog.accept()
@@ -29120,7 +29412,7 @@ class DiaryDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title="Adventure Diary",
-            header_icon="📖",
+            header_icon="đź“–",
             min_width=600,
             max_width=750,
         )
@@ -29165,14 +29457,14 @@ class DiaryDialog(StyledDialog):
         title_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #E0E0E0;")
         header.addWidget(title_lbl)
         header.addStretch()
-        tier_lbl = QtWidgets.QLabel(f"⚔ Power: {power} ({tier.capitalize()} Tier)")
+        tier_lbl = QtWidgets.QLabel(f"âš” Power: {power} ({tier.capitalize()} Tier)")
         tier_lbl.setStyleSheet("font-weight: bold; color: #FFD700;")
         header.addWidget(tier_lbl)
         layout.addLayout(header)
 
         entries = self.blocker.adhd_buster.get("diary", [])
         if entries:
-            stats_lbl = QtWidgets.QLabel(f"📚 {len(entries)} adventures | 🗓️ Latest: {entries[-1].get('short_date', 'Unknown')}")
+            stats_lbl = QtWidgets.QLabel(f"đź“š {len(entries)} adventures | đź—“ď¸Ź Latest: {entries[-1].get('short_date', 'Unknown')}")
             stats_lbl.setStyleSheet("color: #888888;")
             layout.addWidget(stats_lbl)
 
@@ -29190,13 +29482,13 @@ class DiaryDialog(StyledDialog):
                 # Show NEW badge for new entries
                 new_badge = ""
                 if entry.get("is_new"):
-                    new_badge = "<span style='background-color:#4CAF50;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;'>✨ NEW</span>"
+                    new_badge = "<span style='background-color:#4CAF50;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;'>âś¨ NEW</span>"
                     entry["is_new"] = False  # Clear the new flag after display
                     new_entries_cleared = True
                 self.diary_text.append(f"<b style='color:#FFD700;'>{date}</b>{new_badge}<br><span style='color:#E0E0E0;'>{story}</span><br>"
                                        f"<span style='color:#888;'>Power: {pwr} | Focus: {mins} min | Tier: {tr.capitalize()}</span><br><hr>")
         else:
-            self.diary_text.setPlainText("📭 No adventures recorded yet!\n\nComplete focus sessions to record your epic adventures.")
+            self.diary_text.setPlainText("đź“­ No adventures recorded yet!\n\nComplete focus sessions to record your epic adventures.")
         layout.addWidget(self.diary_text)
         
         # Save if we cleared new flags
@@ -29207,11 +29499,11 @@ class DiaryDialog(StyledDialog):
 
         btn_layout = QtWidgets.QHBoxLayout()
         if entries:
-            clear_btn = QtWidgets.QPushButton("🗑️ Clear All")
+            clear_btn = QtWidgets.QPushButton("đź—‘ď¸Ź Clear All")
             clear_btn.setObjectName("dangerButton")
             clear_btn.clicked.connect(self._clear_diary)
             btn_layout.addWidget(clear_btn)
-        write_btn = QtWidgets.QPushButton("✍️ Write Entry")
+        write_btn = QtWidgets.QPushButton("âśŤď¸Ź Write Entry")
         write_btn.clicked.connect(self._write_entry)
         btn_layout.addWidget(write_btn)
         btn_layout.addStretch()
@@ -29280,7 +29572,7 @@ class DiaryDialog(StyledDialog):
         self._animation_step += 1
         
         # Pulse the header with different emojis
-        emojis = ["🎉", "⭐", "🌟", "✨", "🎊", "💫"]
+        emojis = ["đźŽ‰", "â­", "đźŚź", "âś¨", "đźŽŠ", "đź’«"]
         emoji = emojis[self._animation_step % len(emojis)]
         
         if self.levels_gained > 1:
@@ -29320,23 +29612,23 @@ class DiaryEntryRevealDialog(StyledDialog):
         
         # Get tier-specific emoji for header
         tier_emojis = {
-            "pathetic": "🌱", "modest": "🛡️", "decent": "💪",
-            "heroic": "🔥", "epic": "⚡", "legendary": "⭐", "godlike": "🌟"
+            "pathetic": "đźŚ±", "modest": "đź›ˇď¸Ź", "decent": "đź’Ş",
+            "heroic": "đź”Ą", "epic": "âšˇ", "legendary": "â­", "godlike": "đźŚź"
         }
-        emoji = tier_emojis.get(self.tier, "📖")
+        emoji = tier_emojis.get(self.tier, "đź“–")
         
         super().__init__(parent, "Today's Adventure", emoji, 480, 520, closable=True)
 
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         tier = self.tier
         tier_styles = {
-            "pathetic": {"accent": "#9e9e9e", "emoji": "🌱"},
-            "modest": {"accent": "#8bc34a", "emoji": "🛡️"},
-            "decent": {"accent": "#4caf50", "emoji": "💪"},
-            "heroic": {"accent": "#2196f3", "emoji": "🔥"},
-            "epic": {"accent": "#9c27b0", "emoji": "⚡"},
-            "legendary": {"accent": "#ff9800", "emoji": "⭐"},
-            "godlike": {"accent": "#ffc107", "emoji": "🌟"}
+            "pathetic": {"accent": "#9e9e9e", "emoji": "đźŚ±"},
+            "modest": {"accent": "#8bc34a", "emoji": "đź›ˇď¸Ź"},
+            "decent": {"accent": "#4caf50", "emoji": "đź’Ş"},
+            "heroic": {"accent": "#2196f3", "emoji": "đź”Ą"},
+            "epic": {"accent": "#9c27b0", "emoji": "âšˇ"},
+            "legendary": {"accent": "#ff9800", "emoji": "â­"},
+            "godlike": {"accent": "#ffc107", "emoji": "đźŚź"}
         }
         style = tier_styles.get(tier, tier_styles["pathetic"])
 
@@ -29389,15 +29681,15 @@ class DiaryEntryRevealDialog(StyledDialog):
         tier_display = tier.capitalize()
         if tier_boosted:
             base_tier = self.entry.get("base_tier", tier)
-            power_text = f"⚔ Power: {power}  |  🎭 {base_tier.capitalize()} → {tier_display} (bonus!)"
+            power_text = f"Power: {power} | Tier: {base_tier.capitalize()} -> {tier_display} (bonus)"
         else:
-            power_text = f"⚔ Power: {power}  |  🎭 {tier_display} Tier"
+            power_text = f"Power: {power} | Tier: {tier_display}"
         pwr_lbl = QtWidgets.QLabel(power_text)
         pwr_lbl.setStyleSheet(f"font-weight: bold; color: {style['accent']}; font-size: 14px;")
         pwr_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(pwr_lbl)
         
-        mins_lbl = QtWidgets.QLabel(f"⏱️ {self.session_minutes} min focus session")
+        mins_lbl = QtWidgets.QLabel(f"{self.session_minutes} min focus session")
         mins_lbl.setStyleSheet("color: #999;")
         mins_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(mins_lbl)
@@ -29423,7 +29715,8 @@ class PriorityTimeLogDialog(StyledDialog):
         self.session_minutes = session_minutes
         self.time_spins: list = []
         self.priority_indices: list = []
-        super().__init__(parent, "Log Priority Time", "📊", 450, 500, closable=True)
+        self.total_alloc_label: Optional[QtWidgets.QLabel] = None
+        super().__init__(parent, "Log Priority Time", "Log", 450, 500, closable=True)
 
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         header = QtWidgets.QLabel(f"<b>You completed a {self.session_minutes} minute focus session.</b>")
@@ -29458,6 +29751,7 @@ class PriorityTimeLogDialog(StyledDialog):
                 spin.setValue(0)
                 spin.setSuffix(" min")
                 spin.setMinimumWidth(100)
+                spin.valueChanged.connect(self._update_time_allocation_feedback)
                 row.addWidget(spin)
                 p_layout.addLayout(row)
                 self.time_spins.append(spin)
@@ -29471,6 +29765,10 @@ class PriorityTimeLogDialog(StyledDialog):
         layout.addSpacing(10)
 
         if has_priorities:
+            self.total_alloc_label = QtWidgets.QLabel()
+            self.total_alloc_label.setStyleSheet("color: #9aa0a6; font-size: 11px;")
+            layout.addWidget(self.total_alloc_label)
+
             # Quick options
             quick_container = QtWidgets.QWidget()
             quick_container.setStyleSheet("background-color: rgba(0,0,0,0.2); border-radius: 8px;")
@@ -29490,10 +29788,11 @@ class PriorityTimeLogDialog(StyledDialog):
             btn_row.addWidget(split_btn)
             q_layout.addLayout(btn_row)
             layout.addWidget(quick_container)
+            self._update_time_allocation_feedback()
 
         layout.addStretch()
         self.add_button_row(layout, [
-            ("💾 Save & Close", "primary", self._save_and_close),
+            ("Save & Close", "primary", self._save_and_close),
             ("Skip", "default", self.reject)
         ])
 
@@ -29510,6 +29809,16 @@ class PriorityTimeLogDialog(StyledDialog):
                 spin.setValue(per)
 
     def _save_and_close(self) -> None:
+        total_minutes = sum(spin.value() for spin in self.time_spins)
+        if total_minutes > self.session_minutes:
+            show_warning(
+                self,
+                "Invalid Allocation",
+                f"Logged time is {total_minutes} min, but this session was {self.session_minutes} min.\n"
+                "Reduce allocations so total minutes do not exceed the session length."
+            )
+            return
+
         for spin, idx in zip(self.time_spins, self.priority_indices):
             minutes = spin.value()
             if minutes > 0:
@@ -29518,6 +29827,22 @@ class PriorityTimeLogDialog(StyledDialog):
                 self.blocker.priorities[idx]["logged_hours"] = cur + hours
         self.blocker.save_config()
         self.accept()
+
+    def _update_time_allocation_feedback(self, *_args) -> None:
+        if not self.total_alloc_label:
+            return
+        total_minutes = sum(spin.value() for spin in self.time_spins)
+        remaining = self.session_minutes - total_minutes
+        if remaining < 0:
+            self.total_alloc_label.setStyleSheet("color: #ff6b6b; font-size: 11px; font-weight: bold;")
+            self.total_alloc_label.setText(
+                f"Allocated: {total_minutes}/{self.session_minutes} min (over by {abs(remaining)} min)"
+            )
+        else:
+            self.total_alloc_label.setStyleSheet("color: #9aa0a6; font-size: 11px;")
+            self.total_alloc_label.setText(
+                f"Allocated: {total_minutes}/{self.session_minutes} min ({remaining} min unassigned)"
+            )
 
 
 class PriorityCheckinDialog(StyledDialog):
@@ -29533,7 +29858,7 @@ class PriorityCheckinDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title="Priority Check-in",
-            header_icon="⏰",
+            header_icon="Check",
             min_width=400,
             max_width=500,
         )
@@ -29542,34 +29867,27 @@ class PriorityCheckinDialog(StyledDialog):
         q_lbl = QtWidgets.QLabel("Are you currently working on your priority tasks?")
         q_lbl.setStyleSheet("color: #E0E0E0; font-size: 13px;")
         layout.addWidget(q_lbl)
-
-        if GAMIFICATION_AVAILABLE:
-            streak = self.blocker.stats.get("streak_days", 0)
-            bonuses = calculate_rarity_bonuses(self.session_minutes, streak)
-            bonus_parts = []
-            if bonuses["session_bonus"] > 0:
-                bonus_parts.append(f"⏱️+{bonuses['session_bonus']}%")
-            if bonuses["streak_bonus"] > 0:
-                bonus_parts.append(f"🔥+{bonuses['streak_bonus']}%")
-            if bonus_parts:
-                bonus_lbl = QtWidgets.QLabel(f"✨ Loot bonuses: {' '.join(bonus_parts)}")
-                bonus_lbl.setStyleSheet("color: #FFD700;")
-                layout.addWidget(bonus_lbl)
-
-        p_box = QtWidgets.QGroupBox("📌 Today's Priorities")
+        minutes_text = f"{self.session_minutes} min" if self.session_minutes > 0 else "this session"
+        context_lbl = QtWidgets.QLabel(
+            f"Quick check-in at {minutes_text}: stay aligned with your priorities."
+        )
+        context_lbl.setStyleSheet("color: #9aa0a6; font-size: 11px;")
+        context_lbl.setWordWrap(True)
+        layout.addWidget(context_lbl)
+        p_box = QtWidgets.QGroupBox("Today's Priorities")
         p_layout = QtWidgets.QVBoxLayout(p_box)
-        text = "\n".join([f"• {p.get('title', '')}" for p in self.today_priorities])
+        text = "\n".join([f"- {p.get('title', '')}" for p in self.today_priorities])
         p_lbl = QtWidgets.QLabel(text if text.strip() else "No priorities set")
         p_lbl.setStyleSheet("color: #E0E0E0;")
         p_layout.addWidget(p_lbl)
         layout.addWidget(p_box)
 
         btn_layout = QtWidgets.QHBoxLayout()
-        no_btn = QtWidgets.QPushButton("⚠ Need to refocus")
+        no_btn = QtWidgets.QPushButton("Need to refocus")
         no_btn.clicked.connect(self._confirm_off_task)
         btn_layout.addWidget(no_btn)
         btn_layout.addStretch()
-        yes_btn = QtWidgets.QPushButton("✅ Yes, I'm on task!")
+        yes_btn = QtWidgets.QPushButton("Yes, I'm on task!")
         yes_btn.setObjectName("primaryButton")
         yes_btn.clicked.connect(self._confirm_on_task)
         btn_layout.addWidget(yes_btn)
@@ -29586,7 +29904,7 @@ class PriorityCheckinDialog(StyledDialog):
 
     def _confirm_off_task(self) -> None:
         self.result = False
-        styled_info(self, "Time to refocus!", "Take a breath and get back to your priorities.\nYou've got this! 💪")
+        styled_info(self, "Time to refocus!", "Take a breath and get back to your priorities.")
         self.accept()
 
 
@@ -29601,7 +29919,7 @@ class PrioritySessionStartDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title="Focus on a Priority?",
-            header_icon="🎯",
+            header_icon="Focus",
             min_width=450,
             max_width=550,
         )
@@ -29644,9 +29962,9 @@ class PrioritySessionStartDialog(StyledDialog):
             self.priority_buttons = []
             for i, p in enumerate(today_priorities):
                 btn = QtWidgets.QPushButton()
-                strategic_badge = " 💰" if p["strategic"] else ""
+                strategic_badge = " [Strategic]" if p["strategic"] else ""
                 hours_info = f" ({p['logged_hours']:.1f}h logged)" if p["logged_hours"] > 0 else ""
-                btn.setText(f"🎯 {p['title']}{strategic_badge}{hours_info}")
+                btn.setText(f"{p['title']}{strategic_badge}{hours_info}")
                 btn.setStyleSheet("""
                     QPushButton {
                         background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -29675,13 +29993,13 @@ class PrioritySessionStartDialog(StyledDialog):
             # Strategic bonus info
             has_strategic = any(p["strategic"] for p in today_priorities)
             if has_strategic:
-                strategic_info = QtWidgets.QLabel("💰 Strategic priorities earn 2.5x coins!")
+                strategic_info = QtWidgets.QLabel("Strategic priorities earn 2.5x coins.")
                 strategic_info.setStyleSheet("color: #FFD700; font-size: 11px;")
                 strategic_info.setAlignment(QtCore.Qt.AlignCenter)
                 layout.addWidget(strategic_info)
         else:
             no_priorities = QtWidgets.QLabel(
-                "📝 No priorities set for today.\n\n"
+                "No priorities set for today.\n\n"
                 "You can still start a session, or go to\n"
                 "My Priorities to add tasks for today."
             )
@@ -29771,15 +30089,17 @@ class PrioritiesDialog(StyledDialog):
         self.title_edits: List[QtWidgets.QLineEdit] = []
         self.day_checks: List[List[tuple]] = []
         self.planned_spins: List[QtWidgets.QDoubleSpinBox] = []
+        self.progress_bars: List[QtWidgets.QProgressBar] = []
         self.strategic_checks: List[QtWidgets.QCheckBox] = []
         self.priority_list_layout: Optional[QtWidgets.QVBoxLayout] = None
         self.add_priority_btn: Optional[QtWidgets.QPushButton] = None
         self.strategic_group: Optional[QtWidgets.QButtonGroup] = None
+        self._completing_priority = False
         
         super().__init__(
             parent=parent,
             title="My Priorities",
-            header_icon="🎯",
+            header_icon="Priorities",
             min_width=550,
             max_width=700,
         )
@@ -29790,7 +30110,6 @@ class PrioritiesDialog(StyledDialog):
         return {
             "title": "",
             "days": [],
-            "active": False,
             "planned_hours": 0,
             "logged_hours": 0,
             "strategic": False,
@@ -29820,12 +30139,12 @@ class PrioritiesDialog(StyledDialog):
         self.scroll_area.setWidget(self.priority_list_container)
         layout.addWidget(self.scroll_area)
 
-        self.add_priority_btn = QtWidgets.QPushButton("➕ Add Priority")
+        self.add_priority_btn = QtWidgets.QPushButton("Add Priority")
         self.add_priority_btn.clicked.connect(self._add_priority)
         layout.addWidget(self.add_priority_btn)
 
         # Today's Focus
-        today_box = QtWidgets.QGroupBox("📌 Today's Focus")
+        today_box = QtWidgets.QGroupBox("Today's Focus")
         today_layout = QtWidgets.QVBoxLayout(today_box)
         self.today_lbl = QtWidgets.QLabel()
         today_layout.addWidget(self.today_lbl)
@@ -29835,22 +30154,22 @@ class PrioritiesDialog(StyledDialog):
         self._refresh_today_focus()
 
         btn_layout = QtWidgets.QHBoxLayout()
-        save_btn = QtWidgets.QPushButton("💾 Save")
+        save_btn = QtWidgets.QPushButton("Save")
         save_btn.setObjectName("primaryButton")
         save_btn.clicked.connect(self._save_priorities)
         btn_layout.addWidget(save_btn)
         if self.on_start_callback:
-            start_btn = QtWidgets.QPushButton("▶ Start Session")
+            start_btn = QtWidgets.QPushButton("Start Session")
             start_btn.clicked.connect(self._start_session)
             btn_layout.addWidget(start_btn)
         btn_layout.addStretch()
         close_btn = QtWidgets.QPushButton("Close")
-        close_btn.clicked.connect(self.accept)
+        close_btn.clicked.connect(self._close_dialog)
         btn_layout.addWidget(close_btn)
         layout.addLayout(btn_layout)
 
         # Settings section
-        settings_box = QtWidgets.QGroupBox("⚙️ Settings")
+        settings_box = QtWidgets.QGroupBox("Settings")
         settings_layout = QtWidgets.QVBoxLayout(settings_box)
         
         # Startup toggle
@@ -29893,27 +30212,31 @@ class PrioritiesDialog(StyledDialog):
         title_row = QtWidgets.QHBoxLayout()
         title_edit = QtWidgets.QLineEdit(priority.get("title", ""))
         title_edit.setPlaceholderText("Enter priority title...")
+        title_edit.textChanged.connect(self._on_priority_inputs_changed)
         title_row.addWidget(title_edit)
 
         # Strategic Priority Checkbox
-        strategic_chk = QtWidgets.QCheckBox("Strategic (+50% XP)")
+        strategic_chk = QtWidgets.QCheckBox("Strategic (2.5x Coins)")
         is_strategic = priority.get("strategic", False)
         strategic_chk.setChecked(is_strategic)
 
         # Strategic checkbox is always enabled - user can change which priority is strategic
-        strategic_chk.setToolTip("Sessions focused on this priority grant +50% XP. Only one priority can be strategic at a time.")
+        strategic_chk.setToolTip(
+            "Sessions focused on this priority grant 2.5x coins. "
+            "Only one priority can be strategic at a time."
+        )
         strategic_chk.toggled.connect(lambda checked, idx=index: self._on_strategic_toggled(idx, checked))
 
         title_row.addWidget(strategic_chk)
         self.strategic_checks.append(strategic_chk)
 
-        complete_btn = QtWidgets.QPushButton("✅ Complete")
+        complete_btn = QtWidgets.QPushButton("Complete")
         complete_btn.setToolTip("Mark this priority as complete and roll for a Lucky Gift!")
         complete_btn.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
         complete_btn.clicked.connect(lambda checked=False, idx=index: self._complete_priority(idx))
         title_row.addWidget(complete_btn)
 
-        remove_btn = QtWidgets.QPushButton("🗑 Remove")
+        remove_btn = QtWidgets.QPushButton("Remove")
         remove_btn.setToolTip("Remove this priority entry")
         remove_btn.clicked.connect(lambda checked=False, idx=index: self._remove_priority(idx))
         remove_btn.setEnabled(len(self.priorities) > 1)
@@ -29929,6 +30252,7 @@ class PrioritiesDialog(StyledDialog):
         for day in self.DAYS:
             cb = QtWidgets.QCheckBox(day[:3])
             cb.setChecked(day in saved_days)
+            cb.toggled.connect(self._on_priority_inputs_changed)
             days_layout.addWidget(cb)
             day_checks.append((day, cb))
         self.day_checks.append(day_checks)
@@ -29939,21 +30263,17 @@ class PrioritiesDialog(StyledDialog):
         planned_spin = NoScrollDoubleSpinBox()
         planned_spin.setRange(0, 100)
         planned_spin.setValue(priority.get("planned_hours", 0))
+        planned_spin.valueChanged.connect(lambda value, idx=index: self._on_planned_hours_changed(idx, value))
         planned_layout.addWidget(planned_spin)
         self.planned_spins.append(planned_spin)
         
-        logged = priority.get("logged_hours", 0)
-        planned = priority.get("planned_hours", 0)
-        
-        if planned > 0:
-            p_bar = QtWidgets.QProgressBar()
-            p_bar.setMaximum(100)
-            pct = min(100, int((logged / planned) * 100)) if planned else 0
-            p_bar.setValue(pct)
-            p_bar.setFormat(f"{logged:.1f}/{planned:.1f} hrs ({pct}%)")
-            p_bar.setFixedWidth(160)
-            planned_layout.addWidget(p_bar)
-            
+        p_bar = QtWidgets.QProgressBar()
+        p_bar.setMaximum(100)
+        p_bar.setFixedWidth(180)
+        self.progress_bars.append(p_bar)
+        planned_layout.addWidget(p_bar)
+        self._update_priority_progress(index)
+             
         g_layout.addLayout(planned_layout)
         self.priority_list_layout.addWidget(group)
 
@@ -29966,6 +30286,35 @@ class PrioritiesDialog(StyledDialog):
         for i, chk in enumerate(self.strategic_checks):
             if i != index and chk.isEnabled() and chk.isChecked():
                 chk.setChecked(False)
+
+    def _on_priority_inputs_changed(self, *_args) -> None:
+        """Keep the Today section in sync while user edits fields."""
+        self._sync_ui_into_priorities()
+        self._refresh_today_focus()
+
+    def _on_planned_hours_changed(self, index: int, value: float) -> None:
+        if 0 <= index < len(self.priorities):
+            self.priorities[index]["planned_hours"] = value
+        self._update_priority_progress(index)
+
+    def _update_priority_progress(self, index: int) -> None:
+        if index < 0 or index >= len(self.progress_bars):
+            return
+        bar = self.progress_bars[index]
+        priority = self.priorities[index] if index < len(self.priorities) else {}
+        logged = float(priority.get("logged_hours", 0) or 0)
+        planned = float(self.planned_spins[index].value()) if index < len(self.planned_spins) else float(priority.get("planned_hours", 0) or 0)
+
+        if planned <= 0:
+            bar.setValue(0)
+            bar.setFormat("Set planned hours to track progress")
+            bar.setVisible(False)
+            return
+
+        pct = min(100, int((logged / planned) * 100)) if planned > 0 else 0
+        bar.setVisible(True)
+        bar.setValue(pct)
+        bar.setFormat(f"{logged:.1f}/{planned:.1f} hrs ({pct}%)")
 
     def _sync_ui_into_priorities(self) -> None:
         """Sync current UI widget values back into self.priorities data."""
@@ -30004,6 +30353,7 @@ class PrioritiesDialog(StyledDialog):
         self.title_edits = []
         self.day_checks = []
         self.planned_spins = []
+        self.progress_bars = []
         self.strategic_checks = []
 
         # Ensure at least one priority exists
@@ -30046,16 +30396,100 @@ class PrioritiesDialog(StyledDialog):
         else:
             self.today_lbl.setText("No priorities set for today.")
 
-    def _save_priorities(self) -> None:
+    def _normalize_priority_list(self, priorities: list) -> List[dict]:
+        normalized: List[dict] = []
+        for priority in priorities:
+            title = str(priority.get("title", "")).strip()
+            if not title:
+                continue
+
+            raw_days = priority.get("days", [])
+            days = [day for day in self.DAYS if isinstance(raw_days, list) and day in raw_days]
+
+            try:
+                planned_hours = float(priority.get("planned_hours", 0) or 0)
+            except (TypeError, ValueError):
+                planned_hours = 0.0
+            try:
+                logged_hours = float(priority.get("logged_hours", 0) or 0)
+            except (TypeError, ValueError):
+                logged_hours = 0.0
+
+            normalized.append({
+                "title": title,
+                "days": days,
+                "planned_hours": max(0.0, planned_hours),
+                "logged_hours": max(0.0, logged_hours),
+                "strategic": bool(priority.get("strategic", False)),
+            })
+
+        # Enforce single strategic priority.
+        strategic_seen = False
+        for priority in normalized:
+            if priority.get("strategic") and not strategic_seen:
+                strategic_seen = True
+            else:
+                priority["strategic"] = False
+
+        return normalized
+
+    def _normalized_priorities_for_save(self) -> List[dict]:
+        return self._normalize_priority_list(self.priorities)
+
+    def _close_dialog(self) -> None:
+        """Prompt when unsaved priority edits would be lost."""
         self._sync_ui_into_priorities()
-        self.blocker.priorities = copy.deepcopy(self.priorities)
+        current = self._normalized_priorities_for_save()
+        saved = self._normalize_priority_list(self.blocker.priorities if isinstance(self.blocker.priorities, list) else [])
+        if current == saved:
+            self.accept()
+            return
+
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("Unsaved Changes")
+        msg.setText("You have unsaved changes in My Priorities.")
+        msg.setInformativeText("Save before closing?")
+        msg.setIcon(QtWidgets.QMessageBox.Warning)
+        save_btn = msg.addButton("Save", QtWidgets.QMessageBox.AcceptRole)
+        discard_btn = msg.addButton("Discard", QtWidgets.QMessageBox.DestructiveRole)
+        cancel_btn = msg.addButton("Cancel", QtWidgets.QMessageBox.RejectRole)
+        msg.setDefaultButton(save_btn)
+        msg.exec()
+
+        clicked = msg.clickedButton()
+        if clicked == save_btn:
+            self._save_priorities(show_feedback=False)
+            self.accept()
+        elif clicked == discard_btn:
+            self.accept()
+        elif clicked == cancel_btn:
+            return
+
+    def reject(self) -> None:
+        self._close_dialog()
+
+    def _save_priorities(self, show_feedback: bool = True) -> None:
+        self._sync_ui_into_priorities()
+        blank_entries = sum(1 for p in self.priorities if not str(p.get("title", "")).strip())
+        cleaned = self._normalized_priorities_for_save()
+
+        # Persist only meaningful priorities; blank placeholders stay UI-only.
+        self.blocker.priorities = copy.deepcopy(cleaned)
+        self.priorities = copy.deepcopy(cleaned) if cleaned else [self._empty_priority()]
         self.blocker.save_config()
         self._rebuild_priority_rows()
         self._refresh_today_focus()
-        show_info(self, "Saved", "Priorities saved!")
+        if not show_feedback:
+            return
+        if blank_entries > 0 and cleaned:
+            show_info(self, "Saved", f"Priorities saved! Ignored {blank_entries} empty entr{'y' if blank_entries == 1 else 'ies'}.")
+        elif blank_entries > 0 and not cleaned:
+            show_info(self, "Saved", "No titled priorities were saved. Empty entries were ignored.")
+        else:
+            show_info(self, "Saved", "Priorities saved!")
 
     def _start_session(self) -> None:
-        self._save_priorities()
+        self._save_priorities(show_feedback=False)
         
         # Find the first priority for today
         today = datetime.now().strftime("%A")
@@ -30093,6 +30527,19 @@ class PrioritiesDialog(StyledDialog):
             self.blocker.save_config()
 
     def _complete_priority(self, index: int) -> None:
+        """Guard against duplicate completion clicks/dialog re-entry."""
+        if self._completing_priority:
+            return
+        if index < 0 or index >= len(self.priorities):
+            return
+
+        self._completing_priority = True
+        try:
+            self._complete_priority_impl(index)
+        finally:
+            self._completing_priority = False
+
+    def _complete_priority_impl(self, index: int) -> None:
         """Mark a priority as complete and roll for a lucky gift reward."""
         self._sync_ui_into_priorities()
         title = self.title_edits[index].text().strip()
@@ -30115,9 +30562,9 @@ class PrioritiesDialog(StyledDialog):
         # Confirm completion
         reply = show_question(
             self, "Complete Priority?",
-            f"🎯 Mark '{title}' as COMPLETE?\n\n"
+            f"Mark '{title}' as COMPLETE?\n\n"
             f"You'll get a chance to win a Lucky Gift!\n"
-            f"(🎰 {chance}% chance based on {logged_hours:.1f}h logged)",
+            f"({chance}% chance based on {logged_hours:.1f}h logged)",
             QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No
         )
         
@@ -30132,6 +30579,7 @@ class PrioritiesDialog(StyledDialog):
             pre_rolled_result = roll_priority_completion_reward(
                 story_id=active_story,
                 logged_hours=logged_hours,
+                adhd_buster=self.blocker.adhd_buster,
             )
             if isinstance(pre_rolled_result, dict) and "chance" in pre_rolled_result:
                 chance = int(pre_rolled_result["chance"])
@@ -30145,6 +30593,7 @@ class PrioritiesDialog(StyledDialog):
             logged_hours=logged_hours,
             story_id=active_story,
             pre_rolled_result=pre_rolled_result,
+            adhd_buster=self.blocker.adhd_buster,
             parent=self
         )
         lottery.exec()
@@ -30185,8 +30634,8 @@ class PrioritiesDialog(StyledDialog):
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
-                title="✅ Priority Complete!",
-                header_emoji="✅",
+                title="Priority Complete!",
+                header_emoji="OK",
                 source_label="Priority Completion Reward",
                 items_earned=items_earned,
                 equipped=equipped,
@@ -30203,7 +30652,9 @@ class PrioritiesDialog(StyledDialog):
             self.priorities.pop(index)
         
         # Save and refresh
-        self.blocker.priorities = copy.deepcopy(self.priorities)
+        cleaned = self._normalize_priority_list(self.priorities)
+        self.blocker.priorities = copy.deepcopy(cleaned)
+        self.priorities = copy.deepcopy(cleaned) if cleaned else [self._empty_priority()]
         self.blocker.save_config()
         self._rebuild_priority_rows()
         self._refresh_today_focus()
@@ -30214,7 +30665,6 @@ class PrioritiesDialog(StyledDialog):
             main_window = main_window.parent()
         if main_window and hasattr(main_window, '_update_coin_display'):
             main_window._update_coin_display()
-
 
 class AISessionCompleteDialog(StyledDialog):
     """AI-powered session completion dialog with ratings, notes, and break suggestions."""
@@ -30228,20 +30678,20 @@ class AISessionCompleteDialog(StyledDialog):
         super().__init__(
             parent=parent,
             title="Session Complete!",
-            header_icon="🎉",
+            header_icon="đźŽ‰",
             min_width=480,
             max_width=600,
         )
         self.resize(520, 550)
 
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
-        duration_label = QtWidgets.QLabel(f"🎯 You focused for {self.session_duration // 60} minutes")
+        duration_label = QtWidgets.QLabel(f"đźŽŻ You focused for {self.session_duration // 60} minutes")
         duration_label.setAlignment(QtCore.Qt.AlignCenter)
         duration_label.setStyleSheet("font-size: 14px; color: #E0E0E0;")
         layout.addWidget(duration_label)
 
         # Rating section
-        rating_group = QtWidgets.QGroupBox("📝 How was your focus? (optional)")
+        rating_group = QtWidgets.QGroupBox("đź“ť How was your focus? (optional)")
         rating_layout = QtWidgets.QVBoxLayout(rating_group)
 
         rate_lbl = QtWidgets.QLabel("Rate your session:")
@@ -30250,10 +30700,10 @@ class AISessionCompleteDialog(StyledDialog):
 
         btn_layout = QtWidgets.QHBoxLayout()
         ratings = [
-            ("😫", "Struggled to concentrate, many distractions"),
-            ("😐", "Decent session, some distractions"),
-            ("😊", "Good session, stayed mostly focused"),
-            ("🌟", "Amazing session! In the zone!")
+            ("đź«", "Struggled to concentrate, many distractions"),
+            ("đź", "Decent session, some distractions"),
+            ("đźŠ", "Good session, stayed mostly focused"),
+            ("đźŚź", "Amazing session! In the zone!")
         ]
         self.rating_buttons = []
         for emoji, description in ratings:
@@ -30283,7 +30733,7 @@ class AISessionCompleteDialog(StyledDialog):
         layout.addWidget(rating_group)
 
         # Break suggestions
-        suggestion_group = QtWidgets.QGroupBox("💡 Suggested Break Activities")
+        suggestion_group = QtWidgets.QGroupBox("đź’ˇ Suggested Break Activities")
         suggestion_layout = QtWidgets.QVBoxLayout(suggestion_group)
         self.suggestions_label = QtWidgets.QLabel()
         self.suggestions_label.setWordWrap(True)
@@ -30300,7 +30750,7 @@ class AISessionCompleteDialog(StyledDialog):
         skip_btn.clicked.connect(self.accept)
         btn_layout2.addWidget(skip_btn)
         btn_layout2.addStretch()
-        save_btn = QtWidgets.QPushButton("💾 Save & Continue")
+        save_btn = QtWidgets.QPushButton("đź’ľ Save & Continue")
         save_btn.setObjectName("primaryButton")
         save_btn.clicked.connect(self._save_and_close)
         btn_layout2.addWidget(save_btn)
@@ -30318,21 +30768,21 @@ class AISessionCompleteDialog(StyledDialog):
         # Generate suggestions based on session length (same logic as LocalAI.suggest_break_activity)
         if session_mins > 60:  # Long session
             suggestions = [
-                "🚶 Take a 10-minute walk to refresh",
-                "💧 Drink water and do light stretching",
-                "🌳 Step outside for fresh air"
+                "đźš¶ Take a 10-minute walk to refresh",
+                "đź’§ Drink water and do light stretching",
+                "đźŚł Step outside for fresh air"
             ]
         elif session_mins > 30:
             suggestions = [
-                "☕ Quick coffee/tea break",
-                "🧘 5-minute breathing exercises",
-                "👀 Look away from screen, rest eyes"
+                "â• Quick coffee/tea break",
+                "đź§ 5-minute breathing exercises",
+                "đź‘€ Look away from screen, rest eyes"
             ]
         else:
             suggestions = [
-                "⚡ Brief 2-minute stretch",
-                "💪 Do 10 pushups for energy",
-                "🎵 Listen to one song"
+                "âšˇ Brief 2-minute stretch",
+                "đź’Ş Do 10 pushups for energy",
+                "đźŽµ Listen to one song"
             ]
         
         text = "\n".join(f"  {i}. {s}" for i, s in enumerate(suggestions, 1))
@@ -30413,7 +30863,7 @@ class WaterRingWidget(QtWidgets.QWidget):
         painter.setFont(font)
         
         main_rect = QtCore.QRectF(rect)
-        painter.drawText(main_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"💧{self.current}")
+        painter.drawText(main_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"đź’§{self.current}")
         
         # Subtext: "of 8" label
         font.setPixelSize(10)
@@ -30478,7 +30928,7 @@ class ChapterRingWidget(QtWidgets.QWidget):
         span_angle = -int(self.percentage * 360 * 16)
         painter.drawArc(rect, start_angle, span_angle)
         
-        # Main text: "📖 X/Y" chapters
+        # Main text: "đź“– X/Y" chapters
         painter.setPen(QtGui.QColor("#ffffff"))
         font = painter.font()
         font.setPixelSize(13)
@@ -30486,7 +30936,7 @@ class ChapterRingWidget(QtWidgets.QWidget):
         painter.setFont(font)
         
         main_rect = QtCore.QRectF(rect)
-        painter.drawText(main_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"📖{self.unlocked}/{self.total}")
+        painter.drawText(main_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"đź“–{self.unlocked}/{self.total}")
         
         # Subtext: progress percentage or "Done!"
         font.setPixelSize(10)
@@ -30496,7 +30946,7 @@ class ChapterRingWidget(QtWidgets.QWidget):
         painter.setPen(QtGui.QColor(arc_color))
         
         if self.is_complete:
-            painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, "✨Done")
+            painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, "âś¨Done")
         else:
             pct = int(self.percentage * 100)
             painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"{pct}%")
@@ -30511,23 +30961,23 @@ class EyeRingWidget(QtWidgets.QWidget):
     """Circular progress bar for daily eye routines."""
     clicked = QtCore.Signal()
     
-    # Vision progression: blind animals → sharp-eyed predators
+    # Vision progression: blind animals â†’ sharp-eyed predators
     EYE_CATEGORIES = [
-        (0, "🦔 Mole", "#ff6b6b"),       # 0 routines - nearly blind
-        (1, "🦇 Bat", "#ff8c42"),        # 1 routine - uses echolocation
-        (3, "🐁 Mouse", "#ffa726"),      # 3+ routines - poor vision
-        (5, "🐶 Pup", "#ffca28"),        # 5+ routines - decent
-        (8, "🐱 Cat", "#9ccc65"),        # 8+ routines - good night vision
-        (12, "🦉 Owl", "#66bb6a"),       # 12+ routines - excellent
-        (16, "🦅 Eagle", "#26c6da"),     # 16+ routines - 8x human vision
-        (20, "🦅 Hawk", "#ab47bc"),      # 20+ routines - the best!
+        (0, "đź¦” Mole", "#ff6b6b"),       # 0 routines - nearly blind
+        (1, "đź¦‡ Bat", "#ff8c42"),        # 1 routine - uses echolocation
+        (3, "đź Mouse", "#ffa726"),      # 3+ routines - poor vision
+        (5, "đź¶ Pup", "#ffca28"),        # 5+ routines - decent
+        (8, "đź± Cat", "#9ccc65"),        # 8+ routines - good night vision
+        (12, "đź¦‰ Owl", "#66bb6a"),       # 12+ routines - excellent
+        (16, "đź¦… Eagle", "#26c6da"),     # 16+ routines - 8x human vision
+        (20, "đź¦… Hawk", "#ab47bc"),      # 20+ routines - the best!
     ]
     
     def __init__(self, parent=None):
         super().__init__(parent)
         self.percentage = 0.0
         self.text = "0"
-        self.subtext = "👀 Screen Zombie"
+        self.subtext = "đź‘€ Screen Zombie"
         self.ring_color = "#00bcd4"  # Cyan for eye theme
         self.setMinimumSize(60, 60)
         self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
@@ -30537,7 +30987,7 @@ class EyeRingWidget(QtWidgets.QWidget):
         """Set eye routine progress."""
         daily_cap = max(1, daily_cap)  # Avoid division by zero
         self.percentage = min(current / daily_cap, 1.0)
-        self.text = f"👁️{current}"
+        self.text = f"đź‘ď¸Ź{current}"
         
         # Find appropriate category
         category_text = self.EYE_CATEGORIES[0][1]
@@ -30592,7 +31042,7 @@ class EyeRingWidget(QtWidgets.QWidget):
         # Truncate long labels
         subtext = self.subtext
         if len(subtext) > 14:
-            subtext = subtext[:12] + "…"
+            subtext = subtext[:12] + "â€¦"
         painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, subtext)
 
     def mousePressEvent(self, event):
@@ -30830,8 +31280,8 @@ class EntitiesRingWidget(QtWidgets.QWidget):
         
         # Draw the count with exceptional part highlighted
         if self.exceptional_count > 0 and self.normal_count > 0:
-            # Format: ⭐normal+exceptional where exceptional is brighter
-            text = f"⭐{self.normal_count}"
+            # Format: â­normal+exceptional where exceptional is brighter
+            text = f"â­{self.normal_count}"
             exc_text = f"+{self.exceptional_count}"
             
             # Calculate positions for centered text
@@ -30855,7 +31305,7 @@ class EntitiesRingWidget(QtWidgets.QWidget):
                 painter.setPen(QtGui.QColor("#ffd700"))  # All exceptional - gold
             else:
                 painter.setPen(QtGui.QColor("#ffffff"))  # Normal only - white
-            painter.drawText(main_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"⭐{total_bonded}")
+            painter.drawText(main_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"â­{total_bonded}")
         
         # Subtext: "Bonded" or show exceptional count if any
         font.setPixelSize(10)
@@ -30865,7 +31315,7 @@ class EntitiesRingWidget(QtWidgets.QWidget):
         painter.setPen(QtGui.QColor(arc_color))
         
         if self.exceptional_count > 0:
-            painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"✨{self.exceptional_count}")
+            painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"âś¨{self.exceptional_count}")
         else:
             painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, "Bonded")
 
@@ -30954,7 +31404,7 @@ class MiniHeroWidget(QtWidgets.QWidget):
         tier = "pathetic"
         if GAMIFICATION_AVAILABLE and get_diary_power_tier:
             tier = get_diary_power_tier(power)
-        self.setToolTip(f"⚔ Power: {power} ({tier.title()})\nClick to view Hero tab")
+        self.setToolTip(f"âš” Power: {power} ({tier.title()})\nClick to view Hero tab")
         
         self.update()
     
@@ -31001,16 +31451,16 @@ class ChronoStreamWidget(QtWidgets.QWidget):
     
     # Duration lanes: events that span time (lane_id, color, label, emoji)
     DURATION_LANES = [
-        ("sleep", "#3949ab", "Sleep", "😴"),       # Indigo - top lane
-        ("focus", "#4caf50", "Focus", "🎯"),       # Green
-        ("activity", "#e91e63", "Activity", "🏃"), # Pink
+        ("sleep", "#3949ab", "Sleep", "đź´"),       # Indigo - top lane
+        ("focus", "#4caf50", "Focus", "đźŽŻ"),       # Green
+        ("activity", "#e91e63", "Activity", "đźŹ"), # Pink
     ]
     
     # Point events: single-moment markers shown as icons (lane_id, color, emoji)
     POINT_EVENTS = [
-        ("water", "#4fc3f7", "💧"),    # Cyan water drop
-        ("eye", "#ff9800", "👁"),      # Orange eye
-        ("weight", "#9c27b0", "⚖"),   # Purple scale
+        ("water", "#4fc3f7", "đź’§"),    # Cyan water drop
+        ("eye", "#ff9800", "đź‘"),      # Orange eye
+        ("weight", "#9c27b0", "âš–"),   # Purple scale
     ]
     
     # Lane height (pixels per lane)
@@ -31260,7 +31710,7 @@ class ChronoStreamWidget(QtWidgets.QWidget):
         for evt in point_events:
             lane_id = evt.get('lane', '')
             start = max(0.0, min(24.0, evt.get('start', 0)))
-            emoji = emoji_map.get(lane_id, '•')
+            emoji = emoji_map.get(lane_id, 'â€˘')
             color = QtGui.QColor(color_map.get(lane_id, '#888888'))
             
             x_center = int((start / 24.0) * width)
@@ -31354,7 +31804,7 @@ class ChronoStreamWidget(QtWidgets.QWidget):
         # Draw point events row label
         point_y = self._get_point_row_y(header_height)
         painter.setPen(QtGui.QColor("#666666"))
-        painter.drawText(legend_x - 5, point_y + self.POINT_ROW_HEIGHT - 4, "⬇")
+        painter.drawText(legend_x - 5, point_y + self.POINT_ROW_HEIGHT - 4, "â¬‡")
 
 
 class DailyTimelineWidget(QtWidgets.QFrame):
@@ -31828,11 +32278,11 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                 intensity = min(1.0, score / 100.0) if score > 0 else 0.5
                 
                 # Build tooltip
-                tooltip = f"😴 Sleep ({entry_date})\n"
-                tooltip += f"🛏️ {bedtime_str} → ☀️ {waketime_str}\n"
-                tooltip += f"⏱️ Duration: {hours:.1f}h\n"
-                tooltip += f"⭐ Quality: {quality.title()}\n"
-                tooltip += f"📊 Score: {score}/100"
+                tooltip = f"đź´ Sleep ({entry_date})\n"
+                tooltip += f"đź›Źď¸Ź {bedtime_str} â†’ â€ď¸Ź {waketime_str}\n"
+                tooltip += f"âŹ±ď¸Ź Duration: {hours:.1f}h\n"
+                tooltip += f"â­ Quality: {quality.title()}\n"
+                tooltip += f"đź“Š Score: {score}/100"
                 
                 if entry_date == yesterday_str:
                     if w_float < b_float:
@@ -31886,7 +32336,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     end_hour = now_dt.hour + now_dt.minute / 60.0
                     duration_mins = (now_ts - session_start_ts) / 60
                     
-                    tooltip = f"🎯 Active Focus Session\n"
+                    tooltip = f"đźŽŻ Active Focus Session\n"
                     tooltip += f"Started: {session_start_dt.strftime('%H:%M')}\n"
                     tooltip += f"Duration: {int(duration_mins)}m"
                     
@@ -31910,7 +32360,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
             if focus_sec > 60:  # More than 1 minute logged
                 focus_mins = focus_sec / 60
                 # Estimate focus distribution (simplified)
-                tooltip = f"🎯 Today's Focus\n⏱️ Total: {focus_mins:.0f} minutes"
+                tooltip = f"đźŽŻ Today's Focus\nâŹ±ď¸Ź Total: {focus_mins:.0f} minutes"
                 # This is just shown as context - the active session is the main indicator
         except Exception as e:
             logger.debug(f"[Timeline] Focus events error: {e}")
@@ -31933,7 +32383,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                         if 0 <= h <= 23 and 0 <= m <= 59:
                             time_float = h + m / 60.0
                             
-                            tooltip = f"💧 Water #{water_today_count}\n⏰ {entry_time}"
+                            tooltip = f"đź’§ Water #{water_today_count}\nâŹ° {entry_time}"
                             
                             events.append({
                                 'start': time_float,
@@ -31972,7 +32422,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                         rest_hour = last_dt.hour + last_dt.minute / 60.0
                         daily_count = eye_stats.get("daily_count", 1)
                         
-                        tooltip = f"👁️ Eye Rest #{daily_count}\n⏰ {last_dt.strftime('%H:%M')}\n💆 Routine completed"
+                        tooltip = f"đź‘ď¸Ź Eye Rest #{daily_count}\nâŹ° {last_dt.strftime('%H:%M')}\nđź’† Routine completed"
                         
                         events.append({
                             'start': max(0, rest_hour - 3 / 60.0),  # 3 min before
@@ -32009,16 +32459,16 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     
                     # Activity types
                     activity_emojis = {
-                        'walking': '🚶',
-                        'running': '🏃',
-                        'cycling': '🚴',
-                        'swimming': '🏊',
-                        'strength': '💪',
-                        'yoga': '🧘',
-                        'sports': '⚽',
-                        'exercise': '🏋️',
+                        'walking': 'đźš¶',
+                        'running': 'đźŹ',
+                        'cycling': 'đźš´',
+                        'swimming': 'đźŹŠ',
+                        'strength': 'đź’Ş',
+                        'yoga': 'đź§',
+                        'sports': 'âš˝',
+                        'exercise': 'đźŹ‹ď¸Ź',
                     }
-                    emoji = activity_emojis.get(activity_type, '🏃')
+                    emoji = activity_emojis.get(activity_type, 'đźŹ')
                     
                     # Estimate time (assume morning/afternoon based on entry time or default to 12:00)
                     entry_time_str = entry.get('time', '12:00')
@@ -32031,10 +32481,10 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     end_hour = min(start_hour + duration / 60.0, 24.0)
                     
                     tooltip = f"{emoji} {activity_type.title()}\n"
-                    tooltip += f"⏱️ Duration: {duration} min\n"
-                    tooltip += f"💪 Intensity: {intensity_level.title()}\n"
+                    tooltip += f"âŹ±ď¸Ź Duration: {duration} min\n"
+                    tooltip += f"đź’Ş Intensity: {intensity_level.title()}\n"
                     if calories > 0:
-                        tooltip += f"🔥 Calories: {calories}"
+                        tooltip += f"đź”Ą Calories: {calories}"
                     
                     events.append({
                         'start': start_hour,
@@ -32068,15 +32518,15 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     except:
                         log_hour = 8.0  # Default morning
                     
-                    tooltip = f"⚖️ Weight Log\n"
-                    tooltip += f"📊 {weight} {unit}\n"
-                    tooltip += f"⏰ Logged at {entry_time_str}"
+                    tooltip = f"âš–ď¸Ź Weight Log\n"
+                    tooltip += f"đź“Š {weight} {unit}\n"
+                    tooltip += f"âŹ° Logged at {entry_time_str}"
                     
                     events.append({
                         'start': log_hour,
                         'end': min(log_hour + 15 / 60.0, 24.0),  # 15 min marker
                         'color': QtGui.QColor("#9c27b0"),
-                        'label': f'⚖️ {weight} {unit}',
+                        'label': f'âš–ď¸Ź {weight} {unit}',
                         'lane': 'weight',
                         'intensity': 1.0,
                         'tooltip': tooltip
@@ -32109,7 +32559,7 @@ class StoryTab(QtWidgets.QWidget):
         layout.setSpacing(15)
         
         # === Story Mode Selection ===
-        mode_group = QtWidgets.QGroupBox("📜 Story Mode")
+        mode_group = QtWidgets.QGroupBox("đź“ś Story Mode")
         mode_layout = QtWidgets.QVBoxLayout(mode_group)
         
         if GAMIFICATION_AVAILABLE:
@@ -32141,8 +32591,8 @@ class StoryTab(QtWidgets.QWidget):
             
             # Mode description
             mode_desc = QtWidgets.QLabel(
-                "<i>Story: Full story progression with chapters • "
-                "Hero Only: Just the character and gear • "
+                "<i>Story: Full story progression with chapters â€˘ "
+                "Hero Only: Just the character and gear â€˘ "
                 "Disabled: No gamification features</i>"
             )
             mode_desc.setStyleSheet("color: #666; font-size: 11px;")
@@ -32152,7 +32602,7 @@ class StoryTab(QtWidgets.QWidget):
         layout.addWidget(mode_group)
         
         # === Story Selection ===
-        story_group = QtWidgets.QGroupBox("📖 Choose Your Story")
+        story_group = QtWidgets.QGroupBox("đź“– Choose Your Story")
         story_layout = QtWidgets.QVBoxLayout(story_group)
         
         if GAMIFICATION_AVAILABLE:
@@ -32167,11 +32617,11 @@ class StoryTab(QtWidgets.QWidget):
             current_idx = 0
             for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
                 is_locked = story_id not in unlocked_stories
-                lock_icon = "🔒 " if is_locked else ""
+                lock_icon = "đź”’ " if is_locked else ""
                 self.story_combo.addItem(f"{lock_icon}{story_info['title']}", story_id)
                 tooltip = story_info['description']
                 if is_locked:
-                    tooltip += "\n\n🔒 Costs 100 coins to unlock"
+                    tooltip += "\n\nđź”’ Costs 100 coins to unlock"
                 self.story_combo.setItemData(i, tooltip, QtCore.Qt.ToolTipRole)
                 if story_id == current_story:
                     current_idx = i
@@ -32181,7 +32631,7 @@ class StoryTab(QtWidgets.QWidget):
             story_select_bar.addWidget(self.story_combo)
             
             # Restart Story button
-            self.restart_story_btn = QtWidgets.QPushButton("🔄 Restart Story")
+            self.restart_story_btn = QtWidgets.QPushButton("đź”„ Restart Story")
             self.restart_story_btn.setToolTip("Reset this story's hero - lose all gear, progress, and decisions")
             self.restart_story_btn.setStyleSheet("color: #c62828;")
             self.restart_story_btn.clicked.connect(self._on_restart_story)
@@ -32200,7 +32650,7 @@ class StoryTab(QtWidgets.QWidget):
         layout.addWidget(story_group)
         
         # === Story Progress ===
-        progress_group = QtWidgets.QGroupBox("📊 Story Progress")
+        progress_group = QtWidgets.QGroupBox("đź“Š Story Progress")
         progress_layout = QtWidgets.QVBoxLayout(progress_group)
         
         if GAMIFICATION_AVAILABLE:
@@ -32242,7 +32692,7 @@ class StoryTab(QtWidgets.QWidget):
         layout.addWidget(progress_group)
         
         # === Chapter Selection ===
-        chapter_group = QtWidgets.QGroupBox("📚 Chapters")
+        chapter_group = QtWidgets.QGroupBox("đź“š Chapters")
         chapter_layout = QtWidgets.QVBoxLayout(chapter_group)
         
         chapter_bar = QtWidgets.QHBoxLayout()
@@ -32256,7 +32706,7 @@ class StoryTab(QtWidgets.QWidget):
             self.chapter_combo.addItem("Story unavailable", 0)
         
         chapter_bar.addWidget(self.chapter_combo)
-        read_btn = QtWidgets.QPushButton("📖 Read Chapter")
+        read_btn = QtWidgets.QPushButton("đź“– Read Chapter")
         read_btn.clicked.connect(self._read_story_chapter)
         chapter_bar.addWidget(read_btn)
         chapter_bar.addStretch()
@@ -32311,7 +32761,7 @@ class StoryTab(QtWidgets.QWidget):
         from gamification import AVAILABLE_STORIES, get_selected_story
         story_id = get_selected_story(self.blocker.adhd_buster)
         story_info = AVAILABLE_STORIES.get(story_id, {})
-        self.story_desc_lbl.setText(f"📖 {story_info.get('description', '')}")
+        self.story_desc_lbl.setText(f"đź“– {story_info.get('description', '')}")
     
     def _update_story_progress_labels(self) -> None:
         """Update story progress labels and progress bar."""
@@ -32329,22 +32779,22 @@ class StoryTab(QtWidgets.QWidget):
         if hasattr(self, 'story_progress_lbl'):
             if is_preview:
                 self.story_progress_lbl.setText(
-                    f"👁️ PREVIEW MODE  |  📖 Chapter 1 FREE  |  💰 Unlock for full story"
+                    f"đź‘ď¸Ź PREVIEW MODE  |  đź“– Chapter 1 FREE  |  đź’° Unlock for full story"
                 )
                 self.story_progress_lbl.setStyleSheet("color: #ff9800; font-weight: bold;")
             else:
                 chapters_read = len(progress.get('chapters_read', []))
                 self.story_progress_lbl.setText(
-                    f"📚 Read: {chapters_read}/{progress['total_chapters']}  |  "
-                    f"🔓 Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
-                    f"⚡ Decisions: {progress['decisions_made']}/3"
+                    f"đź“š Read: {chapters_read}/{progress['total_chapters']}  |  "
+                    f"đź”“ Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
+                    f"âšˇ Decisions: {progress['decisions_made']}/3"
                 )
                 self.story_progress_lbl.setStyleSheet("")
         
         if hasattr(self, 'story_next_lbl'):
             if is_preview:
                 self.story_next_lbl.setText(
-                    "💡 Read Chapter 1 to try this story, then unlock to continue the adventure!"
+                    "đź’ˇ Read Chapter 1 to try this story, then unlock to continue the adventure!"
                 )
                 self.story_next_lbl.setStyleSheet("color: #2196f3;")
             elif progress.get('next_readable_chapter'):
@@ -32356,22 +32806,22 @@ class StoryTab(QtWidgets.QWidget):
                         next_title = ch['title']
                         break
                 self.story_next_lbl.setText(
-                    f"📖 Next: {next_title}"
+                    f"đź“– Next: {next_title}"
                 )
                 self.story_next_lbl.setStyleSheet("color: #4caf50;")
             elif progress['next_threshold']:
                 self.story_next_lbl.setText(
-                    f"🔒 Next chapter unlocks at {progress['next_threshold']} power "
+                    f"đź”’ Next chapter unlocks at {progress['next_threshold']} power "
                     f"({progress['power_to_next']} more needed)"
                 )
                 self.story_next_lbl.setStyleSheet("color: #666;")
             else:
                 chapters_read = len(progress.get('chapters_read', []))
                 if chapters_read >= progress['total_chapters']:
-                    self.story_next_lbl.setText("✨ You have completed the story!")
+                    self.story_next_lbl.setText("âś¨ You have completed the story!")
                     self.story_next_lbl.setStyleSheet("color: #f1c40f; font-weight: bold;")
                 else:
-                    self.story_next_lbl.setText("✨ You have unlocked the entire story!")
+                    self.story_next_lbl.setText("âś¨ You have unlocked the entire story!")
                     self.story_next_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
         
         # Update progress bar
@@ -32400,23 +32850,23 @@ class StoryTab(QtWidgets.QWidget):
         for ch in progress["chapters"]:
             # Determine status emoji
             if not ch["unlocked"]:
-                emoji = "🔒"  # Power locked
+                emoji = "đź”’"  # Power locked
             elif not ch["can_read"]:
-                emoji = "⏳"  # Waiting (unlocked but can't read yet)
+                emoji = "âŹł"  # Waiting (unlocked but can't read yet)
             elif ch["is_read"]:
-                emoji = "✅"  # Read
+                emoji = "âś…"  # Read
             else:
-                emoji = "📖"  # Can read now
+                emoji = "đź“–"  # Can read now
             
             # Decision marker
             decision_marker = ""
             if ch.get("has_decision"):
                 if ch.get("decision_made"):
-                    decision_marker = " ✓"  # Decision already made
+                    decision_marker = " âś“"  # Decision already made
                 elif ch.get("decision_pending"):
-                    decision_marker = " ⚡"  # Pending decision (read but not decided)
+                    decision_marker = " âšˇ"  # Pending decision (read but not decided)
                 elif ch.get("is_read"):
-                    decision_marker = " ⚡"  # Read but decision pending
+                    decision_marker = " âšˇ"  # Read but decision pending
             
             self.chapter_combo.addItem(
                 f"{emoji} {ch['title']}{decision_marker}",
@@ -32426,15 +32876,15 @@ class StoryTab(QtWidgets.QWidget):
             # Set tooltip with status info
             tooltip = ch["title"]
             if not ch["unlocked"]:
-                tooltip += f"\n🔒 {ch['read_blocked_reason']}"
+                tooltip += f"\nđź”’ {ch['read_blocked_reason']}"
             elif not ch["can_read"]:
-                tooltip += f"\n⏳ {ch['read_blocked_reason']}"
+                tooltip += f"\nâŹł {ch['read_blocked_reason']}"
             elif not ch["is_read"]:
-                tooltip += "\n📖 Ready to read!"
+                tooltip += "\nđź“– Ready to read!"
             else:
-                tooltip += "\n✅ Already read"
+                tooltip += "\nâś… Already read"
                 if ch.get("decision_pending"):
-                    tooltip += "\n⚡ Decision pending!"
+                    tooltip += "\nâšˇ Decision pending!"
             self.chapter_combo.setItemData(self.chapter_combo.count() - 1, tooltip, QtCore.Qt.ToolTipRole)
     
     def _refresh_story_combo(self) -> None:
@@ -32453,13 +32903,13 @@ class StoryTab(QtWidgets.QWidget):
         current_idx = 0
         for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
             is_locked = story_id not in unlocked_stories
-            lock_icon = "📖 " if not is_locked else "👁️ "
+            lock_icon = "đź“– " if not is_locked else "đź‘ď¸Ź "
             self.story_combo.addItem(f"{lock_icon}{story_info['title']}", story_id)
             tooltip = story_info['description']
             if is_locked:
-                tooltip += "\n\n👁️ PREVIEW: Chapter 1 FREE!\n💰 Unlock full story: 100 coins"
+                tooltip += "\n\nđź‘ď¸Ź PREVIEW: Chapter 1 FREE!\nđź’° Unlock full story: 100 coins"
             else:
-                tooltip += "\n\n📖 UNLOCKED: Full story access"
+                tooltip += "\n\nđź“– UNLOCKED: Full story access"
             self.story_combo.setItemData(i, tooltip, QtCore.Qt.ToolTipRole)
             if story_id == current_story:
                 current_idx = i
@@ -32522,12 +32972,12 @@ class StoryTab(QtWidgets.QWidget):
                 # Preview mode - can read Chapter 1 for free
                 reply = show_question(
                     self, "Preview Story",
-                    f"📖 Preview '{story_title}'\n\n"
+                    f"đź“– Preview '{story_title}'\n\n"
                     f"Chapter 1 is FREE to read!\n"
                     f"Unlock the full story (100 coins) to:\n"
-                    f"  • Progress to chapters 2-7\n"
-                    f"  • Make story decisions\n"
-                    f"  • Discover all 8 endings\n\n"
+                    f"  â€˘ Progress to chapters 2-7\n"
+                    f"  â€˘ Make story decisions\n"
+                    f"  â€˘ Discover all 8 endings\n\n"
                     f"Try Chapter 1 now?",
                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
                 )
@@ -32567,12 +33017,12 @@ class StoryTab(QtWidgets.QWidget):
         story_title = story_info.get("title", story_id)
         
         reply = show_question(
-            self, "⚠️ Restart Story?",
+            self, "âš ď¸Ź Restart Story?",
             f"Are you sure you want to RESTART '{story_title}'?\n\n"
             f"This will DELETE:\n"
-            f"  ❌ All gear and inventory for this story\n"
-            f"  ❌ All story decisions and progress\n"
-            f"  ❌ All chapters unlocked\n\n"
+            f"  âťŚ All gear and inventory for this story\n"
+            f"  âťŚ All story decisions and progress\n"
+            f"  âťŚ All chapters unlocked\n\n"
             f"Your hero will start from Chapter 1 with nothing.\n\n"
             f"This CANNOT be undone!",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
@@ -32607,7 +33057,7 @@ class StoryTab(QtWidgets.QWidget):
                 self, "Story Restarted",
                 f"'{story_title}' has been reset!\n\n"
                 f"Your hero begins anew at Chapter 1.\n"
-                f"Good luck on your fresh journey! 🌟"
+                f"Good luck on your fresh journey! đźŚź"
             )
         else:
             show_error(self, "Error", "Failed to restart story. Please try again.")
@@ -32672,9 +33122,9 @@ class StoryTab(QtWidgets.QWidget):
         if chapter_info and not chapter_info.get("can_read"):
             reason = chapter_info.get("read_blocked_reason", "Cannot read this chapter yet")
             show_warning(
-                self, "📚 Read in Order",
+                self, "đź“š Read in Order",
                 f"You need to read chapters in sequence.\n\n"
-                f"⏳ {reason}\n\n"
+                f"âŹł {reason}\n\n"
                 f"Stories are meant to be experienced in order so decisions from earlier chapters can affect later events."
             )
             return
@@ -32691,25 +33141,25 @@ class StoryTab(QtWidgets.QWidget):
             
             if current_coins < STORY_UNLOCK_COST:
                 show_warning(
-                    self, "🔒 Story Preview Mode",
+                    self, "đź”’ Story Preview Mode",
                     f"You're previewing '{story_title}'.\n\n"
                     f"Chapter 1 is FREE! To continue to Chapter {chapter_num}:\n\n"
-                    f"  💰 Unlock cost: {STORY_UNLOCK_COST} coins\n"
-                    f"  💵 You have: {current_coins} coins\n"
-                    f"  📈 Need: {STORY_UNLOCK_COST - current_coins} more coins\n\n"
+                    f"  đź’° Unlock cost: {STORY_UNLOCK_COST} coins\n"
+                    f"  đź’µ You have: {current_coins} coins\n"
+                    f"  đź“ Need: {STORY_UNLOCK_COST - current_coins} more coins\n\n"
                     f"Complete focus sessions to earn coins!"
                 )
                 return
             
             # Offer to unlock
             reply = show_question(
-                self, "🔓 Unlock Full Story?",
+                self, "đź”“ Unlock Full Story?",
                 f"Unlock '{story_title}' for {STORY_UNLOCK_COST} coins?\n\n"
                 f"This unlocks:\n"
-                f"  ✅ All 7 chapters\n"
-                f"  ✅ 3 story decisions\n"
-                f"  ✅ 8 unique endings\n"
-                f"  ✅ Full hero progression\n\n"
+                f"  âś… All 7 chapters\n"
+                f"  âś… 3 story decisions\n"
+                f"  âś… 8 unique endings\n"
+                f"  âś… Full hero progression\n\n"
                 f"You have: {current_coins} coins\n"
                 f"After unlock: {current_coins - STORY_UNLOCK_COST} coins",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
@@ -32731,7 +33181,7 @@ class StoryTab(QtWidgets.QWidget):
                 self.blocker.adhd_buster["unlocked_stories"].append(story_id)
             self.blocker.save_config()
             
-            show_info(self, "Story Unlocked! 🎉", f"You've unlocked '{story_title}'!\n\nEnjoy the full adventure!")
+            show_info(self, "Story Unlocked! đźŽ‰", f"You've unlocked '{story_title}'!\n\nEnjoy the full adventure!")
             self._refresh_story_combo()
             # Continue to show the chapter
         
@@ -32765,7 +33215,7 @@ class StoryTab(QtWidgets.QWidget):
             return f'<p>{text}</p>'
         
         # Use styled frameless dialog
-        dialog = StyledDialog(self, f"📖 {story_info.get('title', 'Story')} - Chapter {chapter_num}")
+        dialog = StyledDialog(self, f"đź“– {story_info.get('title', 'Story')} - Chapter {chapter_num}")
         dialog.setMinimumSize(650, 550)
         layout = dialog._content_layout
         
@@ -32834,7 +33284,7 @@ class StoryTab(QtWidgets.QWidget):
         
         # Add teaser for next chapter
         if chapter_data.get("next_teaser"):
-            teaser_lbl = QtWidgets.QLabel(f"<p style='color: #3498db; font-style: italic; margin-top: 15px;'>🔮 {chapter_data['next_teaser']}</p>")
+            teaser_lbl = QtWidgets.QLabel(f"<p style='color: #3498db; font-style: italic; margin-top: 15px;'>đź”® {chapter_data['next_teaser']}</p>")
             teaser_lbl.setWordWrap(True)
             teaser_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(teaser_lbl)
@@ -32888,7 +33338,7 @@ class StoryTab(QtWidgets.QWidget):
         """)
         decision_layout = QtWidgets.QVBoxLayout(decision_frame)
         
-        decision_title = QtWidgets.QLabel("<h3 style='color: #f1c40f;'>⚡ A Pivotal Decision</h3>")
+        decision_title = QtWidgets.QLabel("<h3 style='color: #f1c40f;'>âšˇ A Pivotal Decision</h3>")
         decision_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         decision_layout.addWidget(decision_title)
         
@@ -32921,7 +33371,7 @@ class StoryTab(QtWidgets.QWidget):
         
         warning_lbl = QtWidgets.QLabel(
             "<p style='color: #e74c3c; font-size: 11px; text-align: center;'>"
-            "⚠️ <b>Warning:</b> This choice is permanent and will affect your story!</p>"
+            "âš ď¸Ź <b>Warning:</b> This choice is permanent and will affect your story!</p>"
         )
         warning_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         decision_layout.addWidget(warning_lbl)
@@ -32961,17 +33411,17 @@ class StoryTab(QtWidgets.QWidget):
             
             if current_coins < STORY_UNLOCK_COST:
                 show_warning(
-                    self, "🔒 Preview Mode",
+                    self, "đź”’ Preview Mode",
                     f"Decisions require unlocking the full story.\n\n"
-                    f"💰 Unlock cost: {STORY_UNLOCK_COST} coins\n"
-                    f"💵 You have: {current_coins} coins\n"
-                    f"📈 Need: {STORY_UNLOCK_COST - current_coins} more coins"
+                    f"đź’° Unlock cost: {STORY_UNLOCK_COST} coins\n"
+                    f"đź’µ You have: {current_coins} coins\n"
+                    f"đź“ Need: {STORY_UNLOCK_COST - current_coins} more coins"
                 )
                 dialog._decision_in_progress = False
                 return
             
             reply = show_question(
-                self, "🔓 Unlock to Decide?",
+                self, "đź”“ Unlock to Decide?",
                 f"Unlock '{story_title}' for {STORY_UNLOCK_COST} coins?\n\n"
                 f"This unlocks decisions and all chapters!\n\n"
                 f"You have: {current_coins} coins\n"
@@ -33034,7 +33484,7 @@ class StoryTab(QtWidgets.QWidget):
                 outcome_layout.setContentsMargins(5, 5, 5, 5)
                 
                 # Compact decision header with choice inline
-                choice_text = f"<p style='font-size: 12px; color: #2ecc71; margin: 0;'><b>✅ You chose:</b> {result.get('choice_label', option_key)}</p>"
+                choice_text = f"<p style='font-size: 12px; color: #2ecc71; margin: 0;'><b>âś… You chose:</b> {result.get('choice_label', option_key)}</p>"
                 choice_lbl = QtWidgets.QLabel(choice_text)
                 choice_lbl.setWordWrap(True)
                 outcome_layout.addWidget(choice_lbl)
@@ -33065,7 +33515,7 @@ class StoryTab(QtWidgets.QWidget):
                     if updated_chapter.get("next_teaser"):
                         teaser = QtWidgets.QLabel(
                             f"<p style='color: #3498db; font-size: 11px; font-style: italic; margin: 8px 0 0 0;'>"
-                            f"🔮 {updated_chapter['next_teaser']}</p>"
+                            f"đź”® {updated_chapter['next_teaser']}</p>"
                         )
                         teaser.setWordWrap(True)
                         dialog._decision_container_layout.addWidget(teaser)
@@ -33089,7 +33539,7 @@ class DevTab(QtWidgets.QWidget):
 
         # Header row
         header_row = QtWidgets.QHBoxLayout()
-        warning = QtWidgets.QLabel("⚠️ Developer Tools - For Testing Only")
+        warning = QtWidgets.QLabel("âš ď¸Ź Developer Tools - For Testing Only")
         warning.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 14px; padding: 10px;")
         header_row.addStretch()
         header_row.addWidget(warning)
@@ -33097,7 +33547,7 @@ class DevTab(QtWidgets.QWidget):
         layout.addLayout(header_row)
 
         # Generate Item Section
-        item_group = QtWidgets.QGroupBox("🎁 Generate Item")
+        item_group = QtWidgets.QGroupBox("đźŽ Generate Item")
         item_layout = QtWidgets.QVBoxLayout(item_group)
         
         # Rarity selector
@@ -33136,7 +33586,7 @@ class DevTab(QtWidgets.QWidget):
         layout.addWidget(item_group)
 
         # Add Coins Section
-        coins_group = QtWidgets.QGroupBox("🪙 Add Coins")
+        coins_group = QtWidgets.QGroupBox("đźŞ™ Add Coins")
         coins_layout = QtWidgets.QHBoxLayout(coins_group)
         
         for amount in [100, 500, 1000, 5000]:
@@ -33148,7 +33598,7 @@ class DevTab(QtWidgets.QWidget):
         layout.addWidget(coins_group)
 
         # Add XP Section
-        xp_group = QtWidgets.QGroupBox("⭐ Add Experience")
+        xp_group = QtWidgets.QGroupBox("â­ Add Experience")
         xp_layout = QtWidgets.QHBoxLayout(xp_group)
         
         for amount in [50, 100, 500, 1000]:
@@ -33159,8 +33609,64 @@ class DevTab(QtWidgets.QWidget):
         
         layout.addWidget(xp_group)
 
+        # Rarity Power Gates Section
+        gates_group = QtWidgets.QGroupBox("Rarity Power Gates")
+        gates_layout = QtWidgets.QVBoxLayout(gates_group)
+
+        gates_info = QtWidgets.QLabel(
+            "Configure hero power required to unlock higher rarity drops.\n"
+            "Merge/lucky-merge logic is intentionally unaffected."
+        )
+        gates_info.setStyleSheet("color: #b0bec5; font-size: 11px;")
+        gates_info.setWordWrap(True)
+        gates_layout.addWidget(gates_info)
+
+        gates_form = QtWidgets.QGridLayout()
+        gates_form.addWidget(QtWidgets.QLabel("Epic unlock power:"), 0, 0)
+        self.epic_gate_spin = QtWidgets.QSpinBox()
+        self.epic_gate_spin.setRange(0, 100000)
+        self.epic_gate_spin.setSingleStep(10)
+        gates_form.addWidget(self.epic_gate_spin, 0, 1)
+
+        gates_form.addWidget(QtWidgets.QLabel("Legendary unlock power:"), 1, 0)
+        self.legendary_gate_spin = QtWidgets.QSpinBox()
+        self.legendary_gate_spin.setRange(0, 100000)
+        self.legendary_gate_spin.setSingleStep(10)
+        gates_form.addWidget(self.legendary_gate_spin, 1, 1)
+        gates_form.setColumnStretch(2, 1)
+        gates_layout.addLayout(gates_form)
+
+        self.rarity_gate_summary_label = QtWidgets.QLabel("")
+        self.rarity_gate_summary_label.setStyleSheet("color: #90caf9; font-size: 11px;")
+        self.rarity_gate_summary_label.setWordWrap(True)
+        gates_layout.addWidget(self.rarity_gate_summary_label)
+
+        gate_btn_row = QtWidgets.QHBoxLayout()
+        load_gates_btn = QtWidgets.QPushButton("Reload")
+        load_gates_btn.setStyleSheet("background-color: #607d8b; color: white; font-weight: bold; padding: 6px;")
+        load_gates_btn.clicked.connect(self._load_rarity_power_gates_ui)
+        gate_btn_row.addWidget(load_gates_btn)
+
+        apply_gates_btn = QtWidgets.QPushButton("Apply Gates")
+        apply_gates_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 6px;")
+        apply_gates_btn.clicked.connect(self._apply_rarity_power_gates)
+        gate_btn_row.addWidget(apply_gates_btn)
+
+        reset_gates_btn = QtWidgets.QPushButton("Reset Defaults")
+        reset_gates_btn.setStyleSheet("background-color: #455a64; color: white; font-weight: bold; padding: 6px;")
+        reset_gates_btn.clicked.connect(self._reset_rarity_power_gates_defaults)
+        gate_btn_row.addWidget(reset_gates_btn)
+        gate_btn_row.addStretch()
+        gates_layout.addLayout(gate_btn_row)
+
+        self.epic_gate_spin.valueChanged.connect(self._refresh_rarity_power_gate_summary)
+        self.legendary_gate_spin.valueChanged.connect(self._refresh_rarity_power_gate_summary)
+
+        layout.addWidget(gates_group)
+        QtCore.QTimer.singleShot(20, self._load_rarity_power_gates_ui)
+
         # Level-Up QA Section
-        levelup_group = QtWidgets.QGroupBox("🧪 Level-Up QA")
+        levelup_group = QtWidgets.QGroupBox("đź§Ş Level-Up QA")
         levelup_layout = QtWidgets.QVBoxLayout(levelup_group)
         levelup_layout.setSpacing(8)
 
@@ -33172,30 +33678,30 @@ class DevTab(QtWidgets.QWidget):
         levelup_layout.addWidget(self.level_diag_label)
 
         level_btn_row1 = QtWidgets.QHBoxLayout()
-        check_btn = QtWidgets.QPushButton("🔍 Check XP/Level Integrity")
+        check_btn = QtWidgets.QPushButton("đź”Ť Check XP/Level Integrity")
         check_btn.setStyleSheet("background-color: #607d8b; color: white; font-weight: bold; padding: 8px;")
         check_btn.clicked.connect(self._check_xp_level_integrity)
         level_btn_row1.addWidget(check_btn)
 
-        repair_btn = QtWidgets.QPushButton("🛠 Fix XP/Level Sync")
+        repair_btn = QtWidgets.QPushButton("đź›  Fix XP/Level Sync")
         repair_btn.setStyleSheet("background-color: #ff9800; color: black; font-weight: bold; padding: 8px;")
         repair_btn.clicked.connect(self._repair_xp_level_sync)
         level_btn_row1.addWidget(repair_btn)
         levelup_layout.addLayout(level_btn_row1)
 
         level_btn_row2 = QtWidgets.QHBoxLayout()
-        next_level_btn = QtWidgets.QPushButton("⬆️ XP to Next Level")
+        next_level_btn = QtWidgets.QPushButton("â¬†ď¸Ź XP to Next Level")
         next_level_btn.setStyleSheet("background-color: #4caf50; color: white; font-weight: bold; padding: 8px;")
         next_level_btn.clicked.connect(self._grant_xp_to_next_level)
         level_btn_row2.addWidget(next_level_btn)
 
-        levelup_test_btn = QtWidgets.QPushButton("🎉 Next Level + Dialog")
+        levelup_test_btn = QtWidgets.QPushButton("đźŽ‰ Next Level + Dialog")
         levelup_test_btn.setStyleSheet("background-color: #8e24aa; color: white; font-weight: bold; padding: 8px;")
         levelup_test_btn.clicked.connect(self._test_level_up_dialog)
         level_btn_row2.addWidget(levelup_test_btn)
         levelup_layout.addLayout(level_btn_row2)
 
-        preview_btn = QtWidgets.QPushButton("🎬 Preview Dialog (No XP Change)")
+        preview_btn = QtWidgets.QPushButton("đźŽ¬ Preview Dialog (No XP Change)")
         preview_btn.setStyleSheet("background-color: #3949ab; color: white; font-weight: bold; padding: 8px;")
         preview_btn.clicked.connect(self._preview_level_up_dialog)
         levelup_layout.addWidget(preview_btn)
@@ -33203,20 +33709,20 @@ class DevTab(QtWidgets.QWidget):
         layout.addWidget(levelup_group)
 
         # Cooldown Reset Section
-        cooldown_group = QtWidgets.QGroupBox("⏱️ Reset Cooldowns")
+        cooldown_group = QtWidgets.QGroupBox("âŹ±ď¸Ź Reset Cooldowns")
         cooldown_layout = QtWidgets.QHBoxLayout(cooldown_group)
         
-        water_reset_btn = QtWidgets.QPushButton("💧 Reset Water Cooldown")
+        water_reset_btn = QtWidgets.QPushButton("đź’§ Reset Water Cooldown")
         water_reset_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
         water_reset_btn.clicked.connect(self._reset_water_cooldown)
         cooldown_layout.addWidget(water_reset_btn)
         
-        water_attempts_btn = QtWidgets.QPushButton("🎰 Reset Lottery Attempts")
+        water_attempts_btn = QtWidgets.QPushButton("đźŽ° Reset Lottery Attempts")
         water_attempts_btn.setStyleSheet("background-color: #9c27b0; color: white; font-weight: bold; padding: 8px;")
         water_attempts_btn.clicked.connect(self._reset_water_lottery_attempts)
         cooldown_layout.addWidget(water_attempts_btn)
         
-        eye_reset_btn = QtWidgets.QPushButton("👁️ Reset Eye Routine Cooldown")
+        eye_reset_btn = QtWidgets.QPushButton("đź‘ď¸Ź Reset Eye Routine Cooldown")
         eye_reset_btn.setStyleSheet("background-color: #00bcd4; color: white; font-weight: bold; padding: 8px;")
         eye_reset_btn.clicked.connect(self._reset_eye_routine_cooldown)
         cooldown_layout.addWidget(eye_reset_btn)
@@ -33224,7 +33730,7 @@ class DevTab(QtWidgets.QWidget):
         layout.addWidget(cooldown_group)
 
         # Entity Encounter Section
-        entity_group = QtWidgets.QGroupBox("🐾 Entity Encounter Test")
+        entity_group = QtWidgets.QGroupBox("đźľ Entity Encounter Test")
         entity_layout = QtWidgets.QVBoxLayout(entity_group)
         
         # Story selector
@@ -33252,12 +33758,12 @@ class DevTab(QtWidgets.QWidget):
         # Encounter buttons
         encounter_btn_layout = QtWidgets.QHBoxLayout()
         
-        selected_btn = QtWidgets.QPushButton("🎯 Encounter Selected")
+        selected_btn = QtWidgets.QPushButton("đźŽŻ Encounter Selected")
         selected_btn.setStyleSheet("background-color: #4caf50; color: white; font-weight: bold; padding: 8px;")
         selected_btn.clicked.connect(self._encounter_selected_entity)
         encounter_btn_layout.addWidget(selected_btn)
         
-        trigger_btn = QtWidgets.QPushButton("🎲 Random Encounter")
+        trigger_btn = QtWidgets.QPushButton("đźŽ˛ Random Encounter")
         trigger_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
         trigger_btn.clicked.connect(self._trigger_entity_encounter)
         encounter_btn_layout.addWidget(trigger_btn)
@@ -33276,13 +33782,13 @@ class DevTab(QtWidgets.QWidget):
         entity_layout.addLayout(rarity_btn_layout)
         
         # Entitidex viewer button
-        view_btn = QtWidgets.QPushButton("📖 View Entitidex")
+        view_btn = QtWidgets.QPushButton("đź“– View Entitidex")
         view_btn.setStyleSheet("background-color: #ff9800; color: white; font-weight: bold; padding: 8px;")
         view_btn.clicked.connect(self._view_entitidex)
         entity_layout.addWidget(view_btn)
         
         # Generate Exceptional Entity button
-        exceptional_btn = QtWidgets.QPushButton("🌟 Generate EXCEPTIONAL Entity (Guaranteed)")
+        exceptional_btn = QtWidgets.QPushButton("đźŚź Generate EXCEPTIONAL Entity (Guaranteed)")
         exceptional_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -33303,7 +33809,7 @@ class DevTab(QtWidgets.QWidget):
         layout.addWidget(entity_group)
 
         # Entity Lock/Unlock Section
-        lock_group = QtWidgets.QGroupBox("🔓 Entity Lock/Unlock (Testing)")
+        lock_group = QtWidgets.QGroupBox("đź”“ Entity Lock/Unlock (Testing)")
         lock_layout = QtWidgets.QVBoxLayout(lock_group)
         
         # Story selector for lock/unlock
@@ -33339,17 +33845,17 @@ class DevTab(QtWidgets.QWidget):
         # Quick action buttons
         quick_btn_layout = QtWidgets.QHBoxLayout()
         
-        unlock_all_btn = QtWidgets.QPushButton("🔓 Unlock All")
+        unlock_all_btn = QtWidgets.QPushButton("đź”“ Unlock All")
         unlock_all_btn.setStyleSheet("background-color: #4caf50; color: white; font-weight: bold; padding: 8px;")
         unlock_all_btn.clicked.connect(self._unlock_all_entities)
         quick_btn_layout.addWidget(unlock_all_btn)
         
-        lock_all_btn = QtWidgets.QPushButton("🔒 Lock All")
+        lock_all_btn = QtWidgets.QPushButton("đź”’ Lock All")
         lock_all_btn.setStyleSheet("background-color: #f44336; color: white; font-weight: bold; padding: 8px;")
         lock_all_btn.clicked.connect(self._lock_all_entities)
         quick_btn_layout.addWidget(lock_all_btn)
         
-        apply_btn = QtWidgets.QPushButton("💾 Apply Changes")
+        apply_btn = QtWidgets.QPushButton("đź’ľ Apply Changes")
         apply_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
         apply_btn.clicked.connect(self._apply_entity_lock_changes)
         quick_btn_layout.addWidget(apply_btn)
@@ -33364,22 +33870,22 @@ class DevTab(QtWidgets.QWidget):
         # ================================================================
         # CITY SYSTEM CONTROLS
         # ================================================================
-        city_group = QtWidgets.QGroupBox("🏰 City System Controls")
+        city_group = QtWidgets.QGroupBox("đźŹ° City System Controls")
         city_layout = QtWidgets.QVBoxLayout(city_group)
         
         # Resources Section
-        resources_label = QtWidgets.QLabel("📦 Resources")
+        resources_label = QtWidgets.QLabel("đź“¦ Resources")
         resources_label.setStyleSheet("font-weight: bold; color: #FFD700; font-size: 12px;")
         city_layout.addWidget(resources_label)
         
         # Resource add buttons
         resource_btn_layout = QtWidgets.QHBoxLayout()
         resource_info = [
-            ("💧 Water", "water", "#2196f3"),
-            ("🧱 Materials", "materials", "#795548"),
-            ("🔩 Scrap", "scrap", "#607d8b"),
-            ("🏃 Activity", "activity", "#4caf50"),
-            ("🎯 Focus", "focus", "#9c27b0"),
+            ("đź’§ Water", "water", "#2196f3"),
+            ("đź§± Materials", "materials", "#795548"),
+            ("đź”© Scrap", "scrap", "#607d8b"),
+            ("đźŹ Activity", "activity", "#4caf50"),
+            ("đźŽŻ Focus", "focus", "#9c27b0"),
         ]
         for label, res_type, color in resource_info:
             btn = QtWidgets.QPushButton(f"{label} +50")
@@ -33403,7 +33909,7 @@ class DevTab(QtWidgets.QWidget):
         city_layout.addWidget(self.city_resources_label)
         
         # Building selector
-        building_label = QtWidgets.QLabel("🏗️ Building Controls")
+        building_label = QtWidgets.QLabel("đźŹ—ď¸Ź Building Controls")
         building_label.setStyleSheet("font-weight: bold; color: #FFD700; font-size: 12px; margin-top: 10px;")
         city_layout.addWidget(building_label)
         
@@ -33443,17 +33949,17 @@ class DevTab(QtWidgets.QWidget):
         # Building action buttons
         building_action_layout = QtWidgets.QHBoxLayout()
         
-        place_btn = QtWidgets.QPushButton("📍 Place Building")
+        place_btn = QtWidgets.QPushButton("đź“Ť Place Building")
         place_btn.setStyleSheet("background-color: #4caf50; color: white; font-weight: bold; padding: 8px;")
         place_btn.clicked.connect(self._city_place_building)
         building_action_layout.addWidget(place_btn)
         
-        complete_btn = QtWidgets.QPushButton("✅ Complete Building")
+        complete_btn = QtWidgets.QPushButton("âś… Complete Building")
         complete_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
         complete_btn.clicked.connect(self._city_complete_building)
         building_action_layout.addWidget(complete_btn)
         
-        remove_btn = QtWidgets.QPushButton("🗑️ Remove Building")
+        remove_btn = QtWidgets.QPushButton("đź—‘ď¸Ź Remove Building")
         remove_btn.setStyleSheet("background-color: #f44336; color: white; font-weight: bold; padding: 8px;")
         remove_btn.clicked.connect(self._city_remove_building)
         building_action_layout.addWidget(remove_btn)
@@ -33463,17 +33969,17 @@ class DevTab(QtWidgets.QWidget):
         # Quick actions row
         quick_city_layout = QtWidgets.QHBoxLayout()
         
-        place_all_btn = QtWidgets.QPushButton("🏘️ Place All Buildings")
+        place_all_btn = QtWidgets.QPushButton("đźŹď¸Ź Place All Buildings")
         place_all_btn.setStyleSheet("background-color: #ff9800; color: white; font-weight: bold; padding: 8px;")
         place_all_btn.clicked.connect(self._city_place_all_buildings)
         quick_city_layout.addWidget(place_all_btn)
         
-        complete_all_btn = QtWidgets.QPushButton("🎯 Complete All")
+        complete_all_btn = QtWidgets.QPushButton("đźŽŻ Complete All")
         complete_all_btn.setStyleSheet("background-color: #9c27b0; color: white; font-weight: bold; padding: 8px;")
         complete_all_btn.clicked.connect(self._city_complete_all_buildings)
         quick_city_layout.addWidget(complete_all_btn)
         
-        max_all_btn = QtWidgets.QPushButton("⬆️ Max All Levels")
+        max_all_btn = QtWidgets.QPushButton("â¬†ď¸Ź Max All Levels")
         max_all_btn.setStyleSheet("background-color: #FFD700; color: black; font-weight: bold; padding: 8px;")
         max_all_btn.clicked.connect(self._city_max_all_buildings)
         quick_city_layout.addWidget(max_all_btn)
@@ -33483,17 +33989,17 @@ class DevTab(QtWidgets.QWidget):
         # Reset/Clear row
         reset_city_layout = QtWidgets.QHBoxLayout()
         
-        clear_city_btn = QtWidgets.QPushButton("💥 Clear All Buildings")
+        clear_city_btn = QtWidgets.QPushButton("đź’Ą Clear All Buildings")
         clear_city_btn.setStyleSheet("background-color: #b71c1c; color: white; font-weight: bold; padding: 8px;")
         clear_city_btn.clicked.connect(self._city_clear_all)
         reset_city_layout.addWidget(clear_city_btn)
         
-        reset_resources_btn = QtWidgets.QPushButton("🔄 Reset Resources to 0")
+        reset_resources_btn = QtWidgets.QPushButton("đź”„ Reset Resources to 0")
         reset_resources_btn.setStyleSheet("background-color: #455a64; color: white; font-weight: bold; padding: 8px;")
         reset_resources_btn.clicked.connect(self._city_reset_resources)
         reset_city_layout.addWidget(reset_resources_btn)
         
-        give_resources_btn = QtWidgets.QPushButton("💰 +500 All Resources")
+        give_resources_btn = QtWidgets.QPushButton("đź’° +500 All Resources")
         give_resources_btn.setStyleSheet("background-color: #00bcd4; color: white; font-weight: bold; padding: 8px;")
         give_resources_btn.clicked.connect(self._city_give_all_resources)
         reset_city_layout.addWidget(give_resources_btn)
@@ -33526,7 +34032,7 @@ class DevTab(QtWidgets.QWidget):
             from gamification import generate_item
             game_state = get_game_state()
             if not game_state:
-                self.status_label.setText("❌ Game state not available")
+                self.status_label.setText("âťŚ Game state not available")
                 return
             
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
@@ -33534,10 +34040,10 @@ class DevTab(QtWidgets.QWidget):
             item["source"] = "dev_tools"
             
             game_state.add_item(item)
-            self.status_label.setText(f"✅ Generated: {item.get('name', 'Unknown')} ({rarity})")
+            self.status_label.setText(f"âś… Generated: {item.get('name', 'Unknown')} ({rarity})")
             self.status_label.setStyleSheet(f"color: #4caf50; padding: 10px;")
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _generate_full_item_matrix(self) -> None:
@@ -33547,13 +34053,13 @@ class DevTab(QtWidgets.QWidget):
 
             game_state = get_game_state()
             if not game_state:
-                self.status_label.setText("❌ Game state not available")
+                self.status_label.setText("âťŚ Game state not available")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 return
 
             rarity_tiers = _get_item_rarity_order(include_unreleased=True)
             if not rarity_tiers:
-                self.status_label.setText("❌ No rarity tiers available")
+                self.status_label.setText("âťŚ No rarity tiers available")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 return
 
@@ -33563,7 +34069,7 @@ class DevTab(QtWidgets.QWidget):
                 story_ids = list(STORY_GEAR_THEMES.keys())
 
             if not story_ids:
-                self.status_label.setText("❌ No story themes available")
+                self.status_label.setText("âťŚ No story themes available")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 return
 
@@ -33598,11 +34104,11 @@ class DevTab(QtWidgets.QWidget):
                 QtWidgets.QMessageBox.No,
             )
             if reply != QtWidgets.QMessageBox.Yes:
-                self.status_label.setText("ℹ️ Full matrix generation cancelled")
+                self.status_label.setText("â„ąď¸Ź Full matrix generation cancelled")
                 self.status_label.setStyleSheet("color: #9e9e9e; padding: 10px;")
                 return
 
-            self.status_label.setText(f"⏳ Generating full matrix... 0/{total_targets}")
+            self.status_label.setText(f"âŹł Generating full matrix... 0/{total_targets}")
             self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
             QtWidgets.QApplication.processEvents()
 
@@ -33631,7 +34137,7 @@ class DevTab(QtWidgets.QWidget):
                     added += 1
 
                     if idx % 24 == 0 or idx == total_targets:
-                        self.status_label.setText(f"⏳ Generating full matrix... {idx}/{total_targets}")
+                        self.status_label.setText(f"âŹł Generating full matrix... {idx}/{total_targets}")
                         QtWidgets.QApplication.processEvents()
 
             if failed_targets:
@@ -33639,18 +34145,18 @@ class DevTab(QtWidgets.QWidget):
                 if len(failed_targets) > 5:
                     preview += ", ..."
                 self.status_label.setText(
-                    f"⚠️ Added {added}/{total_targets} items. Failed: {len(failed_targets)} ({preview})"
+                    f"âš ď¸Ź Added {added}/{total_targets} items. Failed: {len(failed_targets)} ({preview})"
                 )
                 self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
             else:
                 self.status_label.setText(
-                    f"✅ Added full matrix: {added} items "
+                    f"âś… Added full matrix: {added} items "
                     f"across {len(story_ids)} themes ({attempts_total} generation rolls)"
                 )
                 self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _add_coins(self, amount: int) -> None:
@@ -33658,14 +34164,14 @@ class DevTab(QtWidgets.QWidget):
         try:
             game_state = get_game_state()
             if not game_state:
-                self.status_label.setText("❌ Game state not available")
+                self.status_label.setText("âťŚ Game state not available")
                 return
             
             new_total = game_state.add_coins(amount)
-            self.status_label.setText(f"✅ Added {amount} coins! New total: {new_total}")
+            self.status_label.setText(f"âś… Added {amount} coins! New total: {new_total}")
             self.status_label.setStyleSheet("color: #ffd700; padding: 10px;")
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _add_xp(self, amount: int) -> None:
@@ -33673,19 +34179,131 @@ class DevTab(QtWidgets.QWidget):
         try:
             game_state = get_game_state()
             if not game_state:
-                self.status_label.setText("❌ Game state not available")
+                self.status_label.setText("âťŚ Game state not available")
                 return
             
             new_xp, new_level, leveled_up = game_state.add_xp(amount)
             if leveled_up:
-                self.status_label.setText(f"🎉 Level Up! Now level {new_level} with {new_xp} XP")
+                self.status_label.setText(f"đźŽ‰ Level Up! Now level {new_level} with {new_xp} XP")
             else:
-                self.status_label.setText(f"✅ Added {amount} XP! Level {new_level}, {new_xp} XP")
+                self.status_label.setText(f"âś… Added {amount} XP! Level {new_level}, {new_xp} XP")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
             self._refresh_level_diag()
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _get_default_rarity_power_gates(self) -> Dict[str, int]:
+        """Return fallback-safe default rarity power gates."""
+        try:
+            from gamification import DEFAULT_RARITY_POWER_GATES
+            defaults = dict(DEFAULT_RARITY_POWER_GATES)
+        except Exception:
+            defaults = {"Epic": 200, "Legendary": 400}
+        defaults["Epic"] = max(0, int(defaults.get("Epic", 200) or 0))
+        defaults["Legendary"] = max(0, int(defaults.get("Legendary", 400) or 0))
+        return defaults
+
+    def _load_rarity_power_gates_ui(self) -> None:
+        """Load current rarity gate config values into Dev controls."""
+        if not hasattr(self, "epic_gate_spin") or not hasattr(self, "legendary_gate_spin"):
+            return
+
+        gates = self._get_default_rarity_power_gates()
+        adhd_buster = getattr(self.blocker, "adhd_buster", {})
+        custom = adhd_buster.get("rarity_power_gates") if isinstance(adhd_buster, dict) else None
+        if isinstance(custom, dict):
+            for rarity in ("Epic", "Legendary"):
+                raw_value = custom.get(rarity, custom.get(rarity.lower(), gates[rarity]))
+                try:
+                    gates[rarity] = max(0, int(raw_value))
+                except (TypeError, ValueError):
+                    pass
+
+        self.epic_gate_spin.blockSignals(True)
+        self.legendary_gate_spin.blockSignals(True)
+        self.epic_gate_spin.setValue(gates["Epic"])
+        self.legendary_gate_spin.setValue(gates["Legendary"])
+        self.epic_gate_spin.blockSignals(False)
+        self.legendary_gate_spin.blockSignals(False)
+        self._refresh_rarity_power_gate_summary()
+
+    def _refresh_rarity_power_gate_summary(self) -> None:
+        """Update the helper summary text for current gate values."""
+        if not hasattr(self, "rarity_gate_summary_label"):
+            return
+        epic = int(self.epic_gate_spin.value()) if hasattr(self, "epic_gate_spin") else 0
+        legendary = int(self.legendary_gate_spin.value()) if hasattr(self, "legendary_gate_spin") else 0
+
+        if legendary < epic:
+            self.rarity_gate_summary_label.setStyleSheet("color: #ffb74d; font-size: 11px;")
+            self.rarity_gate_summary_label.setText(
+                f"Warning: Legendary gate ({legendary}) is below Epic gate ({epic})."
+            )
+            return
+
+        self.rarity_gate_summary_label.setStyleSheet("color: #90caf9; font-size: 11px;")
+        self.rarity_gate_summary_label.setText(
+            f"Active rule: power < {epic} locks Epic+Legendary, power < {legendary} locks Legendary."
+        )
+
+    def _apply_rarity_power_gates(self) -> None:
+        """Persist rarity power gates to current profile config."""
+        if not hasattr(self, "epic_gate_spin") or not hasattr(self, "legendary_gate_spin"):
+            return
+
+        epic = max(0, int(self.epic_gate_spin.value()))
+        legendary = max(0, int(self.legendary_gate_spin.value()))
+        if legendary < epic:
+            self.status_label.setText(
+                f"Warning: Legendary gate ({legendary}) must be >= Epic gate ({epic})."
+            )
+            self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
+            return
+
+        if not isinstance(self.blocker.adhd_buster, dict):
+            self.status_label.setText("Error: adhd_buster state unavailable")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+            return
+
+        custom_gates = self.blocker.adhd_buster.get("rarity_power_gates")
+        if not isinstance(custom_gates, dict):
+            custom_gates = {}
+        custom_gates["Epic"] = epic
+        custom_gates["Legendary"] = legendary
+        self.blocker.adhd_buster["rarity_power_gates"] = custom_gates
+
+        try:
+            gs = get_game_state()
+            if gs:
+                gs.force_save()
+            else:
+                self.blocker.save_config()
+        except Exception:
+            self.blocker.save_config()
+
+        self._refresh_rarity_power_gate_summary()
+        self.status_label.setText(
+            f"Rarity gates updated: Epic={epic}, Legendary={legendary}"
+        )
+        self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+
+    def _reset_rarity_power_gates_defaults(self) -> None:
+        """Reset rarity gates in UI to code defaults and save."""
+        defaults = self._get_default_rarity_power_gates()
+        self.epic_gate_spin.setValue(defaults["Epic"])
+        self.legendary_gate_spin.setValue(defaults["Legendary"])
+        self._apply_rarity_power_gates()
+
+    def _refresh_dev_state(self) -> None:
+        """Refresh dev-tab values after profile switches."""
+        self._load_rarity_power_gates_ui()
+        self._refresh_level_diag()
+        if hasattr(self, "city_resources_label"):
+            try:
+                self._refresh_city_display()
+            except Exception:
+                pass
 
     def _get_level_xp_snapshot(self) -> Optional[Dict[str, Any]]:
         """Collect current XP/level state and derived values for diagnostics."""
@@ -33764,17 +34382,17 @@ class DevTab(QtWidgets.QWidget):
         self._refresh_level_diag()
         snap = self._get_level_xp_snapshot()
         if not snap:
-            self.status_label.setText("❌ Could not run XP integrity check")
+            self.status_label.setText("âťŚ Could not run XP integrity check")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
             return
 
         if snap["desync"]:
             self.status_label.setText(
-                f"⚠️ XP/Level mismatch detected: hero L{snap['hero_level']} vs calculated L{snap['calc_level']}"
+                f"âš ď¸Ź XP/Level mismatch detected: hero L{snap['hero_level']} vs calculated L{snap['calc_level']}"
             )
             self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
         else:
-            self.status_label.setText(f"✅ XP/Level integrity OK at level {snap['calc_level']}")
+            self.status_label.setText(f"âś… XP/Level integrity OK at level {snap['calc_level']}")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
 
     def _repair_xp_level_sync(self) -> None:
@@ -33782,7 +34400,7 @@ class DevTab(QtWidgets.QWidget):
         try:
             snap = self._get_level_xp_snapshot()
             if not snap:
-                self.status_label.setText("❌ XP repair unavailable (missing gamification helpers)")
+                self.status_label.setText("âťŚ XP repair unavailable (missing gamification helpers)")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 return
 
@@ -33805,11 +34423,11 @@ class DevTab(QtWidgets.QWidget):
 
             self._refresh_level_diag()
             self.status_label.setText(
-                f"🛠 Repaired XP sync: level {old_level} → {snap['calc_level']}, xp_in_level={snap['calc_xp_in_level']}"
+                f"đź›  Repaired XP sync: level {old_level} â†’ {snap['calc_level']}, xp_in_level={snap['calc_xp_in_level']}"
             )
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
         except Exception as e:
-            self.status_label.setText(f"❌ Error repairing XP sync: {e}")
+            self.status_label.setText(f"âťŚ Error repairing XP sync: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _grant_xp_to_next_level(self, show_dialog: bool = False) -> None:
@@ -33817,13 +34435,13 @@ class DevTab(QtWidgets.QWidget):
         try:
             gs = get_game_state()
             if not gs:
-                self.status_label.setText("❌ Game state not available")
+                self.status_label.setText("âťŚ Game state not available")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 return
 
             snap = self._get_level_xp_snapshot()
             if not snap:
-                self.status_label.setText("❌ XP helper functions unavailable")
+                self.status_label.setText("âťŚ XP helper functions unavailable")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 return
 
@@ -33833,20 +34451,20 @@ class DevTab(QtWidgets.QWidget):
 
             if leveled_up:
                 self.status_label.setText(
-                    f"🎉 Added {xp_amount} XP → level {old_level} → {new_level} (xp_in_level={new_xp})"
+                    f"đźŽ‰ Added {xp_amount} XP â†’ level {old_level} â†’ {new_level} (xp_in_level={new_xp})"
                 )
                 self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
                 if show_dialog:
                     self._show_level_up_test_dialog(old_level, new_level, f"+{xp_amount} XP to next")
             else:
                 self.status_label.setText(
-                    f"⚠️ Added {xp_amount} XP but no level-up occurred (now L{new_level}, xp_in_level={new_xp})"
+                    f"âš ď¸Ź Added {xp_amount} XP but no level-up occurred (now L{new_level}, xp_in_level={new_xp})"
                 )
                 self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
 
             self._refresh_level_diag()
         except Exception as e:
-            self.status_label.setText(f"❌ Error granting XP: {e}")
+            self.status_label.setText(f"âťŚ Error granting XP: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _test_level_up_dialog(self) -> None:
@@ -33857,7 +34475,7 @@ class DevTab(QtWidgets.QWidget):
         """Open a synthetic +1 level dialog without mutating XP."""
         snap = self._get_level_xp_snapshot()
         if not snap:
-            self.status_label.setText("❌ Could not preview dialog (XP snapshot unavailable)")
+            self.status_label.setText("âťŚ Could not preview dialog (XP snapshot unavailable)")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
             return
         self._show_level_up_test_dialog(snap["calc_level"], snap["calc_level"] + 1, "Preview only (no XP change)")
@@ -33879,10 +34497,10 @@ class DevTab(QtWidgets.QWidget):
             dialog.exec()
             dialog.hide()
             dialog.deleteLater()
-            self.status_label.setText(f"✅ Level-up dialog shown (L{old_level} → L{new_level})")
+            self.status_label.setText(f"âś… Level-up dialog shown (L{old_level} â†’ L{new_level})")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
         except Exception as e:
-            self.status_label.setText(f"❌ Error opening level-up dialog: {e}")
+            self.status_label.setText(f"âťŚ Error opening level-up dialog: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _get_coin_data(self) -> Optional[Dict[str, Any]]:
@@ -33925,16 +34543,16 @@ class DevTab(QtWidgets.QWidget):
                     for entry in today_entries:
                         entry["time"] = "00:00"
                     self.blocker.save_config()
-                    self.status_label.setText(f"✅ Water cooldown reset! ({len(today_entries)} entries set to 00:00)")
+                    self.status_label.setText(f"âś… Water cooldown reset! ({len(today_entries)} entries set to 00:00)")
                     self.status_label.setStyleSheet("color: #2196f3; padding: 10px;")
                 else:
-                    self.status_label.setText("ℹ️ No water entries today - no cooldown to reset")
+                    self.status_label.setText("â„ąď¸Ź No water entries today - no cooldown to reset")
                     self.status_label.setStyleSheet("color: #888; padding: 10px;")
             else:
-                self.status_label.setText("ℹ️ No water entries - no cooldown to reset")
+                self.status_label.setText("â„ąď¸Ź No water entries - no cooldown to reset")
                 self.status_label.setStyleSheet("color: #888; padding: 10px;")
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _reset_water_lottery_attempts(self) -> None:
@@ -33944,15 +34562,15 @@ class DevTab(QtWidgets.QWidget):
                 old_attempts = self.blocker.water_lottery_attempts
                 self.blocker.water_lottery_attempts = 0
                 self.blocker.save_config()
-                self.status_label.setText(f"✅ Lottery attempts reset! (was {old_attempts}, now 0 → 1% win chance)")
+                self.status_label.setText(f"âś… Lottery attempts reset! (was {old_attempts}, now 0 â†’ 1% win chance)")
                 self.status_label.setStyleSheet("color: #9c27b0; padding: 10px;")
             else:
                 self.blocker.water_lottery_attempts = 0
                 self.blocker.save_config()
-                self.status_label.setText("✅ Lottery attempts initialized to 0")
+                self.status_label.setText("âś… Lottery attempts initialized to 0")
                 self.status_label.setStyleSheet("color: #9c27b0; padding: 10px;")
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _reset_eye_routine_cooldown(self) -> None:
@@ -33965,7 +34583,7 @@ class DevTab(QtWidgets.QWidget):
             self.blocker.stats["eye_protection"]["last_date"] = ""
             self.blocker.save_config()
             
-            self.status_label.setText(f"✅ Eye routine cooldown reset! (was {old_date})")
+            self.status_label.setText(f"âś… Eye routine cooldown reset! (was {old_date})")
             self.status_label.setStyleSheet("color: #00bcd4; padding: 10px;")
             
             # Refresh the eye tab display if it exists
@@ -33974,7 +34592,7 @@ class DevTab(QtWidgets.QWidget):
             if main_window and hasattr(main_window, 'eye_tab'):
                 main_window.eye_tab._update_cooldown_display()
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _refresh_entity_selector(self) -> None:
@@ -33996,13 +34614,13 @@ class DevTab(QtWidgets.QWidget):
             )
             
             for entity in sorted_entities:
-                rarity_icon = {"common": "⚪", "uncommon": "🟢", "rare": "🔵", 
-                               "epic": "🟣", "legendary": "🟠"}.get(entity.rarity.lower(), "⚪")
+                rarity_icon = {"common": "âšŞ", "uncommon": "đźź˘", "rare": "đź”µ", 
+                               "epic": "đźźŁ", "legendary": "đźź "}.get(entity.rarity.lower(), "âšŞ")
                 rarity_icon = "*" if entity.rarity.lower() == "celestial" else rarity_icon
                 self.entity_combo.addItem(f"{rarity_icon} {entity.name} ({entity.id})", entity.id)
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error loading entities: {e}")
+            self.status_label.setText(f"âťŚ Error loading entities: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _encounter_selected_entity(self) -> None:
@@ -34015,14 +34633,14 @@ class DevTab(QtWidgets.QWidget):
             
             game_state = get_game_state()
             if not game_state:
-                self.status_label.setText("❌ Game state not available")
+                self.status_label.setText("âťŚ Game state not available")
                 return
             
             story_id = self.story_combo.currentText()
             entity_id = self.entity_combo.currentData()
             
             if not entity_id:
-                self.status_label.setText("❌ No entity selected")
+                self.status_label.setText("âťŚ No entity selected")
                 return
             
             # Find the entity
@@ -34030,7 +34648,7 @@ class DevTab(QtWidgets.QWidget):
             entity = next((e for e in entities if e.id == entity_id), None)
             
             if not entity:
-                self.status_label.setText(f"❌ Entity not found: {entity_id}")
+                self.status_label.setText(f"âťŚ Entity not found: {entity_id}")
                 return
             
             hero_power = game_state.get_current_power()
@@ -34164,11 +34782,11 @@ class DevTab(QtWidgets.QWidget):
                 bookmark_data=bookmark_data,
             )
             
-            self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity}){' ⭐' if is_exceptional else ''}")
+            self.status_label.setText(f"âś¨ Encountered: {entity.name} ({entity.rarity}){' â­' if is_exceptional else ''}")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _trigger_entity_encounter(self) -> None:
@@ -34184,7 +34802,7 @@ class DevTab(QtWidgets.QWidget):
             
             game_state = get_game_state()
             if not game_state:
-                self.status_label.setText("❌ Game state not available")
+                self.status_label.setText("âťŚ Game state not available")
                 return
             
             story_id = self.story_combo.currentText()
@@ -34210,7 +34828,7 @@ class DevTab(QtWidgets.QWidget):
                         pass
                     is_exceptional = random.random() < exceptional_chance
                 else:
-                    self.status_label.setText("❌ No entities available")
+                    self.status_label.setText("âťŚ No entities available")
                     return
             
             # Calculate join probability
@@ -34299,10 +34917,10 @@ class DevTab(QtWidgets.QWidget):
             )
             
         except ImportError as e:
-            self.status_label.setText(f"❌ Import error: {e}")
+            self.status_label.setText(f"âťŚ Import error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _show_random_entity(self) -> None:
@@ -34319,7 +34937,7 @@ class DevTab(QtWidgets.QWidget):
             entities = get_entities_for_story(story_id)
             
             if not entities:
-                self.status_label.setText(f"❌ No entities for story: {story_id}")
+                self.status_label.setText(f"âťŚ No entities for story: {story_id}")
                 return
             
             entity = random.choice(entities)
@@ -34412,11 +35030,11 @@ class DevTab(QtWidgets.QWidget):
                 flavor_text=flavor_text,
             )
             
-            self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity}){' ⭐' if is_exceptional else ''}")
+            self.status_label.setText(f"âś¨ Encountered: {entity.name} ({entity.rarity}){' â­' if is_exceptional else ''}")
             self.status_label.setStyleSheet("color: #2196f3; padding: 10px;")
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _encounter_by_rarity(self, rarity: str) -> None:
@@ -34436,7 +35054,7 @@ class DevTab(QtWidgets.QWidget):
             matching = [e for e in entities if e.rarity.lower() == rarity.lower()]
             
             if not matching:
-                self.status_label.setText(f"❌ No {rarity} entities for {story_id}")
+                self.status_label.setText(f"âťŚ No {rarity} entities for {story_id}")
                 return
             
             entity = random.choice(matching)
@@ -34531,13 +35149,13 @@ class DevTab(QtWidgets.QWidget):
                 flavor_text=flavor_text,
             )
             
-            self.status_label.setText(f"✨ {rarity.upper()}: {entity.name}{' ⭐' if is_exceptional else ''}")
+            self.status_label.setText(f"âś¨ {rarity.upper()}: {entity.name}{' â­' if is_exceptional else ''}")
             color = {"common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3", 
                      "epic": "#9c27b0", "legendary": "#ff9800"}.get(rarity, "#4caf50")
             self.status_label.setStyleSheet(f"color: {color}; padding: 10px;")
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _generate_exceptional_entity(self) -> None:
@@ -34552,7 +35170,7 @@ class DevTab(QtWidgets.QWidget):
             entities = get_entities_for_story(story_id)
             
             if not entities:
-                self.status_label.setText(f"❌ No entities for story: {story_id}")
+                self.status_label.setText(f"âťŚ No entities for story: {story_id}")
                 return
             
             # Pick a random entity
@@ -34592,11 +35210,11 @@ class DevTab(QtWidgets.QWidget):
             # Use exceptional_name if available
             display_name = entity.exceptional_name if entity.exceptional_name else entity.name
             border_col = exceptional_colors.get("border", "#FFD700")
-            self.status_label.setText(f"🌟 EXCEPTIONAL {display_name} added!")
+            self.status_label.setText(f"đźŚź EXCEPTIONAL {display_name} added!")
             self.status_label.setStyleSheet(f"color: {border_col}; padding: 10px; font-weight: bold;")
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _view_entitidex(self) -> None:
@@ -34609,14 +35227,14 @@ class DevTab(QtWidgets.QWidget):
             
             # Create a simple viewer dialog
             dialog = QtWidgets.QDialog(self)
-            dialog.setWindowTitle(f"📖 Entitidex - {story_id.capitalize()}")
+            dialog.setWindowTitle(f"đź“– Entitidex - {story_id.capitalize()}")
             dialog.setFixedSize(600, 500)
             dialog.setStyleSheet("background: #1E1E1E;")
             
             layout = QtWidgets.QVBoxLayout(dialog)
             
             # Title
-            title = QtWidgets.QLabel(f"🐾 {story_id.capitalize()} Entities ({len(entities)} total)")
+            title = QtWidgets.QLabel(f"đźľ {story_id.capitalize()} Entities ({len(entities)} total)")
             title.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFD700; padding: 10px;")
             title.setAlignment(QtCore.Qt.AlignCenter)
             layout.addWidget(title)
@@ -34659,7 +35277,7 @@ class DevTab(QtWidgets.QWidget):
                 name.setWordWrap(True)
                 card_layout.addWidget(name)
                 
-                power = QtWidgets.QLabel(f"⚡ {entity.power}")
+                power = QtWidgets.QLabel(f"âšˇ {entity.power}")
                 power.setStyleSheet("color: #FFD700; font-size: 10px;")
                 card_layout.addWidget(power)
                 
@@ -34680,11 +35298,11 @@ class DevTab(QtWidgets.QWidget):
             
             dialog.exec()
             
-            self.status_label.setText(f"📖 Viewing {len(entities)} {story_id} entities")
+            self.status_label.setText(f"đź“– Viewing {len(entities)} {story_id} entities")
             self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _refresh_entity_lock_list(self) -> None:
@@ -34720,7 +35338,7 @@ class DevTab(QtWidgets.QWidget):
                 normal_item.setData(QtCore.Qt.UserRole + 1, False)  # Normal variant
                 
                 is_normal_unlocked = entity.id in collected
-                normal_checkbox = QtWidgets.QCheckBox(f"  {entity.name} ({entity.rarity}) ⚡{entity.power}")
+                normal_checkbox = QtWidgets.QCheckBox(f"  {entity.name} ({entity.rarity}) âšˇ{entity.power}")
                 normal_checkbox.setChecked(is_normal_unlocked)
                 normal_checkbox.setStyleSheet(f"color: {color}; font-weight: bold;")
                 
@@ -34734,8 +35352,8 @@ class DevTab(QtWidgets.QWidget):
                 exceptional_item.setData(QtCore.Qt.UserRole + 1, True)  # Exceptional variant
                 
                 is_exceptional_unlocked = entity.id in exceptional
-                exc_name = entity.exceptional_name if entity.exceptional_name else f"{entity.name} ⭐"
-                exceptional_checkbox = QtWidgets.QCheckBox(f"  ⭐ {exc_name}")
+                exc_name = entity.exceptional_name if entity.exceptional_name else f"{entity.name} â­"
+                exceptional_checkbox = QtWidgets.QCheckBox(f"  â­ {exc_name}")
                 exceptional_checkbox.setChecked(is_exceptional_unlocked)
                 # Golden gradient style for exceptional
                 exceptional_checkbox.setStyleSheet(
@@ -34749,13 +35367,13 @@ class DevTab(QtWidgets.QWidget):
             collected_count = sum(1 for e in entities if e.id in collected)
             exceptional_count = sum(1 for e in entities if e.id in exceptional)
             self.status_label.setText(
-                f"📋 {story_id}: {collected_count}/{len(entities)} normal, "
-                f"{exceptional_count}/{len(entities)} exceptional ⭐"
+                f"đź“‹ {story_id}: {collected_count}/{len(entities)} normal, "
+                f"{exceptional_count}/{len(entities)} exceptional â­"
             )
             self.status_label.setStyleSheet("color: #2196f3; padding: 10px;")
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error loading entities: {e}")
+            self.status_label.setText(f"âťŚ Error loading entities: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _unlock_all_entities(self) -> None:
@@ -34765,7 +35383,7 @@ class DevTab(QtWidgets.QWidget):
             checkbox = self.entity_lock_list.itemWidget(item)
             if checkbox:
                 checkbox.setChecked(True)
-        self.status_label.setText("✅ All entities marked for unlock - click 'Apply Changes' to save")
+        self.status_label.setText("âś… All entities marked for unlock - click 'Apply Changes' to save")
         self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
 
     def _lock_all_entities(self) -> None:
@@ -34775,7 +35393,7 @@ class DevTab(QtWidgets.QWidget):
             checkbox = self.entity_lock_list.itemWidget(item)
             if checkbox:
                 checkbox.setChecked(False)
-        self.status_label.setText("🔒 All entities marked for lock - click 'Apply Changes' to save")
+        self.status_label.setText("đź”’ All entities marked for lock - click 'Apply Changes' to save")
         self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _apply_entity_lock_changes(self) -> None:
@@ -34871,18 +35489,18 @@ class DevTab(QtWidgets.QWidget):
             if normal_locked > 0:
                 parts.append(f"{normal_locked} normal locked")
             if exceptional_unlocked > 0:
-                parts.append(f"{exceptional_unlocked} exceptional ⭐ unlocked")
+                parts.append(f"{exceptional_unlocked} exceptional â­ unlocked")
             if exceptional_locked > 0:
-                parts.append(f"{exceptional_locked} exceptional ⭐ locked")
+                parts.append(f"{exceptional_locked} exceptional â­ locked")
             
             if parts:
-                self.status_label.setText(f"✅ Applied: {', '.join(parts)}")
+                self.status_label.setText(f"âś… Applied: {', '.join(parts)}")
             else:
-                self.status_label.setText("ℹ️ No changes to apply")
+                self.status_label.setText("â„ąď¸Ź No changes to apply")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error applying changes: {e}")
+            self.status_label.setText(f"âťŚ Error applying changes: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     # ========================================================================
@@ -34906,10 +35524,10 @@ class DevTab(QtWidgets.QWidget):
             # Update resources display
             resources = get_resources(self.blocker.adhd_buster)
             res_text = "  |  ".join([
-                f"💧 {resources.get('water', 0)}",
-                f"🧱 {resources.get('materials', 0)}",
-                f"🏃 {resources.get('activity', 0)}",
-                f"🎯 {resources.get('focus', 0)}",
+                f"đź’§ {resources.get('water', 0)}",
+                f"đź§± {resources.get('materials', 0)}",
+                f"đźŹ {resources.get('activity', 0)}",
+                f"đźŽŻ {resources.get('focus', 0)}",
             ])
             self.city_resources_label.setText(f"Current: {res_text}")
             self.city_resources_label.setStyleSheet("color: #4caf50; padding: 5px;")
@@ -34928,14 +35546,14 @@ class DevTab(QtWidgets.QWidget):
                         bid = cell.get("building_id", "?")[:3].upper()
                         status = cell.get("status", "?")
                         level = cell.get("level", 1)
-                        s_icon = {"placed": "📍", "building": "🔨", "complete": "✅"}.get(status, "?")
+                        s_icon = {"placed": "đź“Ť", "building": "đź”¨", "complete": "âś…"}.get(status, "?")
                         row_parts.append(f"[{bid}{level}{s_icon}]")
                 grid_lines.append(" ".join(row_parts))
             
-            self.city_grid_label.setText("Grid (5×5):\n" + "\n".join(grid_lines))
+            self.city_grid_label.setText("Grid (5Ă—5):\n" + "\n".join(grid_lines))
             
         except Exception as e:
-            self.city_resources_label.setText(f"❌ Error: {e}")
+            self.city_resources_label.setText(f"âťŚ Error: {e}")
 
     def _add_city_resource(self, resource_type: str, amount: int) -> None:
         """Add city resources."""
@@ -34946,8 +35564,8 @@ class DevTab(QtWidgets.QWidget):
             self.blocker.save_config()
             self._refresh_city_display()
             
-            emoji = {"water": "💧", "materials": "🧱", "scrap": "🔩", "activity": "🏃", "focus": "🎯"}.get(resource_type, "📦")
-            self.status_label.setText(f"✅ Added {amount} {emoji} {resource_type}! New total: {new_total}")
+            emoji = {"water": "đź’§", "materials": "đź§±", "scrap": "đź”©", "activity": "đźŹ", "focus": "đźŽŻ"}.get(resource_type, "đź“¦")
+            self.status_label.setText(f"âś… Added {amount} {emoji} {resource_type}! New total: {new_total}")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
             
             # Refresh city tab if available
@@ -34956,7 +35574,7 @@ class DevTab(QtWidgets.QWidget):
                 main_win.city_tab._refresh_city()
             
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_place_building(self) -> None:
@@ -34970,7 +35588,7 @@ class DevTab(QtWidgets.QWidget):
             col = self.city_col_spin.value()
             
             if not building_id:
-                self.status_label.setText("❌ No building selected")
+                self.status_label.setText("âťŚ No building selected")
                 return
             
             success = place_building(self.blocker.adhd_buster, row, col, building_id)
@@ -34978,7 +35596,7 @@ class DevTab(QtWidgets.QWidget):
             if success:
                 self.blocker.save_config()
                 self._refresh_city_display()
-                self.status_label.setText(f"✅ Placed {building_id} at ({row}, {col})")
+                self.status_label.setText(f"âś… Placed {building_id} at ({row}, {col})")
                 self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
                 
                 # Refresh city tab
@@ -34986,11 +35604,11 @@ class DevTab(QtWidgets.QWidget):
                 if hasattr(main_win, 'city_tab'):
                     main_win.city_tab._refresh_city()
             else:
-                self.status_label.setText(f"❌ Could not place {building_id} at ({row}, {col})")
+                self.status_label.setText(f"âťŚ Could not place {building_id} at ({row}, {col})")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_complete_building(self) -> None:
@@ -35009,7 +35627,7 @@ class DevTab(QtWidgets.QWidget):
             grid = city.get("grid", [])
             
             if grid[row][col] is None:
-                self.status_label.setText(f"❌ No building at ({row}, {col})")
+                self.status_label.setText(f"âťŚ No building at ({row}, {col})")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 return
             
@@ -35034,7 +35652,7 @@ class DevTab(QtWidgets.QWidget):
             self.blocker.save_config()
             self._refresh_city_display()
             
-            self.status_label.setText(f"✅ Completed {building_id} L{actual_level} at ({row}, {col})")
+            self.status_label.setText(f"âś… Completed {building_id} L{actual_level} at ({row}, {col})")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
             
             # Refresh city tab
@@ -35043,7 +35661,7 @@ class DevTab(QtWidgets.QWidget):
                 main_win.city_tab._refresh_city()
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_remove_building(self) -> None:
@@ -35059,7 +35677,7 @@ class DevTab(QtWidgets.QWidget):
             if removed:
                 self.blocker.save_config()
                 self._refresh_city_display()
-                self.status_label.setText(f"✅ Removed {removed} from ({row}, {col})")
+                self.status_label.setText(f"âś… Removed {removed} from ({row}, {col})")
                 self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
                 
                 # Refresh city tab
@@ -35067,11 +35685,11 @@ class DevTab(QtWidgets.QWidget):
                 if hasattr(main_win, 'city_tab'):
                     main_win.city_tab._refresh_city()
             else:
-                self.status_label.setText(f"❌ No building at ({row}, {col})")
+                self.status_label.setText(f"âťŚ No building at ({row}, {col})")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_place_all_buildings(self) -> None:
@@ -35100,7 +35718,7 @@ class DevTab(QtWidgets.QWidget):
             
             self.blocker.save_config()
             self._refresh_city_display()
-            self.status_label.setText(f"✅ Placed {placed} buildings!")
+            self.status_label.setText(f"âś… Placed {placed} buildings!")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
             
             # Refresh city tab
@@ -35109,7 +35727,7 @@ class DevTab(QtWidgets.QWidget):
                 main_win.city_tab._refresh_city()
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_complete_all_buildings(self) -> None:
@@ -35133,7 +35751,7 @@ class DevTab(QtWidgets.QWidget):
             
             self.blocker.save_config()
             self._refresh_city_display()
-            self.status_label.setText(f"✅ Completed {completed} buildings!")
+            self.status_label.setText(f"âś… Completed {completed} buildings!")
             self.status_label.setStyleSheet("color: #9c27b0; padding: 10px;")
             
             # Refresh city tab
@@ -35142,7 +35760,7 @@ class DevTab(QtWidgets.QWidget):
                 main_win.city_tab._refresh_city()
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_max_all_buildings(self) -> None:
@@ -35175,7 +35793,7 @@ class DevTab(QtWidgets.QWidget):
             
             self.blocker.save_config()
             self._refresh_city_display()
-            self.status_label.setText(f"✅ Maxed {maxed} buildings to max level!")
+            self.status_label.setText(f"âś… Maxed {maxed} buildings to max level!")
             self.status_label.setStyleSheet("color: #FFD700; padding: 10px;")
             
             # Refresh city tab
@@ -35184,7 +35802,7 @@ class DevTab(QtWidgets.QWidget):
                 main_win.city_tab._refresh_city()
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_clear_all(self) -> None:
@@ -35198,7 +35816,7 @@ class DevTab(QtWidgets.QWidget):
             
             self.blocker.save_config()
             self._refresh_city_display()
-            self.status_label.setText("💥 Cleared all buildings from city!")
+            self.status_label.setText("đź’Ą Cleared all buildings from city!")
             self.status_label.setStyleSheet("color: #b71c1c; padding: 10px;")
             
             # Refresh city tab
@@ -35207,7 +35825,7 @@ class DevTab(QtWidgets.QWidget):
                 main_win.city_tab._refresh_city()
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_reset_resources(self) -> None:
@@ -35225,7 +35843,7 @@ class DevTab(QtWidgets.QWidget):
             
             self.blocker.save_config()
             self._refresh_city_display()
-            self.status_label.setText("🔄 Reset all city resources to 0!")
+            self.status_label.setText("đź”„ Reset all city resources to 0!")
             self.status_label.setStyleSheet("color: #455a64; padding: 10px;")
             
             # Refresh city tab
@@ -35234,7 +35852,7 @@ class DevTab(QtWidgets.QWidget):
                 main_win.city_tab._refresh_city()
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _city_give_all_resources(self) -> None:
@@ -35250,7 +35868,7 @@ class DevTab(QtWidgets.QWidget):
             
             self.blocker.save_config()
             self._refresh_city_display()
-            self.status_label.setText("💰 Added +500 to all resources!")
+            self.status_label.setText("đź’° Added +500 to all resources!")
             self.status_label.setStyleSheet("color: #00bcd4; padding: 10px;")
             
             # Refresh city tab
@@ -35259,7 +35877,7 @@ class DevTab(QtWidgets.QWidget):
                 main_win.city_tab._refresh_city()
                 
         except Exception as e:
-            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setText(f"âťŚ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
 
@@ -35534,7 +36152,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         quick_bar = QtWidgets.QHBoxLayout()
 
         # Priorities button
-        priorities_btn = QtWidgets.QPushButton("🎯 Priorities")
+        priorities_btn = QtWidgets.QPushButton("đźŽŻ Priorities")
         priorities_btn.setStyleSheet("font-weight: bold; padding: 6px 12px;")
         priorities_btn.clicked.connect(self._open_priorities)
         quick_bar.addWidget(priorities_btn)
@@ -35552,7 +36170,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             # Coin counter
             coins = self.blocker.adhd_buster.get("coins", 0)
-            self.coin_label = QtWidgets.QPushButton(f"💰 {coins:,} Coins")
+            self.coin_label = QtWidgets.QPushButton(f"đź’° {coins:,} Coins")
             
             # Build tooltip with lucky bonus info if available
             tooltip = "Your currency for unlocking features and boosters"
@@ -35562,7 +36180,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 coin_discount = lucky_bonuses.get("coin_discount", 0)
                 if coin_discount > 0:
                     effective_discount = min(coin_discount, 90)
-                    tooltip += f"\n✨ Gear Bonus: {effective_discount}% off merge costs!"
+                    tooltip += f"\nâś¨ Gear Bonus: {effective_discount}% off merge costs!"
             
             self.coin_label.setStyleSheet("font-weight: bold; padding: 6px 12px;")
             self.coin_label.setToolTip(tooltip)
@@ -35596,7 +36214,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         
         # Current username button - click to switch users
         current_user = self.blocker.user_dir.name if hasattr(self.blocker, 'user_dir') else "Default"
-        self.user_btn = QtWidgets.QPushButton(f"👤 {current_user}")
+        self.user_btn = QtWidgets.QPushButton(f"đź‘¤ {current_user}")
         self.user_btn.setStyleSheet("""
             QPushButton {
                 font-weight: bold; 
@@ -35645,7 +36263,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         
         # 1. Timer tab
         self.timer_tab = TimerTab(self.blocker, self)
-        self.tabs.addTab(self.timer_tab, "🎯 Focus")
+        self.tabs.addTab(self.timer_tab, "đźŽŻ Focus")
         # Connect session signals to refresh stats and manage ADHD tab state
         self.timer_tab.session_complete.connect(self._on_session_complete)
         self.timer_tab.session_started.connect(self._on_session_started)
@@ -35709,32 +36327,32 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         if GAMIFICATION_AVAILABLE:
             specs.append({"attr": "adhd_tab", "title": self._get_hero_tab_title()})
-            specs.append({"attr": "story_tab", "title": "📜 Story"})
+            specs.append({"attr": "story_tab", "title": "đź“ś Story"})
 
-        specs.append({"attr": "eye_tab", "title": "👁️ Eyes"})
-        specs.append({"attr": "hydration_tab", "title": "💧 Water"})
-        specs.append({"attr": "activity_tab", "title": "🏃 Activity"})
-        specs.append({"attr": "weight_tab", "title": "⚖ Weight"})
-        specs.append({"attr": "sleep_tab", "title": "😴 Sleep"})
+        specs.append({"attr": "eye_tab", "title": "đź‘ď¸Ź Eyes"})
+        specs.append({"attr": "hydration_tab", "title": "đź’§ Water"})
+        specs.append({"attr": "activity_tab", "title": "đźŹ Activity"})
+        specs.append({"attr": "weight_tab", "title": "âš– Weight"})
+        specs.append({"attr": "sleep_tab", "title": "đź´ Sleep"})
 
         if GAMIFICATION_AVAILABLE:
-            specs.append({"attr": "entitidex_tab", "title": "📖 Entitidex"})
+            specs.append({"attr": "entitidex_tab", "title": "đź“– Entitidex"})
 
         if CITY_AVAILABLE:
-            specs.append({"attr": "city_tab", "title": "🏰 City"})
+            specs.append({"attr": "city_tab", "title": "đźŹ° City"})
 
-        specs.append({"attr": "stats_tab", "title": "📊 Productivity"})
-        specs.append({"attr": "schedule_tab", "title": "📅 Schedule"})
-        specs.append({"attr": "categories_tab", "title": "📁 Categories"})
-        specs.append({"attr": "sites_tab", "title": "🌐 Sites"})
+        specs.append({"attr": "stats_tab", "title": "đź“Š Productivity"})
+        specs.append({"attr": "schedule_tab", "title": "đź“… Schedule"})
+        specs.append({"attr": "categories_tab", "title": "đź“ Categories"})
+        specs.append({"attr": "sites_tab", "title": "đźŚ Sites"})
 
         if AI_AVAILABLE:
-            specs.append({"attr": "ai_tab", "title": "🧠 AI Insights"})
+            specs.append({"attr": "ai_tab", "title": "đź§  AI Insights"})
 
-        specs.append({"attr": "settings_tab", "title": "⚙ Settings"})
+        specs.append({"attr": "settings_tab", "title": "âš™ Settings"})
 
         if GAMIFICATION_AVAILABLE and self.blocker.dev_mode_enabled:
-            specs.append({"attr": "dev_tab", "title": "🛠️ Dev"})
+            specs.append({"attr": "dev_tab", "title": "đź› ď¸Ź Dev"})
 
         return specs
 
@@ -36079,7 +36697,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         result = styled_question(
             self,
             "Crash Recovery Detected",
-            f"⚠️ {crash_info} did not shut down properly.\n\nSome websites may still be blocked.\n\n"
+            f"âš ď¸Ź {crash_info} did not shut down properly.\n\nSome websites may still be blocked.\n\n"
             "Would you like to remove all blocks and clean up?",
             ["Remove Blocks", "Keep Blocks", "Decide Later"]
         )
@@ -36087,7 +36705,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if result == "Remove Blocks":
             success, message = self.blocker.recover_from_crash()
             if success:
-                show_info(self, "Recovery Complete", "✅ All blocks have been removed.\n\nYour browser should now be able to access all websites.")
+                show_info(self, "Recovery Complete", "âś… All blocks have been removed.\n\nYour browser should now be able to access all websites.")
             else:
                 show_error(self, "Recovery Failed", f"Could not clean up: {message}\n\nTry using 'Emergency Cleanup' in Settings tab.")
         elif result == "Keep Blocks":
@@ -36163,7 +36781,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             prev_user = um.get_previous_user()
             
             if prev_user and prev_user != self.username and hasattr(self, 'prev_user_btn'):
-                self.prev_user_btn.setText(f"← {prev_user}")
+                self.prev_user_btn.setText(f"â† {prev_user}")
                 self.prev_user_btn.setToolTip(f"Quick switch to {prev_user}")
                 self.prev_user_btn.setVisible(True)
             elif hasattr(self, 'prev_user_btn'):
@@ -36242,7 +36860,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             # Update user button
             if hasattr(self, 'user_btn'):
-                self.user_btn.setText(f"👤 {new_username}")
+                self.user_btn.setText(f"đź‘¤ {new_username}")
             
             # Create new blocker with new user's data
             old_blocker = self.blocker
@@ -36415,6 +37033,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Update DevTab if it exists (hidden developer tools)
             if hasattr(self, 'dev_tab') and self.dev_tab:
                 self.dev_tab.blocker = self.blocker
+                if hasattr(self.dev_tab, '_refresh_dev_state'):
+                    self.dev_tab._refresh_dev_state()
             
             # Update quick bar elements
             if GAMIFICATION_AVAILABLE:
@@ -36425,7 +37045,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 
                 if hasattr(self, 'coin_label'):
                     coins = self.blocker.adhd_buster.get("coins", 0)
-                    self.coin_label.setText(f"💰 {coins:,} Coins")
+                    self.coin_label.setText(f"đź’° {coins:,} Coins")
                     self.coin_label.setVisible(is_gamification_enabled(self.blocker.adhd_buster))
             
             # Update admin label
@@ -36452,11 +37072,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _update_admin_label(self) -> None:
         if hasattr(self, "admin_label"):
             if self.blocker.is_admin():
-                self.admin_label.setText("✅ Admin")
+                self.admin_label.setText("âś… Admin")
                 self.admin_label.setStyleSheet("color: green; font-weight: bold;")
                 self.admin_label.setToolTip("Running with administrator privileges - website blocking will work.")
             else:
-                self.admin_label.setText("⚠ Not Admin")
+                self.admin_label.setText("âš  Not Admin")
                 self.admin_label.setStyleSheet("color: #d32f2f; font-weight: bold;")
                 self.admin_label.setToolTip(
                     "Not running as administrator - website blocking won't work!\n\n"
@@ -36491,7 +37111,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self.blocker.save_config()
                 self._show_health_reminder(
                     "eye",
-                    "👁️ Eyes Reminder",
+                    "đź‘ď¸Ź Eyes Reminder",
                     "Time for an eye routine! Rest your eyes with blinks and far gazing."
                 )
         
@@ -36517,7 +37137,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self.blocker.save_config()
                 self._show_health_reminder(
                     "water",
-                    "💧 Hydration Reminder",
+                    "đź’§ Hydration Reminder",
                     "Time to drink some water! Stay hydrated for better focus."
                 )
     
@@ -36640,7 +37260,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Get user's notification preference
         if reminder_type == "eye":
             pref = getattr(self.blocker, 'eye_reminder_notification_type', 'Toast')
-            emoji = "👁️"
+            emoji = "đź‘ď¸Ź"
             msg_index = getattr(self.blocker, 'eye_reminder_message_index', 0)
             voice_msg = EYE_MESSAGES[msg_index % 50]
             # Increment and save for next time
@@ -36648,7 +37268,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.blocker.save_config()
         else:  # water
             pref = getattr(self.blocker, 'water_reminder_notification_type', 'Toast')
-            emoji = "💧"
+            emoji = "đź’§"
             msg_index = getattr(self.blocker, 'water_reminder_message_index', 0)
             voice_msg = WATER_MESSAGES[msg_index % 50]
             # Increment and save for next time
@@ -36699,12 +37319,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _get_hero_tab_title(self, story_id: Optional[str] = None) -> str:
         """Build the dynamic Hero tab title from the active story."""
         resolved_story = story_id or self._get_current_story_for_labels()
-        return f"🦸 {get_story_main_character_name(resolved_story)}"
+        return f"đź¦¸ {get_story_main_character_name(resolved_story)}"
 
     def _format_buster_button_text(self, power: int, story_id: Optional[str] = None) -> str:
         """Build the quick-bar Hero button label using the active story character name."""
         resolved_story = story_id or self._get_current_story_for_labels()
-        return f"🦸 {get_story_main_character_name(resolved_story)}  ⚔ {power}"
+        return f"đź¦¸ {get_story_main_character_name(resolved_story)}  âš” {power}"
 
     def _refresh_hero_theme_labels(self, power: Optional[int] = None) -> None:
         """Keep Hero button + Hero tab title synced with the active story."""
@@ -36747,7 +37367,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Update the coin counter in the toolbar."""
         if GAMIFICATION_AVAILABLE and hasattr(self, 'coin_label'):
             coins = self.blocker.adhd_buster.get("coins", 0)
-            self.coin_label.setText(f"💰 {coins:,} Coins")
+            self.coin_label.setText(f"đź’° {coins:,} Coins")
     
     # === GameState Signal Handlers (Reactive UI Updates) ===
     
@@ -36759,7 +37379,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _on_coins_changed(self, new_coins: int) -> None:
         """Handle coins change signal - update coin display in toolbar."""
         if hasattr(self, 'coin_label'):
-            self.coin_label.setText(f"💰 {new_coins:,} Coins")
+            self.coin_label.setText(f"đź’° {new_coins:,} Coins")
 
     def _on_xp_changed(self, new_xp: int, new_level: int) -> None:
         """Handle XP change signal - update timeline XP ring."""
@@ -36796,7 +37416,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             coin_discount = lucky_bonuses.get("coin_discount", 0)
             if coin_discount > 0:
                 effective_discount = min(coin_discount, 90)
-                bonus_info = f"<p style='color: #8b5cf6;'><b>✨ Active Gear Bonus: {effective_discount}% off merge costs!</b></p>"
+                bonus_info = f"<p style='color: #8b5cf6;'><b>âś¨ Active Gear Bonus: {effective_discount}% off merge costs!</b></p>"
         
         message = (
             f"<h2>Your Balance: {coins:,} Coins</h2>"
@@ -36815,15 +37435,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             "<li><b>Merge Boost:</b> 50 Coins - +25% success rate for merge</li>"
             "<li><b>Tier Upgrade:</b> 50 Coins - Upgrade result tier by one on success</li>"
             "<li><b>Retry Bump:</b> 50 Coins - On failure, bump success % by 5% and retry</li>"
-            "<li><b>Claim Near-Miss:</b> 100 Coins - Claim item on near-miss failure (≤5%)</li>"
+            "<li><b>Claim Near-Miss:</b> 100 Coins - Claim item on near-miss failure (â‰¤5%)</li>"
             "<li><b>Salvage:</b> 50 Coins - On failure, save one random item from merge</li>"
             "<li><b>Optimize Gear:</b> 10 Coins - Auto-equip best gear for power/lucky options</li>"
             "<li><b>Unlock Story:</b> 100 Coins - Unlock new character themes (Underdog is free)</li>"
             "</ul>"
-            "<p><i>💡 Tip: Mark one priority as 'Strategic' to get 2.5x coins per hour!</i></p>"
-            "<p><i>✨ Lucky Gear with coin_discount reduces merge costs by up to 90%!</i></p>"
+            "<p><i>đź’ˇ Tip: Mark one priority as 'Strategic' to get 2.5x coins per hour!</i></p>"
+            "<p><i>âś¨ Lucky Gear with coin_discount reduces merge costs by up to 90%!</i></p>"
         )
-        show_info(self, "💰 Coin Economy", message)
+        show_info(self, "đź’° Coin Economy", message)
 
     def _check_scheduled_blocking(self) -> None:
         """Check if we should be blocking based on schedule."""
@@ -36872,14 +37492,14 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if not first_launch:
             # First time ever - always reward
             should_reward = True
-            reward_reason = "🎁 Welcome Gift!"
+            reward_reason = "đźŽ Welcome Gift!"
             self.blocker.adhd_buster["first_launch_complete"] = True
         else:
             # Subsequent launches - 10% daily chance
             import random
             if random.random() < 0.10:
                 should_reward = True
-                reward_reason = "🎲 Lucky Daily Drop!"
+                reward_reason = "đźŽ˛ Lucky Daily Drop!"
         
         if should_reward:
             # Set reward date FIRST to prevent race conditions (rapid open/close)
@@ -36932,12 +37552,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
-                title=f"🎁 {reward_reason}",
-                header_emoji="🎁",
+                title=f"đźŽ {reward_reason}",
+                header_emoji="đźŽ",
                 source_label="Daily Login Reward",
                 items_earned=[item],
                 equipped=equipped,
-                extra_messages=[f"Tier boost: {current_tier} → {boosted_tier}"],
+                extra_messages=[f"Tier boost: {current_tier} â†’ {boosted_tier}"],
                 game_state=getattr(self, 'game_state', None)  # For themed slot names
             )
             dialog.exec()
@@ -37274,7 +37894,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             h = remaining // 3600
             m = (remaining % 3600) // 60
             s = remaining % 60
-            self.tray_status_action.setText(f"🔒 Blocking - {h:02d}:{m:02d}:{s:02d}")
+            self.tray_status_action.setText(f"đź”’ Blocking - {h:02d}:{m:02d}:{s:02d}")
             self.tray_icon.setToolTip(f"Personal Liberty - Blocking ({h:02d}:{m:02d}:{s:02d})")
             
             # Update icon with remaining minutes (total minutes, not just the m component)
@@ -37307,11 +37927,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if self._defer_tabs_until_visible and not self._deferred_tabs_started:
             self._start_deferred_tab_loading()
 
-        # Notify Entitidex tab to resume animations if it's currently visible
-        if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
+        # Notify tabs to resume animations if currently visible
+        if hasattr(self, 'entitidex_tab') and self.entitidex_tab and self.entitidex_tab.isVisible():
             self.entitidex_tab.on_window_restored()
-        if hasattr(self, 'adhd_tab') and self.adhd_tab:
+        if hasattr(self, 'adhd_tab') and self.adhd_tab and self.adhd_tab.isVisible():
             self.adhd_tab.on_window_restored()
+        if hasattr(self, 'city_tab') and self.city_tab and self.city_tab.isVisible():
+            self.city_tab.on_window_restored()
         # Tray icon stays visible and timer keeps running
 
     def _quit_application(self) -> None:
@@ -37331,23 +37953,26 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Handle window state changes - notify tabs about minimize/restore."""
         if event.type() == QtCore.QEvent.WindowStateChange:
             if self.windowState() & QtCore.Qt.WindowMinimized:
-                # Window was minimized - notify Entitidex tab to pause animations
+                # Window was minimized - notify all animated tabs to pause
                 if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
                     self.entitidex_tab.on_window_minimized()
                 if hasattr(self, 'adhd_tab') and self.adhd_tab:
                     self.adhd_tab.on_window_minimized()
+                if hasattr(self, 'city_tab') and self.city_tab:
+                    self.city_tab.on_window_minimized()
             else:
                 # Window was restored (any non-minimized state)
                 # Check if the old state was minimized
                 try:
-                    # QWindowStateChangeEvent has oldState() method
                     old_state = event.oldState()
                     if old_state & QtCore.Qt.WindowMinimized:
-                        # Window was restored from minimized - notify Entitidex tab to resume
-                        if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
+                        # Window was restored from minimized - notify all animated tabs
+                        if hasattr(self, 'entitidex_tab') and self.entitidex_tab and self.entitidex_tab.isVisible():
                             self.entitidex_tab.on_window_restored()
-                        if hasattr(self, 'adhd_tab') and self.adhd_tab:
+                        if hasattr(self, 'adhd_tab') and self.adhd_tab and self.adhd_tab.isVisible():
                             self.adhd_tab.on_window_restored()
+                        if hasattr(self, 'city_tab') and self.city_tab and self.city_tab.isVisible():
+                            self.city_tab.on_window_restored()
                 except AttributeError:
                     pass  # Not a QWindowStateChangeEvent, ignore
         super().changeEvent(event)
@@ -37355,15 +37980,17 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _hide_to_tray(self) -> None:
         """Hide window to system tray."""
         if self.tray_icon:
-            # Pause Entitidex animations before hiding (saves CPU in background)
+            # Pause all animated tab animations before hiding (saves CPU in background)
             if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
                 self.entitidex_tab.on_window_minimized()
             if hasattr(self, 'adhd_tab') and self.adhd_tab:
                 self.adhd_tab.on_window_minimized()
+            if hasattr(self, 'city_tab') and self.city_tab:
+                self.city_tab.on_window_minimized()
             self.hide()
             self.tray_icon.showMessage(
                 "Personal Liberty",
-                "Still running in system tray. Double-click to restore, or right-click → Exit to quit.",
+                "Still running in system tray. Double-click to restore, or right-click â†’ Exit to quit.",
                 QtWidgets.QSystemTrayIcon.Information,
                 2000
             )
@@ -37578,7 +38205,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # File menu
         file_menu = menu_bar.addMenu("&File")
-        priorities_action = file_menu.addAction("🎯 Priorities")
+        priorities_action = file_menu.addAction("đźŽŻ Priorities")
         priorities_action.triggered.connect(self._open_priorities)
         file_menu.addSeparator()
         exit_action = file_menu.addAction("Exit")
@@ -37587,11 +38214,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Tools menu
         tools_menu = menu_bar.addMenu("&Tools")
         if GAMIFICATION_AVAILABLE:
-            buster_action = tools_menu.addAction("🦸 ADHD Buster")
+            buster_action = tools_menu.addAction("đź¦¸ ADHD Buster")
             buster_action.triggered.connect(self._open_adhd_buster)
-            diary_action = tools_menu.addAction("📖 Adventure Diary")
+            diary_action = tools_menu.addAction("đź“– Adventure Diary")
             diary_action.triggered.connect(self._open_diary)
-        cleanup_action = tools_menu.addAction("🧹 Emergency Cleanup")
+        cleanup_action = tools_menu.addAction("đź§ą Emergency Cleanup")
         cleanup_action.triggered.connect(self._emergency_cleanup)
 
         # Help menu
@@ -37617,7 +38244,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.timer_tab._preserve_strategic_flag = True  # Prevent reset in _start_session
         self.timer_tab._is_starting_with_priority = True  # Skip priority selection dialog
         
-        strategic_msg = "\n\n💰 This is a STRATEGIC priority!\nYou'll earn 2.5x Coins (25/hour instead of 10/hour)" if is_strategic else ""
+        strategic_msg = "\n\nđź’° This is a STRATEGIC priority!\nYou'll earn 2.5x Coins (25/hour instead of 10/hour)" if is_strategic else ""
         
         self.tabs.setCurrentWidget(self.timer_tab)
         show_info(self, "Priority Session", 
@@ -37668,7 +38295,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         mode = getattr(self.blocker, 'mode', None)
         if mode in (BlockMode.STRICT, BlockMode.HARDCORE) and self.blocker.is_blocking:
             reply = show_question(
-                self, "⚠️ Active Session Detected",
+                self, "âš ď¸Ź Active Session Detected",
                 f"You have an active {mode.upper()} session!\n\n"
                 "Emergency cleanup will bypass the protection you set.\n"
                 "This defeats the purpose of using a strict mode.\n\n"
@@ -37715,7 +38342,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             f"<b>Personal Liberty v{APP_VERSION}</b><br><br>"
             "A focus and productivity tool for Windows.<br><br>"
             "Developed by <b>Lukasz Kaczmarek</b><br><br>"
-            "📧 Feedback / Bug reports: "
+            "đź“§ Feedback / Bug reports: "
             "<a href='mailto:lkacz1@gmail.com?subject=Personal Liberty Feedback'>lkacz1@gmail.com</a><br><br>"
             "Built with PySide6 (Qt for Python).")
 
@@ -37789,7 +38416,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if self.timer_tab.blocker.mode == BlockMode.HARDCORE:
                 reply = show_question(
                     self,
-                    "🔥 Hardcore Mode Active",
+                    "đź”Ą Hardcore Mode Active",
                     "A Hardcore session is running!\n\n"
                     "You must solve the math challenge to exit.\n\nContinue?",
                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
@@ -37851,7 +38478,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
-                source_label="Eye Protection Routine Complete! 👁️",
+                source_label="Eye Protection Routine Complete! đź‘ď¸Ź",
                 items_earned=[item],
                 equipped=equipped_before,
                 game_state=get_game_state(),
@@ -37922,7 +38549,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         Award city resources based on completed focus session.
         
         Resource earning formula (per design doc):
-        - 🎯 Focus: 1 per 30 minutes of focus time
+        - đźŽŻ Focus: 1 per 30 minutes of focus time
         
         Also awards Royal Mint income (coins for focus sessions).
         
@@ -38047,7 +38674,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             return  # Already added
 
         self.dev_tab = DevTab(self.blocker, self)
-        self.tabs.addTab(self.dev_tab, "🛠️ Dev")
+        self.tabs.addTab(self.dev_tab, "đź› ď¸Ź Dev")
 
     def _on_dev_mode_enabled(self) -> None:
         """Handle dev mode being enabled via version tap."""
@@ -38084,8 +38711,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Show toast notification
         if self.tray_icon:
             self.tray_icon.showMessage(
-                "🔔 Focus Reminder",
-                f"You're visiting {domain} during a focus session.\nStay focused! 💪",
+                "đź”” Focus Reminder",
+                f"You're visiting {domain} during a focus session.\nStay focused! đź’Ş",
                 QtWidgets.QSystemTrayIcon.Information,
                 5000  # 5 seconds
             )
@@ -38139,12 +38766,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Connect timeline ring widget clicks to tab navigation.
         
         Called after tabs are created to enable navigation:
-        - Water ring → Water tab
-        - Chapter ring → Story tab
-        - Focus ring → Timer tab
-        - XP ring → Hero tab
-        - Hero mini widget → Hero tab
-        - Entities ring → Entitidex tab
+        - Water ring â†’ Water tab
+        - Chapter ring â†’ Story tab
+        - Focus ring â†’ Timer tab
+        - XP ring â†’ Hero tab
+        - Hero mini widget â†’ Hero tab
+        - Entities ring â†’ Entitidex tab
         """
         # Use a deferred connection since tabs aren't created yet when this is called
         QtCore.QTimer.singleShot(0, self._do_connect_timeline_signals)
@@ -38196,13 +38823,14 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Handle tab changes - refresh data for the newly selected tab."""
         self._load_deferred_tab_for_index(index)
         widget = self.tabs.widget(index)
+        app_visible = self.isVisible() and not self.isMinimized()
         
         # === Critical Performance Fix: Pause Entitidex animations when not visible ===
         # Entitidex cards have shimmer timers (50ms interval) and glow animations
         # running continuously. When switching away, we MUST pause these to avoid
         # CPU drain even when the tab is hidden.
         if GAMIFICATION_AVAILABLE and hasattr(self, 'entitidex_tab'):
-            if widget == self.entitidex_tab:
+            if widget == self.entitidex_tab and app_visible:
                 # Switching TO Entitidex - resume animations
                 self.entitidex_tab._resume_all_animations()
             else:
@@ -38211,11 +38839,18 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # Mirror the same lifecycle policy for Hero tab SVG animations.
         if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
-            if widget == self.adhd_tab:
+            if widget == self.adhd_tab and app_visible:
                 self.adhd_tab._resume_all_animations()
             else:
                 self.adhd_tab._pause_all_animations()
-        
+
+        # Pause/resume city tab WebEngine animations to save CPU.
+        if hasattr(self, 'city_tab') and self.city_tab:
+            if widget == self.city_tab and app_visible:
+                self.city_tab._resume_all_animations()
+            else:
+                self.city_tab._pause_all_animations()
+
         # Refresh stats tab when switched to
         if hasattr(self, 'stats_tab') and widget == self.stats_tab:
             self.blocker.load_stats()
