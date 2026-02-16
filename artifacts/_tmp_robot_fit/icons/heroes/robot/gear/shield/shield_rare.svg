@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="s_energy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00B0FF" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0091EA" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+  <g id="shield_rare" transform="translate(10, 0)">
+    <!-- Hex Energy Emitter -->
+    <!-- Arm Mount -->
+    <rect x="35" y="110" width="10" height="20" fill="#1565C0"/>
+    
+    <!-- Energy Field -->
+    <path d="M20 100 L40 90 L60 100 L60 130 L40 140 L20 130 Z" fill="url(#s_energy)" stroke="#00B0FF" stroke-width="1.5">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Inner Hex -->
+    <path d="M30 110 L40 105 L50 110 L50 120 L40 125 L30 120 Z" fill="none" stroke="#FFFFFF" stroke-opacity="0.5"/>
+  </g>
+  </g>
+</svg>

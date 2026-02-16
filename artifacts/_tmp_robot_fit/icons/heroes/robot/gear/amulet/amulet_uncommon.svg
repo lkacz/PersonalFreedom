@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <g id="amulet_uncommon">
+    <!-- ID Card -->
+    <path d="M85 85 Q90 95 95 85" fill="none" stroke="#90A4AE" stroke-width="1"/>
+    
+    <!-- Card Body -->
+    <rect x="82" y="92" width="16" height="12" rx="1" fill="#ECEFF1" stroke="#CFD8DC"/>
+    
+    <!-- Photo Area -->
+    <rect x="84" y="94" width="4" height="5" fill="#90A4AE"/>
+    
+    <!-- Text Lines -->
+    <line x1="90" y1="95" x2="96" y2="95" stroke="#263238" stroke-width="0.5"/>
+    <line x1="90" y1="97" x2="94" y2="97" stroke="#263238" stroke-width="0.5"/>
+    
+    <!-- Green Access Light -->
+    <rect x="84" y="101" width="12" height="2" fill="#00E676"/>
+  </g>
+</svg>

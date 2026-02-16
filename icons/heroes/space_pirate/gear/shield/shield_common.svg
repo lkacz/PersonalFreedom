@@ -1,10 +1,202 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <!-- Common / Proto colors: Greys, Rusted, Exposed -->
+    <!-- Raw Steel instead of Red Shell -->
+    <linearGradient id="protoSteel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#bdc3c7"/>
+      <stop offset="40%" style="stop-color:#95a5a6"/>
+      <stop offset="100%" style="stop-color:#7f8c8d"/>
+    </linearGradient>
+    <!-- Rusted Iron instead of Gold -->
+    <linearGradient id="rustFrame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8e7f70"/>
+      <stop offset="50%" style="stop-color:#706050"/>
+      <stop offset="100%" style="stop-color:#504035"/>
+    </linearGradient>
+    <!-- Exposed Wire bundles instead of Blue Paint -->
+    <linearGradient id="wireBundle" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e67e22"/>
+      <stop offset="50%" style="stop-color:#d35400"/>
+      <stop offset="100%" style="stop-color:#a04000"/>
+    </linearGradient>
+    <linearGradient id="darkMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3a3a50"/>
+      <stop offset="50%" style="stop-color:#2a2a3e"/>
+      <stop offset="100%" style="stop-color:#1e1e30"/>
+    </linearGradient>
+    <linearGradient id="lightMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8a8ea0"/>
+      <stop offset="40%" style="stop-color:#6e7288"/>
+      <stop offset="100%" style="stop-color:#585c72"/>
+    </linearGradient>
+    <!-- Dim, staticy screen -->
+    <linearGradient id="staticScreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#202020"/>
+      <stop offset="100%" style="stop-color:#303030"/>
+    </linearGradient>
+    <!-- Dim amber glow instead of bright cyan -->
+    <radialGradient id="dimGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#f1c40f;stop-opacity:0.8"/>
+      <stop offset="50%" style="stop-color:#f39c12;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#d35400;stop-opacity:0"/>
+    </radialGradient>
+    <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#505050" stroke-width="0.5"/>
+    </pattern>
+    <filter id="shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+    <clipPath id="screenClip">
+      <rect x="100" y="150" width="58" height="34" rx="5"/>
+    </clipPath>
+  </defs>
 
-  <g id="shield_common">
-    <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="#2e476f" stroke="#13233a" stroke-width="1.2"/>
-    <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="none" stroke="#9E9E9E" stroke-width="1" opacity="0.95"/>
-    <path d="M37 106 L60 105" stroke="#a6c0e4" stroke-width="0.85" opacity="0.62"/>
-    
+  <ellipse cx="40" cy="216" rx="16" ry="2" fill="#000" opacity="0.1"/>
+
+  <g transform="translate(5, 175) scale(0.133)">
+      <g id="protoParrot" filter="url(#shadow)">
+
+        <!-- ===== LEGS (Hydraulics exposed) ===== -->
+        <g id="legs">
+          <!-- Left leg -->
+          <g id="leftLeg">
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -10; 0 0; 0 0" keyTimes="0; 0.2; 0.4; 1" dur="4s" repeatCount="indefinite" />
+            <!-- Exposed piston rod -->
+            <rect x="97" y="248" width="2" height="22" fill="#95a5a6" stroke="none"/>
+            <rect x="95" y="260" width="6" height="10" rx="1" fill="none" stroke="#4a4e64" stroke-width="0.8"/>
+            <!-- Left knee joint -->
+            <circle cx="98" cy="250" r="3" fill="#4a4e64" stroke="#2c3e50" stroke-width="0.8"/>
+            <!-- Left foot - Skeletal -->
+            <path d="M86,268 L80,275 L78,280 L118,280 L116,275 L110,268" fill="none" stroke="#4a4e64" stroke-width="1.2"/>
+            <circle cx="84" cy="278" r="1.5" fill="#4a4e64"/>
+            <circle cx="114" cy="278" r="1.5" fill="#4a4e64"/>
+          </g>
+
+          <!-- Right leg -->
+          <g id="rightLeg">
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 0; 0 -10; 0 0" keyTimes="0; 0.5; 0.7; 1" dur="4s" repeatCount="indefinite" />
+            <rect x="159" y="248" width="2" height="22" fill="#95a5a6" stroke="none"/>
+            <rect x="157" y="260" width="6" height="10" rx="1" fill="none" stroke="#4a4e64" stroke-width="0.8"/>
+            <circle cx="160" cy="250" r="3" fill="#4a4e64" stroke="#2c3e50" stroke-width="0.8"/>
+            <path d="M148,268 L142,275 L140,280 L180,280 L178,275 L172,268" fill="none" stroke="#4a4e64" stroke-width="1.2"/>
+            <circle cx="146" cy="278" r="1.5" fill="#4a4e64"/>
+            <circle cx="176" cy="278" r="1.5" fill="#4a4e64"/>
+          </g>
+        </g>
+
+        <!-- ===== LOWER BODY / HIP ===== -->
+        <g id="hip">
+          <!-- Exposed frame -->
+          <rect x="90" y="234" width="78" height="18" rx="4" fill="none" stroke="#4a4e64" stroke-width="1.5"/>
+          <path d="M90 243 L168 243" stroke="#4a4e64" stroke-width="0.5" stroke-dasharray="2,2"/>
+          <!-- Dangling wire -->
+          <path d="M100 252 C 100 260, 110 260, 110 255" fill="none" stroke="#d35400" stroke-width="1"/>
+        </g>
+
+        <!-- ===== TORSO (Cage / Frame) ===== -->
+        <g id="torso">
+          <!-- Main body frame (no shell) -->
+          <rect x="80" y="132" width="98" height="104" rx="10" fill="url(#grid)" stroke="#555" stroke-width="2"/>
+          
+          <!-- Rusted chest plate backing -->
+          <rect x="92" y="142" width="74" height="50" rx="8" fill="url(#rustFrame)" opacity="0.8"/>
+          
+          <!-- Old School Screen -->
+          <rect x="100" y="150" width="58" height="34" rx="2" fill="url(#staticScreen)" stroke="#222" stroke-width="1"/>
+          <!-- Static / Noise -->
+          <g clip-path="url(#screenClip)">
+             <path d="M98 152 L160 152 M98 156 L160 156 M98 160 L160 160 M98 164 L160 164 M98 168 L160 168 M98 172 L160 172 M98 176 L160 176 M98 180 L160 180" stroke="#00ff00" stroke-opacity="0.1" stroke-width="0.5"/>
+             <rect x="110" y="160" width="5" height="5" fill="#e74c3c" opacity="0.8">
+                <animate attributeName="opacity" values="0;1;0;0" dur="2s" repeatCount="indefinite"/>
+             </rect>
+             <text x="120" y="170" font-family="monospace" font-size="10" fill="#e74c3c" opacity="0.8">ERR</text>
+          </g>
+
+          <!-- Exposed Panel below chest -->
+          <rect x="92" y="198" width="74" height="18" rx="5" fill="none" stroke="#555" stroke-width="1"/>
+          <!-- Exposed Wires inside panel -->
+          <path d="M95 207 C 110 200, 110 214, 125 207" fill="none" stroke="#c0392b" stroke-width="1.5"/>
+          <path d="M130 207 C 145 200, 145 214, 160 207" fill="none" stroke="#f1c40f" stroke-width="1.5"/>
+
+          <!-- Side frame bars -->
+          <line x1="82" y1="160" x2="82" y2="220" stroke="#444" stroke-width="2"/>
+          <line x1="176" y1="160" x2="176" y2="220" stroke="#444" stroke-width="2"/>
+        </g>
+
+        <!-- ===== ARMS (Stripped) ===== -->
+        <g id="arms">
+          <!-- Left arm -->
+          <g id="leftArm">
+            <!-- Shoulder joint - bolts -->
+            <circle cx="74" cy="148" r="6" fill="#7f8c8d" stroke="#555" stroke-width="1"/>
+            <path d="M72 148 L76 148 M74 146 L74 150" stroke="#333" stroke-width="1"/>
+            <!-- Upper arm - piston -->
+            <rect x="70" y="155" width="8" height="28" rx="1" fill="#95a5a6"/>
+            <!-- Elbow joint -->
+            <circle cx="71" cy="186" r="4" fill="#555"/>
+            <!-- Forearm - wires -->
+            <rect x="68" y="190" width="6" height="24" fill="none" stroke="#d35400" stroke-width="1"/>
+            <!-- Hand / gripper - claw -->
+            <path d="M62,214 L60,228 L73,226 L74,214" fill="none" stroke="#555" stroke-width="1"/>
+            <path d="M60,228 L63,229" stroke="#555"/>
+            <path d="M70,228 L69,229" stroke="#555"/>
+          </g>
+
+          <!-- Right arm -->
+          <g id="rightArm">
+            <circle cx="184" cy="148" r="6" fill="#7f8c8d" stroke="#555" stroke-width="1"/>
+            <path d="M182 148 L186 148 M184 146 L184 150" stroke="#333" stroke-width="1"/>
+            <rect x="180" y="155" width="8" height="28" rx="1" fill="#95a5a6"/>
+            <circle cx="187" cy="186" r="4" fill="#555"/>
+            <rect x="184" y="190" width="6" height="24" fill="none" stroke="#d35400" stroke-width="1"/>
+            <path d="M184,214 L182,228 L195,226 L196,214" fill="none" stroke="#555" stroke-width="1"/>
+            <path d="M182,228 L185,229" stroke="#555"/>
+            <path d="M192,228 L191,229" stroke="#555"/>
+          </g>
+        </g>
+
+        <!-- ===== NECK (Spine) ===== -->
+        <g id="neck">
+          <!-- Just a cable bundle -->
+          <rect x="124" y="116" width="10" height="18" rx="2" fill="url(#wireBundle)"/>
+        </g>
+
+        <!-- ===== HEAD (Prototype / Sensor Head) ===== -->
+        <g id="head">
+          <animateTransform attributeName="transform" type="rotate" values="0 130 118; 15 130 118; 15 130 118; -15 130 118; -15 130 118; 0 130 118; 0 130 118" keyTimes="0; 0.1; 0.3; 0.4; 0.6; 0.7; 1" dur="5s" repeatCount="indefinite" />
+          
+          <!-- No main biomechanical dome - just a metal box/cage -->
+          <rect x="96" y="60" width="66" height="50" rx="4" fill="none" stroke="#7f8c8d" stroke-width="2"/>
+          <line x1="96" y1="60" x2="162" y2="110" stroke="#7f8c8d" stroke-width="1"/>
+          <line x1="162" y1="60" x2="96" y2="110" stroke="#7f8c8d" stroke-width="1"/>
+
+          <!-- Face plate (Unfinished) -->
+          <rect x="96" y="66" width="66" height="42" rx="2" fill="url(#protoSteel)" opacity="0.5"/>
+
+          <!-- Eye sockets - just holes -->
+          <circle cx="114" cy="82" r="8" fill="#111" stroke="#333" stroke-width="1"/>
+          <!-- Dim amber sensor light left -->
+          <circle cx="114" cy="82" r="3" fill="#f39c12" opacity="0.6"/>
+
+          <circle cx="144" cy="82" r="8" fill="#111" stroke="#333" stroke-width="1"/>
+          <!-- Broken sensor right -->
+          <circle cx="144" cy="82" r="2" fill="#333"/>
+
+          <!-- Mouth - Exposed Speaker -->
+          <rect x="110" y="96" width="38" height="10" fill="#222"/>
+          <circle cx="129" cy="101" r="3" fill="#444"/>
+
+          <!-- Antenna / Sensor sticking out -->
+          <line x1="100" y1="60" x2="90" y2="40" stroke="#555" stroke-width="1"/>
+          <circle cx="90" cy="40" r="2" fill="#e74c3c"/>
+        </g>
+
+        <!-- ===== BACK THRUSTER PACK (Missing covers) ===== -->
+        <g id="thrusterPack">
+           <!-- Just outline -->
+          <rect x="112" y="220" width="34" height="16" rx="4" fill="none" stroke="#4a4e64" stroke-width="1"/>
+        </g>
+
+      </g>
   </g>
-
 </svg>

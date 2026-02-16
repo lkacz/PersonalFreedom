@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="a_rust" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#BCAAA4"/>
+      <stop offset="100%" stop-color="#5D4037"/>
+    </radialGradient>
+  </defs>
+  <g id="amulet_common">
+    <!-- Rusty Nut on Wire -->
+    <path d="M85 85 Q90 95 95 85" fill="none" stroke="#424242" stroke-width="1"/>
+    
+    <!-- Hex Nut -->
+    <path d="M85 95 L90 92 L95 95 L95 101 L90 104 L85 101 Z" fill="url(#a_rust)" stroke="#3E2723" stroke-width="1"/>
+    <circle cx="90" cy="98" r="2" fill="#212121"/>
+  </g>
+</svg>

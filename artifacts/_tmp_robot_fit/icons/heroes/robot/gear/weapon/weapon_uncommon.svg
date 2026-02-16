@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="w_gun_metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#78909C"/>
+      <stop offset="100%" stop-color="#37474F"/>
+    </linearGradient>
+  </defs>
+  <g id="weapon_uncommon" transform="translate(0, -10)">
+    <!-- Heavy Rotary Cannon -->
+    <!-- Barrels -->
+    <rect x="125" y="80" width="6" height="40" fill="#212121"/>
+    <rect x="133" y="80" width="6" height="40" fill="#212121"/>
+    <rect x="129" y="82" width="6" height="40" fill="#424242"/> <!-- Front barrel -->
+    
+    <!-- Main Body -->
+    <rect x="120" y="120" width="24" height="30" rx="2" fill="url(#w_gun_metal)" stroke="#263238" stroke-width="1.5"/>
+    
+    <!-- Ammo Feed -->
+    <path d="M120 135 L110 140 L110 150" fill="none" stroke="#FDD835" stroke-width="4" stroke-dasharray="4,2"/>
+    
+    <!-- Green Light -->
+    <circle cx="132" cy="130" r="3" fill="#00E676"/>
+  </g>
+</svg>

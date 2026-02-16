@@ -619,6 +619,17 @@ def get_next_rarity(rarity: str, max_rarity: Optional[str] = None) -> str:
     order = get_rarity_order(max_rarity=max_rarity)
     if not order:
         return "Common"
+    if rarity not in order:
+        # If rarity exists but is above the current cap (e.g., Celestial while capped at Legendary),
+        # clamp to the cap tier instead of falling back to Common progression.
+        if rarity in ALL_RARITY_ORDER:
+            try:
+                rarity_idx_full = ALL_RARITY_ORDER.index(rarity)
+                cap_idx_full = ALL_RARITY_ORDER.index(order[-1])
+                if rarity_idx_full >= cap_idx_full:
+                    return order[-1]
+            except ValueError:
+                pass
     idx = get_rarity_index(rarity, order=order)
     return order[min(idx + 1, len(order) - 1)]
 
@@ -3524,6 +3535,10 @@ MERGE_BASE_SUCCESS_RATE = 0.25  # 25% base chance
 MERGE_BOOST_BONUS = 0.25  # +25% success rate when boosted
 MERGE_BONUS_PER_ITEM = 0.03    # +3% per additional item after the first two
 MERGE_MAX_SUCCESS_RATE = 0.90  # Cap at 90% success rate - always some risk!
+MERGE_CELESTIAL_MIN_LEGENDARY_ITEMS = 5
+MERGE_CELESTIAL_BASE_CHANCE = 0.01
+MERGE_CELESTIAL_PER_EXTRA_LEGENDARY = 0.01
+MERGE_CELESTIAL_MAX_CHANCE = 1.0
 
 # Rarity upgrade paths
 RARITY_UPGRADE = {
@@ -3565,6 +3580,30 @@ def calculate_merge_success_rate(items: list, items_merge_luck: int = 0, city_bo
         rate += city_bonus / 100.0
     
     return min(rate, MERGE_MAX_SUCCESS_RATE)
+
+
+def count_merge_legendary_items(items: list) -> int:
+    """Count Legendary items in a merge selection (None-safe)."""
+    valid_items = [item for item in (items or []) if item is not None]
+    return sum(1 for item in valid_items if item.get("rarity") == "Legendary")
+
+
+def calculate_merge_celestial_chance(items: list) -> float:
+    """
+    Calculate Celestial unlock chance for Lucky Merge.
+
+    Rules:
+    - Fewer than 5 Legendary items: 0%
+    - Exactly 5 Legendary items: 1%
+    - +1% for each additional Legendary item
+    """
+    legendary_count = count_merge_legendary_items(items)
+    if legendary_count < MERGE_CELESTIAL_MIN_LEGENDARY_ITEMS:
+        return 0.0
+
+    extra_legendary = legendary_count - MERGE_CELESTIAL_MIN_LEGENDARY_ITEMS
+    chance = MERGE_CELESTIAL_BASE_CHANCE + (extra_legendary * MERGE_CELESTIAL_PER_EXTRA_LEGENDARY)
+    return max(0.0, min(MERGE_CELESTIAL_MAX_CHANCE, chance))
 
 
 def get_merge_result_rarity(items: list) -> str:
@@ -3829,6 +3868,7 @@ def perform_lucky_merge(
     tier_upgrade_enabled: bool = False,
     success_roll: Optional[float] = None,
     tier_roll: Optional[float] = None,
+    celestial_roll: Optional[float] = None,
     base_rarity: Optional[str] = None,
 ) -> dict:
     """Attempt a lucky merge of items.
@@ -3845,12 +3885,16 @@ def perform_lucky_merge(
         tier_upgrade_enabled: Whether upgraded tier window is active
         success_roll: Optional externally provided success roll (0.0-1.0)
         tier_roll: Optional externally provided tier roll (0.0-100.0)
+        celestial_roll: Optional externally provided Celestial roll (0.0-1.0)
         base_rarity: Optional explicit base rarity center for tier window
     """
     # Filter out None items
     valid_items = [item for item in items if item is not None]
     if len(valid_items) < 2:
         return {"success": False, "error": "Need at least 2 items to merge"}
+
+    legendary_count = count_merge_legendary_items(valid_items)
+    celestial_chance = calculate_merge_celestial_chance(valid_items)
     
     success_rate = calculate_merge_success_rate(
         valid_items,
@@ -3878,6 +3922,11 @@ def perform_lucky_merge(
         "tier_weights": lottery["tier_weights"],
         "base_rarity": resolved_base_rarity,
         "tier_upgraded": bool(tier_upgrade_enabled),
+        "legendary_count": legendary_count,
+        "celestial_chance": celestial_chance,
+        "celestial_roll": None,
+        "celestial_unlocked": celestial_chance > 0.0,
+        "celestial_triggered": False,
         "tier_jump": 0,
         "final_rarity": None,
         "result_item": None,
@@ -3885,6 +3934,20 @@ def perform_lucky_merge(
 
     if lottery["success"]:
         final_rarity = lottery["rolled_tier"]
+        if celestial_chance > 0.0:
+            resolved_celestial_roll = celestial_roll
+            if resolved_celestial_roll is None:
+                resolved_celestial_roll = random.random()
+            try:
+                resolved_celestial_roll = float(resolved_celestial_roll)
+            except (TypeError, ValueError):
+                resolved_celestial_roll = 1.0
+            resolved_celestial_roll = max(0.0, min(1.0, resolved_celestial_roll))
+            result["celestial_roll"] = resolved_celestial_roll
+            if resolved_celestial_roll < celestial_chance:
+                final_rarity = "Celestial"
+                result["celestial_triggered"] = True
+
         try:
             base_idx = RARITY_ORDER.index(resolved_base_rarity)
         except ValueError:

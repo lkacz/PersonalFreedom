@@ -16,6 +16,8 @@ try:
     from gamification import (
         calculate_merge_success_rate, 
         get_merge_result_rarity,
+        calculate_merge_tier_weights,
+        calculate_merge_celestial_chance,
         perform_lucky_merge,
         roll_push_your_luck_outcome,
         ITEM_RARITIES,
@@ -26,6 +28,7 @@ try:
         get_next_rarity,
         COIN_COSTS,
         MERGE_BOOST_BONUS,
+        MERGE_TIER_ORDER,
         get_slot_display_name,
         get_selected_story
     )
@@ -35,6 +38,7 @@ except ImportError:
     COIN_COSTS = {"merge_base": 50, "merge_boost": 50, "merge_tier_upgrade": 50, "merge_retry_bump": 50, "merge_claim": 100, "merge_salvage": 50}
     MERGE_BOOST_BONUS = 0.25
     RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
+    MERGE_TIER_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     MAX_OBTAINABLE_RARITY = "Legendary"
     RARITY_UPGRADE = {
         "Common": "Uncommon",
@@ -53,6 +57,24 @@ except ImportError:
         "Celestial": {"color": "#00e5ff", "power": 500},
     }
     RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250, "Celestial": 500}
+    def calculate_merge_tier_weights(base_rarity, tier_upgrade_enabled=False):
+        window = [5, 10, 25, 45, 15] if tier_upgrade_enabled else [5, 15, 60, 15, 5]
+        try:
+            center_idx = MERGE_TIER_ORDER.index(base_rarity)
+        except ValueError:
+            center_idx = min(max(RARITY_ORDER.index(base_rarity), 0), len(MERGE_TIER_ORDER) - 1) if base_rarity in RARITY_ORDER else 2
+        weights = [0] * len(MERGE_TIER_ORDER)
+        for offset, pct in zip([-2, -1, 0, 1, 2], window):
+            target_idx = center_idx + offset
+            clamped_idx = max(0, min(len(MERGE_TIER_ORDER) - 1, target_idx))
+            weights[clamped_idx] += pct
+        return weights
+    def calculate_merge_celestial_chance(items):
+        valid_items = [item for item in (items or []) if item is not None]
+        legendary_count = sum(1 for item in valid_items if item.get("rarity") == "Legendary")
+        if legendary_count < 5:
+            return 0.0
+        return min(1.0, 0.01 + (legendary_count - 5) * 0.01)
     def get_next_rarity(current_rarity, max_rarity=None):
         cap = max_rarity or MAX_OBTAINABLE_RARITY
         try:
@@ -334,44 +356,34 @@ class RarityDistributionWidget(QtWidgets.QWidget):
     Uses a moving window centered on the base rarity result, showing distribution
     across all tiers that are reachable from the merge.
     """
-    
-    # Moving window distribution: [5, 15, 60, 15, 5] centered on base result
-    # Base gives 60% to the result tier, tapering to nearby tiers
-    BASE_WINDOW = [5, 15, 60, 15, 5]
-    # Upgraded shifts the window +1 tier higher
-    UPGRADED_WINDOW = [5, 10, 25, 45, 15]
-    
-    def __init__(self, base_rarity: str = "Common", upgraded: bool = False, parent=None):
+
+    def __init__(
+        self,
+        base_rarity: str = "Common",
+        upgraded: bool = False,
+        celestial_chance: float = 0.0,
+        legendary_count: int = 0,
+        parent=None,
+    ):
         super().__init__(parent)
         self.base_rarity = base_rarity
         self.upgraded = upgraded
-        self.setMinimumHeight(70)
+        self.celestial_chance = max(0.0, min(1.0, float(celestial_chance or 0.0)))
+        self.legendary_count = max(0, int(legendary_count or 0))
+        self.setMinimumHeight(92)
         self._calculate_distribution()
     
     def _calculate_distribution(self):
-        """Calculate the rarity distribution using moving window centered on base rarity."""
-        window = self.UPGRADED_WINDOW if self.upgraded else self.BASE_WINDOW
-        
-        # Get base rarity index (center of the window)
-        try:
-            base_idx = RARITY_ORDER.index(self.base_rarity)
-        except ValueError:
-            base_idx = 0
-        
-        # Apply moving window centered on base_idx
-        # Window offsets: [-2, -1, 0, +1, +2] from center
-        self.distribution = {}  # rarity -> percentage
-        
-        for offset, pct in zip([-2, -1, 0, 1, 2], window):
-            target_idx = base_idx + offset
-            # Clamp to valid tier range [0, 4]
-            clamped_idx = max(0, min(len(RARITY_ORDER) - 1, target_idx))
-            target_rarity = RARITY_ORDER[clamped_idx]
-            
-            if target_rarity in self.distribution:
-                self.distribution[target_rarity] += pct
-            else:
-                self.distribution[target_rarity] = pct
+        """Calculate merge rarity distribution from backend-equivalent tier math."""
+        weights = calculate_merge_tier_weights(
+            self.base_rarity,
+            tier_upgrade_enabled=self.upgraded,
+        )
+        self.distribution = {
+            rarity: float(weight)
+            for rarity, weight in zip(MERGE_TIER_ORDER, weights)
+            if weight > 0
+        }
     
     def set_upgraded(self, upgraded: bool):
         """Update the upgrade status and recalculate distribution."""
@@ -379,13 +391,18 @@ class RarityDistributionWidget(QtWidgets.QWidget):
             self.upgraded = upgraded
             self._calculate_distribution()
             self.update()
+
+    def set_celestial_context(self, celestial_chance: float, legendary_count: int):
+        """Update the Celestial hint context (display-only)."""
+        self.celestial_chance = max(0.0, min(1.0, float(celestial_chance or 0.0)))
+        self.legendary_count = max(0, int(legendary_count or 0))
+        self.update()
     
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         
         w = self.width()
-        h = self.height()
         margin = 10
         bar_height = 30
         bar_y = 25
@@ -403,7 +420,7 @@ class RarityDistributionWidget(QtWidgets.QWidget):
         bar_width = w - 2 * margin
         
         # Get ordered rarities (only those in distribution)
-        ordered_rarities = [r for r in RARITY_ORDER if r in self.distribution]
+        ordered_rarities = [r for r in MERGE_TIER_ORDER if r in self.distribution]
         
         for i, rarity in enumerate(ordered_rarities):
             pct = self.distribution[rarity]
@@ -449,6 +466,14 @@ class RarityDistributionWidget(QtWidgets.QWidget):
         painter.setPen(QtGui.QPen(QtGui.QColor("#444"), 1))
         painter.setBrush(QtCore.Qt.NoBrush)
         painter.drawRoundedRect(margin, bar_y, bar_width, bar_height, 4, 4)
+
+        # Celestial is a separate bonus roll that unlocks only with enough Legendary items.
+        if self.celestial_chance > 0.0:
+            chance_pct = int(round(self.celestial_chance * 100))
+            hint = f"Celestial unlocked: {chance_pct}% ({self.legendary_count} Legendary merged)"
+            painter.setPen(QtGui.QColor("#00e5ff"))
+            painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+            painter.drawText(margin, bar_y + bar_height + 22, hint)
 
 
 class ItemPreviewWidget(QtWidgets.QWidget):
@@ -935,6 +960,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Determine which items affect tier (non-Common only)
         self.tier_affecting_items = [i for i in items if i and i.get("rarity", "Common") != "Common"]
         self.fuel_items = [i for i in items if i and i.get("rarity", "Common") == "Common"]
+        self.legendary_count = sum(1 for i in items if i and i.get("rarity") == "Legendary")
+        self.celestial_chance = calculate_merge_celestial_chance(items)
         
         # Calculate breakdown (matches gamification.py constants)
         base_rate = 0.25  # MERGE_BASE_SUCCESS_RATE from gamification.py
@@ -1160,7 +1187,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Rarity distribution widget (shows lottery probabilities)
         self.rarity_dist_widget = RarityDistributionWidget(
             base_rarity=self.result_rarity,
-            upgraded=False
+            upgraded=False,
+            celestial_chance=self.celestial_chance,
+            legendary_count=self.legendary_count,
         )
         self.rarity_dist_widget.setStyleSheet("""
             QWidget {
@@ -2035,6 +2064,15 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             return
         
         self.accept()
+
+    def _can_push_your_luck(self, rarity: str) -> bool:
+        """Push Your Luck is only valid while below the max obtainable tier."""
+        try:
+            rarity_idx = RARITY_ORDER.index(rarity)
+            cap_idx = RARITY_ORDER.index(MAX_OBTAINABLE_RARITY)
+        except ValueError:
+            return False
+        return rarity_idx < cap_idx
     
     def _show_success_dialog(self):
         """Show success result dialog with optional 'Push Your Luck' re-roll."""
@@ -2042,7 +2080,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         rarity = result_item.get("rarity", "Common")
         
         # Check if Push Your Luck is available (not at top obtainable tier)
-        if rarity != MAX_OBTAINABLE_RARITY:
+        if self._can_push_your_luck(rarity):
             choice = self._show_push_your_luck_dialog(result_item)
             if choice == "reroll":
                 # Player wants to risk it for next tier
@@ -2736,8 +2774,18 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         extra_msgs.append(f"Roll: {roll_raw*100:.1f}% (needed < {needed_raw*100:.1f}%{breakdown_text})")
         
         if tier_upgraded:
-            extra_msgs.append("⬆️ Tier Upgrade enabled (+50 🪙)")
-        
+            extra_msgs.append("Tier Upgrade enabled (+50 coins)")
+
+        if self.merge_result and self.merge_result.get("celestial_triggered"):
+            celestial_roll = self.merge_result.get("celestial_roll")
+            celestial_chance = self.merge_result.get("celestial_chance", 0.0)
+            if celestial_roll is not None:
+                extra_msgs.append(
+                    f"Celestial bonus: {celestial_roll*100:.1f}% (needed < {celestial_chance*100:.1f}%)"
+                )
+            else:
+                extra_msgs.append(f"Celestial bonus triggered ({celestial_chance*100:.1f}%)")
+
         # Show scrap earned if any
         if scrap_earned > 0:
             extra_msgs.append(f"🔩 +{scrap_earned} scrap (leftovers)")

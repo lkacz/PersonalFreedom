@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="b_alloy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#90CAF9"/>
+      <stop offset="100%" stop-color="#1565C0"/>
+    </linearGradient>
+  </defs>
+  <g id="boots_rare">
+    <!-- Sleek Struts -->
+    <path d="M45 150 L65 150 L62 190 L48 190 Z" fill="url(#b_alloy)" stroke="#0D47A1" stroke-width="1.5"/>
+    <path d="M115 150 L135 150 L132 190 L118 190 Z" fill="url(#b_alloy)" stroke="#0D47A1" stroke-width="1.5"/>
+    
+    <!-- Hover Thrusters (Active) -->
+    <path d="M40 190 L65 190 L60 200 L45 200 Z" fill="#212121"/>
+    <path d="M115 190 L140 190 L135 200 L120 200 Z" fill="#212121"/>
+    
+    <!-- Blue Flame -->
+    <path d="M48 200 L53 210 L58 200" fill="#00E5FF" opacity="0.8"/>
+    <path d="M123 200 L128 210 L133 200" fill="#00E5FF" opacity="0.8"/>
+    
+    <!-- Stabilizer Fins -->
+    <path d="M62 160 L70 170 L62 180" fill="#1565C0" stroke="#0D47A1"/>
+    <path d="M118 160 L110 170 L118 180" fill="#1565C0" stroke="#0D47A1"/>
+  </g>
+</svg>

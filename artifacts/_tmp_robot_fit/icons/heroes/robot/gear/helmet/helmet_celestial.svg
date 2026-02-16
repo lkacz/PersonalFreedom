@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
+  <g id="helmet_celestial" transform="translate(-11, 26) scale(1.35)">
+    <path d="M66 38 Q90 14 114 38 L114 52 L66 52 Z" fill="#30435f" stroke="#1a2740" stroke-width="1.5"/>
+    <rect x="63" y="51" width="54" height="5" rx="2.5" fill="#3c5273" stroke="#1a2740" stroke-width="1"/>
+    <rect x="86.5" y="23" width="7" height="21" rx="2" fill="#415a81" opacity="0.8"/>
+    <rect x="74" y="46" width="32" height="6.4" rx="2.2" fill="#101927" stroke="#273851" stroke-width="0.8"/>
+    <circle cx="90" cy="49.2" r="1.8" fill="#00E5FF" opacity="0.95"/>
+    <rect x="74" y="44" width="32" height="8" rx="3" fill="#00E5FF" opacity="0.22"/>
+    <rect x="66.5" y="44" width="6" height="10" rx="2" fill="#2f415f" stroke="#00E5FF" stroke-width="0.9"/><rect x="107.5" y="44" width="6" height="10" rx="2" fill="#2f415f" stroke="#00E5FF" stroke-width="0.9"/>
+    <rect x="75" y="46.5" width="30" height="1.8" rx="0.9" fill="#00E5FF" opacity="0.9"><animate attributeName="y" values="46.5;50;46.5" dur="1.8s" repeatCount="indefinite"/></rect>
+    <path d="M72 35 L80 28 L88 35 L96 28 L104 35 L108 42 L72 42 Z" fill="#283a57" stroke="#00E5FF" stroke-width="1"/><circle cx="90" cy="34" r="2.5" fill="#00E5FF" opacity="0.95"/>
+    <ellipse cx="90" cy="43" rx="29" ry="11" fill="none" stroke="#00E5FF" stroke-width="1.2" opacity="0.58"/><ellipse cx="90" cy="43" rx="23" ry="8.5" fill="none" stroke="#b7f5ff" stroke-width="0.9" opacity="0.55"/>
+  </g>
+
+  </g>
+</svg>

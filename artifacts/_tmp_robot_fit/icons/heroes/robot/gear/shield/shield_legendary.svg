@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="s_sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFFF00"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </radialGradient>
+  </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+  <g id="shield_legendary" transform="translate(8, 0)">
+    <!-- Solar Aegis -->
+    <!-- Main Disk -->
+    <circle cx="42" cy="120" r="22" fill="url(#s_sun)" stroke="#FFD700" stroke-width="2"/>
+    
+    <!-- Rays/Spikes -->
+    <path d="M42 90 L45 100 L39 100 Z" fill="#FFD700"/> <!-- Top -->
+    <path d="M42 150 L45 140 L39 140 Z" fill="#FFD700"/> <!-- Bottom -->
+    <path d="M12 120 L22 117 L22 123 Z" fill="#FFD700"/> <!-- Left -->
+    <path d="M72 120 L62 117 L62 123 Z" fill="#FFD700"/> <!-- Right -->
+    
+    <!-- Inner Cross -->
+    <path d="M32 120 L52 120" stroke="#FF3D00" stroke-width="2"/>
+    <path d="M42 110 L42 130" stroke="#FF3D00" stroke-width="2"/>
+    
+    <!-- Central Gem -->
+    <circle cx="42" cy="120" r="6" fill="#FFFFFF" opacity="0.8">
+       <animate attributeName="opacity" values="0.6;1;0.6" dur="1s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  </g>
+</svg>

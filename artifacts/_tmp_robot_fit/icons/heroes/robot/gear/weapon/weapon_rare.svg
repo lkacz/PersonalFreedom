@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="w_plasma" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00B0FF"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <g id="weapon_rare" transform="rotate(-10 130 130)">
+    <!-- Plasma Rifle -->
+    <!-- Stock/Grip -->
+    <path d="M125 140 L135 140 L130 160 Z" fill="#1565C0"/>
+    
+    <!-- Body -->
+    <rect x="120" y="100" width="20" height="40" rx="2" fill="#FFFFFF" stroke="#0D47A1"/>
+    
+    <!-- Barrel (Energy) -->
+    <rect x="126" y="70" width="8" height="30" fill="url(#w_plasma)" opacity="0.8"/>
+    <rect x="124" y="70" width="12" height="4" fill="#1565C0"/> <!-- Muzzle -->
+    
+    <!-- Coils -->
+    <line x1="120" y1="110" x2="140" y2="110" stroke="#00B0FF" stroke-width="1"/>
+    <line x1="120" y1="120" x2="140" y2="120" stroke="#00B0FF" stroke-width="1"/>
+    <line x1="120" y1="130" x2="140" y2="130" stroke="#00B0FF" stroke-width="1"/>
+  </g>
+</svg>

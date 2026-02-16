@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="a_sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFFF00"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </radialGradient>
+  </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+  <g id="amulet_legendary">
+    <!-- Prime Matrix -->
+    <path d="M85 85 Q90 95 95 85" fill="none" stroke="#FFD700" stroke-width="1"/>
+    
+    <!-- Matrix Body -->
+    <path d="M90 90 L96 94 L96 102 L90 106 L84 102 L84 94 Z" fill="#FFD700" stroke="#FF6F00" stroke-width="1"/>
+    
+    <!-- Inner Light -->
+    <circle cx="90" cy="98" r="3" fill="url(#a_sun)">
+       <animate attributeName="opacity" values="0.7;1;0.7" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Rays -->
+    <path d="M90 85 L90 88" stroke="#FFAB00" stroke-width="1"/>
+    <path d="M90 108 L90 111" stroke="#FFAB00" stroke-width="1"/>
+    <path d="M78 98 L81 98" stroke="#FFAB00" stroke-width="1"/>
+    <path d="M99 98 L102 98" stroke="#FFAB00" stroke-width="1"/>
+  </g>
+  </g>
+</svg>

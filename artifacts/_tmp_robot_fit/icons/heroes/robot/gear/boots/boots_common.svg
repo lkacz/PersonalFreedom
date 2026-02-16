@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="b_rust" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5D4037"/>
+      <stop offset="100%" stop-color="#3E2723"/>
+    </linearGradient>
+  </defs>
+  <g id="boots_common">
+    <!-- Heavy Square Feet -->
+    <rect x="40" y="160" width="20" height="30" fill="url(#b_rust)" stroke="#3E2723" stroke-width="1.5"/>
+    <rect x="120" y="160" width="20" height="30" fill="url(#b_rust)" stroke="#3E2723" stroke-width="1.5"/>
+    
+    <!-- Flat Soles -->
+    <rect x="35" y="190" width="30" height="10" fill="#212121"/>
+    <rect x="115" y="190" width="30" height="10" fill="#212121"/>
+    
+    <!-- Bolts -->
+    <circle cx="50" cy="170" r="1.5" fill="#9E9E9E"/>
+    <circle cx="130" cy="170" r="1.5" fill="#9E9E9E"/>
+  </g>
+</svg>

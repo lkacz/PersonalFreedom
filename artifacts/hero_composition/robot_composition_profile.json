@@ -1,0 +1,490 @@
+{
+  "theme": "robot",
+  "canvas": {
+    "width": 180,
+    "height": 220
+  },
+  "schema_version": 2,
+  "slots": {
+    "Cloak": {
+      "active_rarity": "Common",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Common"
+        },
+        "Uncommon": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Uncommon"
+        },
+        "Rare": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Rare"
+        },
+        "Epic": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Epic"
+        },
+        "Legendary": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Legendary"
+        },
+        "Celestial": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Celestial"
+        }
+      }
+    },
+    "Chestplate": {
+      "active_rarity": "Common",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Common"
+        },
+        "Uncommon": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Uncommon"
+        },
+        "Rare": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Rare"
+        },
+        "Epic": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Epic"
+        },
+        "Legendary": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Legendary"
+        },
+        "Celestial": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Celestial"
+        }
+      }
+    },
+    "Boots": {
+      "active_rarity": "Common",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Common"
+        },
+        "Uncommon": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Uncommon"
+        },
+        "Rare": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Rare"
+        },
+        "Epic": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Epic"
+        },
+        "Legendary": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Legendary"
+        },
+        "Celestial": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Celestial"
+        }
+      }
+    },
+    "Gauntlets": {
+      "active_rarity": "Common",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Common"
+        },
+        "Uncommon": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Uncommon"
+        },
+        "Rare": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Rare"
+        },
+        "Epic": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Epic"
+        },
+        "Legendary": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Legendary"
+        },
+        "Celestial": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Celestial"
+        }
+      }
+    },
+    "Amulet": {
+      "active_rarity": "Common",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Common"
+        },
+        "Uncommon": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Uncommon"
+        },
+        "Rare": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Rare"
+        },
+        "Epic": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Epic"
+        },
+        "Legendary": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Legendary"
+        },
+        "Celestial": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Celestial"
+        }
+      }
+    },
+    "Helmet": {
+      "active_rarity": "Legendary",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Common"
+        },
+        "Uncommon": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Uncommon"
+        },
+        "Rare": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Rare"
+        },
+        "Epic": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Epic"
+        },
+        "Legendary": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Legendary"
+        },
+        "Celestial": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Celestial"
+        }
+      }
+    },
+    "Shield": {
+      "active_rarity": "Common",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Common"
+        },
+        "Uncommon": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Uncommon"
+        },
+        "Rare": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Rare"
+        },
+        "Epic": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Epic"
+        },
+        "Legendary": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Legendary"
+        },
+        "Celestial": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Celestial"
+        }
+      }
+    },
+    "Weapon": {
+      "active_rarity": "Common",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Common"
+        },
+        "Uncommon": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Uncommon"
+        },
+        "Rare": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Rare"
+        },
+        "Epic": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Epic"
+        },
+        "Legendary": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Legendary"
+        },
+        "Celestial": {
+          "offset_x": 0,
+          "offset_y": 0,
+          "scale_x": 1,
+          "scale_y": 1,
+          "rotation_deg": 0,
+          "visible": true,
+          "rarity": "Celestial"
+        }
+      }
+    }
+  }
+}
