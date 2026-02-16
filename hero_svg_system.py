@@ -877,3 +877,112 @@ def render_hero_svg_character(
             base_rendered = True
 
     return base_rendered
+
+
+def generate_hero_composed_html(
+    story_theme: str,
+    equipped: Optional[dict],
+    power_tier: Optional[str] = None,
+    canvas_width: int = HERO_CANVAS_WIDTH,
+    canvas_height: int = HERO_CANVAS_HEIGHT,
+    base_dir: Optional[Path] = None,
+) -> str:
+    """
+    Generate HTML content that layers hero SVGs for WebEngine display.
+    
+    This enables full SVG animation support (SMIL/CSS) not available in QSvgRenderer.
+    """
+    manifest = load_hero_manifest(story_theme, base_dir=base_dir)
+    layers = build_hero_layer_plan(
+        story_theme=story_theme,
+        equipped=equipped,
+        power_tier=power_tier,
+        base_dir=base_dir,
+        manifest=manifest,
+    )
+
+    if not layers:
+        return ""
+
+    style_block = f"""
+    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+    html, body {{ 
+        width: {canvas_width}px; 
+        height: {canvas_height}px; 
+        overflow: hidden;
+        background: transparent;
+    }}
+    .layer {{
+        position: absolute;
+        transform-origin: center center;
+    }}
+    """
+
+    body_content = []
+    
+    # We need a target rect to resolve relative positions
+    # CharacterCanvas uses loose scaling but the SVG system assumes fixed canvas
+    target_rect = QtCore.QRectF(0, 0, canvas_width, canvas_height)
+
+    base_rendered = False
+
+    for i, layer in enumerate(layers):
+        # We use the renderer just to get implicit size/viewBox if needed for target resolution
+        # But for HTML we just need the path and resolved rect
+        renderer = _get_cached_renderer(layer.path)
+        if not renderer:
+            continue
+
+        layer_cfg = _layer_layout_config(manifest, layer, base_dir=base_dir)
+        if layer.kind == "gear" and not bool(layer_cfg.get("visible", True)):
+            continue
+
+        # Resolve position/size using existing logic
+        rect = resolve_layer_target_rect(
+            layer=layer,
+            renderer=renderer,
+            target_rect=target_rect,
+            manifest=manifest,
+            base_dir=base_dir,
+        )
+
+        rotation_deg = 0.0
+        try:
+            rotation_deg = float(layer_cfg.get("rotation_deg", layer_cfg.get("rotation", 0.0)) or 0.0)
+        except (TypeError, ValueError):
+            pass
+
+        # Convert local path to file URL
+        file_url = QtCore.QUrl.fromLocalFile(str(layer.path)).toString()
+
+        # Build inline style for this layer
+        layer_style = (
+            f"left: {rect.x()}px; "
+            f"top: {rect.y()}px; "
+            f"width: {rect.width()}px; "
+            f"height: {rect.height()}px; "
+            f"z-index: {i};"
+        )
+        if abs(rotation_deg) > 0.001:
+            layer_style += f" transform: rotate({rotation_deg}deg);"
+
+        img_tag = f'<img src="{file_url}" class="layer" style="{layer_style}" />'
+        body_content.append(img_tag)
+        if layer.kind == "base":
+            base_rendered = True
+
+    # Keep fallback path functional: if composition cannot render a base layer,
+    # return empty so callers can use the Qt painter path.
+    if not base_rendered or not body_content:
+        return ""
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>{style_block}</style>
+</head>
+<body>
+{"".join(body_content)}
+</body>
+</html>"""

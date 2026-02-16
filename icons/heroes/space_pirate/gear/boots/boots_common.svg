@@ -1,13 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-
-  <g id="boots_common">
-    <path d="M44 188 L74 188 L76 202 L42 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M104 188 L134 188 L136 202 L102 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M42 201 L77 201 L79 209 L40 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M102 201 L137 201 L139 209 L100 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M46 192 L74 192" stroke="#9E9E9E" stroke-width="1.3" opacity="0.92"/>
-    <path d="M106 192 L134 192" stroke="#9E9E9E" stroke-width="1.3" opacity="0.92"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+  <defs>
+    <!-- Improved Grey Metal Gradients -->
+    <linearGradient id="commonLegMetal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4a4e60"/>
+      <stop offset="20%" style="stop-color:#6b7085"/>
+      <stop offset="50%" style="stop-color:#9a9eb0"/>
+      <stop offset="80%" style="stop-color:#6b7085"/>
+      <stop offset="100%" style="stop-color:#4a4e60"/>
+    </linearGradient>
+    <linearGradient id="footGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+       <stop offset="0%" style="stop-color:#3a3d50"/>
+       <stop offset="100%" style="stop-color:#2c2c3a"/>
+    </linearGradient>
     
-  </g>
+    <filter id="glossShadow">
+       <feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.3"/>
+    </filter>
+  </defs>
 
+  <g id="boots_common" filter="url(#glossShadow)">
+       <!-- Knee Joint (Reinforced) -->
+       <circle cx="348" cy="690" r="15" fill="#3a3d50" stroke="#2c2c3a" stroke-width="1.5"/>
+       <circle cx="348" cy="690" r="8" fill="#555883" stroke="#44475c" stroke-width="1"/>
+       <circle cx="348" cy="690" r="3" fill="#8a8ea0" opacity="0.8"/>
+
+       <!-- Upper Rod Structure -->
+       <path d="M340,700 L338,833 L358,833 L356,700 Z" fill="url(#commonLegMetal)" stroke="#2c2c3a" stroke-width="1.2"/>
+       
+       <!-- Reinforcing Band -->
+       <path d="M339,740 L357,740" stroke="#2c2c3a" stroke-width="2" opacity="0.4"/>
+       <rect x="339" y="738" width="18" height="4" fill="none" stroke="#555883" stroke-width="0.5"/>
+
+       <!-- Shin Plate (Slightly Fancy) -->
+       <path d="M338,710 L358,710 L356,760 L339,760 Z" fill="#ffffff" opacity="0.1"/>
+       <path d="M348,710 L348,760" stroke="#2c2c3a" stroke-width="0.5" opacity="0.3"/>
+
+       <!-- Highlight / Gloss -->
+       <path d="M344,705 L342,828" stroke="#ffffff" stroke-width="3" opacity="0.25" stroke-linecap="round"/>
+
+       <!-- Ankle Structure -->
+       <circle cx="348" cy="833" r="6" fill="#3a3d50" stroke="#2c2c3a" stroke-width="1"/>
+
+       <!-- Metal Foot (Improved articulation) -->
+       <path d="M334,835 L362,835 L366,845 L330,845 Z" fill="url(#footGrad)" stroke="#1a1e2c" stroke-width="1"/>
+       <path d="M336,845 L340,848 L356,848 L360,845" fill="#1a1e2c" opacity="0.6"/> <!-- Sole shadow -->
+       
+       <!-- Toe Guard -->
+       <path d="M358,835 L366,845" stroke="#555883" stroke-width="1" opacity="0.5"/>
+       
+       <!-- Detail Bolts -->
+       <circle cx="342" cy="715" r="1" fill="#111111" opacity="0.4"/>
+       <circle cx="354" cy="715" r="1" fill="#111111" opacity="0.4"/>
+       <circle cx="342" cy="755" r="1" fill="#111111" opacity="0.4"/>
+       <circle cx="354" cy="755" r="1" fill="#111111" opacity="0.4"/>
+  </g>
 </svg>

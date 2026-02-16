@@ -90,6 +90,91 @@ class _PaintCache:
         return cls.TIER_COLORS.get(tier, cls.COLOR_GRAY)
 
 
+def _normalize_locked_tiers(locked_tiers: Optional[list]) -> set[str]:
+    """Normalize optional locked-tier lists/tuples into a set of tier names."""
+    if not isinstance(locked_tiers, (list, tuple, set)):
+        return set()
+    return {str(t).strip() for t in locked_tiers if str(t).strip()}
+
+
+def _coerce_unlocked_tier(tier: str, tiers: list[str], locked_tiers: set[str]) -> str:
+    """
+    Coerce a tier into an unlocked one.
+
+    This handles edge cases where the weighted zones are entirely in locked tiers.
+    """
+    if not tiers:
+        return tier
+    if tier not in locked_tiers:
+        return tier
+    for candidate in reversed(tiers):
+        if candidate not in locked_tiers:
+            return candidate
+    return tiers[0]
+
+
+def _extract_power_gate_ui_state(power_gating: Optional[dict]) -> tuple[set[str], float, str]:
+    """
+    Normalize backend power-gating metadata for lottery UI.
+
+    Returns:
+        (locked_tiers, roll_ceiling, message)
+    """
+    gating = power_gating if isinstance(power_gating, dict) else {}
+    locked_tiers = _normalize_locked_tiers(gating.get("locked_rarities"))
+
+    roll_ceiling = 100.0
+    try:
+        roll_ceiling = float(gating.get("roll_ceiling", 100.0))
+    except (TypeError, ValueError):
+        roll_ceiling = 100.0
+    roll_ceiling = max(0.0, min(100.0, roll_ceiling))
+
+    message = gating.get("message", "")
+    if not isinstance(message, str):
+        message = str(message or "")
+    message = message.strip()
+
+    return locked_tiers, roll_ceiling, message
+
+
+def _build_bounce_path(
+    target_roll: float,
+    *,
+    max_position: float = 100.0,
+    start_position: float = 50.0,
+    decay: bool = False,
+) -> list[float]:
+    """
+    Build a bounce path constrained to [0, max_position].
+
+    This keeps the animation honest when part of the rarity bar is locked.
+    """
+    max_pos = max(0.0, min(100.0, float(max_position)))
+    target = max(0.0, min(max_pos, float(target_roll)))
+    start = max(0.0, min(max_pos, float(start_position)))
+
+    if max_pos <= 0.0001:
+        return [0.0, target]
+
+    path = [start]
+    if decay:
+        for bounce in range(5):
+            amplitude = max_pos * max(0.0, (1.0 - (bounce * 0.18)))
+            path.append(amplitude)
+            path.append(0.0)
+    else:
+        going_up = random.choice([True, False])
+        num_bounces = random.randint(4, 6)
+        for _ in range(num_bounces):
+            if going_up:
+                path.extend([max_pos, 0.0])
+            else:
+                path.extend([0.0, max_pos])
+    path.append(target)
+    return path
+
+
 # ============================================================================
 # Continue Button Styles (reserves space in layout, avoids squeeze on reveal)
 # ============================================================================
@@ -1093,7 +1178,8 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
             slider=self.stage1_slider,
             result_label=self.stage1_result,
             target_roll=self.tier_roll,
-            on_complete=self._on_stage1_complete
+            on_complete=self._on_stage1_complete,
+            max_position=self.tier_roll_ceiling,
         )
     
     def _on_stage1_complete(self):
@@ -1409,7 +1495,7 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
             cls._COLOR_WHITE = QtGui.QColor("#fff")
             cls._COLOR_GRAY = QtGui.QColor("#888")
     
-    def __init__(self, weights: dict, parent=None):
+    def __init__(self, weights: dict, locked_tiers: Optional[list] = None, parent=None):
         """
         Args:
             weights: Dict mapping rarity -> weight (e.g., {"Common": 5, ...})
@@ -1418,6 +1504,7 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
         self._init_paint_cache()  # Ensure cache is ready
         self.weights = weights
         self.total = sum(weights.values())
+        self.locked_tiers = _normalize_locked_tiers(locked_tiers)
         self.position = 0.0
         self.result_rarity = None
         self.setMinimumWidth(400)
@@ -1446,14 +1533,14 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
         if self.total <= 0:
             return "Common"  # Fallback
         cumulative = 0.0
-        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
+        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
         for rarity in rarity_order:
             weight = self.weights.get(rarity, 0)
             zone_pct = (weight / self.total) * 100
             if pos < cumulative + zone_pct:
-                return rarity
+                return _coerce_unlocked_tier(rarity, rarity_order, self.locked_tiers)
             cumulative += zone_pct
-        return rarity_order[-1]  # Edge case
+        return _coerce_unlocked_tier(rarity_order[-1], rarity_order, self.locked_tiers)
     
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -1466,7 +1553,7 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
         bar_y = (h - bar_height) // 2 + 5
         
         # Draw rarity zones
-        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
+        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
         cumulative_pct = 0.0
         
         if self.total <= 0:
@@ -1478,9 +1565,11 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
             
             start_x = margin + (cumulative_pct / 100.0) * (w - 2*margin)
             zone_width = (zone_pct / 100.0) * (w - 2*margin)
+            rarity_locked = rarity in self.locked_tiers
             
             # Use cached color objects
             color = self._CACHED_COLORS.get(rarity, self._COLOR_GRAY)
+            painter.setOpacity(0.4 if rarity_locked else 1.0)
             painter.setBrush(color)
             painter.setPen(QtCore.Qt.NoPen)
             
@@ -1496,13 +1585,18 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
                 painter.drawPath(path)
             else:
                 painter.drawRect(rect)
+
+            if rarity_locked:
+                painter.setOpacity(0.7)
+                painter.fillRect(rect, QtGui.QColor(0, 0, 0, 120))
             
             # Draw rarity label if zone is wide enough
             if zone_width > 35:
-                painter.setPen(self._COLOR_WHITE)
+                painter.setPen(self._COLOR_GRAY if rarity_locked else self._COLOR_WHITE)
                 painter.setFont(self._FONT_LABEL)
                 label_x = start_x + zone_width/2 - 12
-                painter.drawText(int(label_x), bar_y + bar_height//2 + 4, rarity[:3].upper())
+                label = "🔒" if rarity_locked else rarity[:3].upper()
+                painter.drawText(int(label_x), bar_y + bar_height//2 + 4, label)
             
             # Draw separator line
             if i < len(rarity_order) - 1:
@@ -1511,6 +1605,7 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
                 painter.drawLine(int(sep_x), bar_y, int(sep_x), bar_y + bar_height)
             
             cumulative_pct += zone_pct
+        painter.setOpacity(1.0)
         
         # Draw 0% and 100% labels
         painter.setPen(self._COLOR_GRAY)
@@ -1582,6 +1677,7 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         logged_hours: float = 0,
         story_id: str = None,
         pre_rolled_result: Optional[dict] = None,
+        adhd_buster: Optional[dict] = None,
         parent: Optional[QtWidgets.QWidget] = None,
     ):
         """
@@ -1601,12 +1697,17 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
                 fallback_result = roll_priority_completion_reward(
                     story_id=story_id,
                     logged_hours=logged_hours,
+                    adhd_buster=adhd_buster,
                 )
                 if isinstance(fallback_result, dict):
                     self._pre_rolled_result = fallback_result
             except Exception:
                 # Keep deterministic fallback behavior below if backend roll is unavailable.
                 pass
+
+        self.rarity_locked_tiers, self.rarity_roll_ceiling, self.rarity_lock_message = _extract_power_gate_ui_state(
+            self._pre_rolled_result.get("power_gating")
+        )
 
         chance_from_backend = self._pre_rolled_result.get("chance")
         if isinstance(chance_from_backend, (int, float)):
@@ -1639,12 +1740,17 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
             self.rarity_roll = float(pre_rarity_roll)
         except (TypeError, ValueError):
             self.rarity_roll = 0.0
-        self.rarity_roll = max(0.0, min(100.0, self.rarity_roll))
+        self.rarity_roll = max(0.0, min(self.rarity_roll_ceiling, self.rarity_roll))
 
         if isinstance(pre_rarity, str) and pre_rarity in self.RARITY_WEIGHTS:
             self.won_rarity = pre_rarity
         else:
             self.won_rarity = self._determine_rarity(self.rarity_roll)
+        self.won_rarity = _coerce_unlocked_tier(
+            self.won_rarity,
+            ["Common", "Uncommon", "Rare", "Epic", "Legendary"],
+            self.rarity_locked_tiers,
+        )
 
         self.won_item = self._pre_rolled_result.get("item") if isinstance(self._pre_rolled_result.get("item"), dict) else None
         if self.won and self.won_item is None:
@@ -1815,10 +1921,19 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         )
         stage2_layout.addWidget(self.stage2_title)
         
-        self.stage2_slider = MultiTierLotterySlider(self.RARITY_WEIGHTS)
+        self.stage2_slider = MultiTierLotterySlider(
+            self.RARITY_WEIGHTS,
+            locked_tiers=list(self.rarity_locked_tiers),
+        )
         self.stage2_slider.setFixedHeight(60)
         self.stage2_slider.setEnabled(False)
         stage2_layout.addWidget(self.stage2_slider)
+
+        if self.rarity_lock_message and self.rarity_locked_tiers:
+            self.stage2_lock_label = QtWidgets.QLabel(f"🔒 {self.rarity_lock_message}")
+            self.stage2_lock_label.setWordWrap(True)
+            self.stage2_lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
+            stage2_layout.addWidget(self.stage2_lock_label)
         
         self.stage2_result = QtWidgets.QLabel("(Win the lucky roll first...)")
         self.stage2_result.setAlignment(QtCore.Qt.AlignCenter)
@@ -1921,11 +2036,13 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
             result_label=self.stage2_result,
             target_roll=self.rarity_roll,
             on_complete=self._on_stage2_complete,
-            is_rarity=True
+            is_rarity=True,
+            max_position=self.rarity_roll_ceiling,
         )
     
     def _on_stage2_complete(self):
         """Handle rarity roll completion."""
+        self.won_rarity = self.stage2_slider.get_rarity_at_position(self.rarity_roll)
         rarity_colors = {
             "Common": "#9e9e9e",
             "Uncommon": "#4caf50",
@@ -1983,27 +2100,30 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         # Show continue button for user to close when ready
         _reveal_continue_btn(self.continue_btn)
     
-    def _animate_stage(self, slider, result_label, target_roll, on_complete, is_rarity=False):
+    def _animate_stage(
+        self,
+        slider,
+        result_label,
+        target_roll,
+        on_complete,
+        is_rarity: bool = False,
+        max_position: float = 100.0,
+    ):
         """Animate a single lottery stage."""
         self._anim_slider = slider
         self._anim_result = result_label
-        self._anim_target = target_roll
+        self._anim_max_position = max(0.0, min(100.0, float(max_position)))
+        self._anim_target = max(0.0, min(self._anim_max_position, float(target_roll)))
         self._anim_callback = on_complete
         self._anim_is_rarity = is_rarity
         
-        # Generate bounce path
-        path_points = [50.0]
-        going_up = random.choice([True, False])
-        num_bounces = random.randint(4, 6)
-        
-        for _ in range(num_bounces):
-            if going_up:
-                path_points.append(100.0)
-                path_points.append(0.0)
-            else:
-                path_points.append(0.0)
-                path_points.append(100.0)
-        path_points.append(target_roll)
+        # Generate bounce path constrained to max_position.
+        path_points = _build_bounce_path(
+            self._anim_target,
+            max_position=self._anim_max_position,
+            start_position=min(50.0, self._anim_max_position),
+            decay=False,
+        )
         
         self._anim_segments = []
         self._anim_total_dist = 0.0
@@ -2044,7 +2164,7 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
                 pos = seg["start"] + (seg["end"] - seg["start"]) * local
                 break
         
-        pos = max(0, min(100, pos))
+        pos = max(0.0, min(self._anim_max_position, pos))
         self._anim_slider.set_position(pos)
         
         # Update result label - only update style if state changed
@@ -2141,7 +2261,13 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
             cls._PEN_MARKER_OUTLINE = QtGui.QPen(QtGui.QColor("#fff"), 2)
             cls._COLOR_WHITE = QtGui.QColor("#fff")
     
-    def __init__(self, result_rarity: str = "Rare", upgraded: bool = False, parent=None):
+    def __init__(
+        self,
+        result_rarity: str = "Rare",
+        upgraded: bool = False,
+        locked_tiers: Optional[list] = None,
+        parent=None,
+    ):
         """
         Args:
             result_rarity: The expected result rarity (center of distribution)
@@ -2151,6 +2277,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         self._init_paint_cache()  # Ensure cache is ready
         self.result_rarity = result_rarity
         self.upgraded = upgraded
+        self.locked_tiers = _normalize_locked_tiers(locked_tiers)
         self.position = 0.0
         self.result_tier = None
         self.setMinimumWidth(400)
@@ -2183,16 +2310,16 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
     def get_tier_at_position(self, pos: float) -> str:
         """Get which tier a position falls into."""
         if self.total <= 0:
-            return self.result_rarity
+            return _coerce_unlocked_tier(self.result_rarity, self.TIERS, self.locked_tiers)
         cumulative = 0.0
         for tier, weight in zip(self.TIERS, self.tier_weights):
             if weight <= 0:
                 continue
             zone_pct = (weight / self.total) * 100
             if pos < cumulative + zone_pct:
-                return tier
+                return _coerce_unlocked_tier(tier, self.TIERS, self.locked_tiers)
             cumulative += zone_pct
-        return "Legendary"
+        return _coerce_unlocked_tier("Legendary", self.TIERS, self.locked_tiers)
     
     def get_position_for_tier(self, tier: str) -> float:
         """Get a random position within a tier's zone."""
@@ -2242,7 +2369,9 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
             color = self._CACHED_COLORS.get(tier, self._COLOR_WHITE)
             start_x = margin + (cumulative_pct / 100.0) * (w - 2*margin)
             zone_width = (zone_pct / 100.0) * (w - 2*margin)
+            tier_locked = tier in self.locked_tiers
             
+            painter.setOpacity(0.4 if tier_locked else 1.0)
             painter.setBrush(color)
             painter.setPen(QtCore.Qt.NoPen)
             
@@ -2257,12 +2386,20 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
                 painter.drawPath(path)
             else:
                 painter.drawRect(rect)
+
+            if tier_locked:
+                painter.setOpacity(0.7)
+                painter.fillRect(rect, QtGui.QColor(0, 0, 0, 120))
             
             # Draw zone label
             if zone_width > 25:
-                painter.setPen(self._COLOR_WHITE)
+                painter.setOpacity(1.0)
+                painter.setPen(QtGui.QColor("#888888") if tier_locked else self._COLOR_WHITE)
                 painter.setFont(self._FONT_LABEL)
-                label = tier[:4] if zone_width > 45 else tier[:3]
+                if tier_locked:
+                    label = "🔒"
+                else:
+                    label = tier[:4] if zone_width > 45 else tier[:3]
                 label_rect = QtCore.QRectF(start_x, bar_y, zone_width, bar_height)
                 painter.drawText(label_rect, QtCore.Qt.AlignCenter, label)
             
@@ -2273,6 +2410,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
                 painter.drawLine(int(sep_x), bar_y, int(sep_x), bar_y + bar_height)
             
             cumulative_pct += zone_pct
+        painter.setOpacity(1.0)
         
         # Draw marker
         marker_x = margin + (self.position / 100.0) * (w - 2*margin)
@@ -2579,7 +2717,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                  entity_perk_contributors: list = None,
                  tier_roll: Optional[float] = None,
                  rolled_tier: Optional[str] = None,
-                 tier_weights: Optional[list] = None):
+                 tier_weights: Optional[list] = None,
+                 power_gating: Optional[dict] = None):
         """
         Args:
             success_roll: The actual success roll (0.0-1.0). If negative, generates random roll.
@@ -2604,6 +2743,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.result_rarity = base_rarity  # This is the CENTER of distribution
         self.custom_title = title  # Store custom title
         self._entity_perk_contributors = entity_perk_contributors or []
+        self.locked_tiers, self.tier_roll_ceiling, self.tier_lock_message = _extract_power_gate_ui_state(power_gating)
         
         # Calculate tier weights using moving window
         self.tier_weights = (
@@ -2617,8 +2757,9 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         if tier_roll is None and rolled_tier in self.TIERS:
             tier_roll = self._midpoint_roll_for_tier(rolled_tier)
         self.tier_roll = float(tier_roll) if tier_roll is not None else (random.random() * 100.0)
-        self.tier_roll = max(0.0, min(100.0, self.tier_roll))
+        self.tier_roll = max(0.0, min(self.tier_roll_ceiling, self.tier_roll))
         self.rolled_tier = rolled_tier if rolled_tier in self.TIERS else self._determine_tier(self.tier_roll)
+        self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
         
         # Calculate tier jump for backwards compatibility
         try:
@@ -2754,10 +2895,17 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         # Use new MergeTierSliderWidget with moving window
         self.stage1_slider = MergeTierSliderWidget(
             result_rarity=self.result_rarity,
-            upgraded=self.tier_upgrade_enabled
+            upgraded=self.tier_upgrade_enabled,
+            locked_tiers=list(self.locked_tiers),
         )
         self.stage1_slider.setFixedHeight(60)
         stage1_layout.addWidget(self.stage1_slider)
+
+        if self.tier_lock_message and self.locked_tiers:
+            self.stage1_lock_label = QtWidgets.QLabel(f"🔒 {self.tier_lock_message}")
+            self.stage1_lock_label.setWordWrap(True)
+            self.stage1_lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
+            stage1_layout.addWidget(self.stage1_lock_label)
         
         # Distribution legend
         dist_widget = self._create_distribution_legend()
@@ -2850,7 +2998,10 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                 continue
             pct = (weight / total) * 100
             color = self.TIER_COLORS.get(tier, "#888")
-            label = QtWidgets.QLabel(f"<b style='color:{color};'>{tier[:3]}</b>:{pct:.0f}%")
+            if tier in self.locked_tiers:
+                label = QtWidgets.QLabel(f"<b style='color:#888;'>🔒</b>:{pct:.0f}%")
+            else:
+                label = QtWidgets.QLabel(f"<b style='color:{color};'>{tier[:3]}</b>:{pct:.0f}%")
             label.setStyleSheet("font-size: 10px; color: #aaa;")
             layout.addWidget(label)
         
@@ -2959,7 +3110,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             slider=self.stage1_slider,
             result_label=self.stage1_result,
             target_roll=self.tier_roll,
-            on_complete=self._on_stage1_complete
+            on_complete=self._on_stage1_complete,
+            max_position=self.tier_roll_ceiling,
         )
     
     def _on_stage1_complete(self):
@@ -3048,24 +3200,21 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             _play_lottery_result_sound(False)  # Play lose sound
             _reveal_continue_btn(self.continue_btn)  # Show continue button for user to close when ready
     
-    def _animate_tier_stage(self, slider, result_label, target_roll, on_complete):
+    def _animate_tier_stage(self, slider, result_label, target_roll, on_complete, max_position: float = 100.0):
         """Animate tier roll with bounce effect."""
         self._anim_slider = slider
         self._anim_result = result_label
-        self._anim_target = target_roll
+        self._tier_anim_max_position = max(0.0, min(100.0, float(max_position)))
+        self._anim_target = max(0.0, min(self._tier_anim_max_position, float(target_roll)))
         self._anim_callback = on_complete
-        
-        # Generate bounce path
-        path_points = [50.0]
-        going_up = random.choice([True, False])
-        num_bounces = random.randint(4, 6)
-        
-        for _ in range(num_bounces):
-            if going_up:
-                path_points.extend([100.0, 0.0])
-            else:
-                path_points.extend([0.0, 100.0])
-        path_points.append(target_roll)
+
+        # Generate bounce path constrained to unlocked span.
+        path_points = _build_bounce_path(
+            self._anim_target,
+            max_position=self._tier_anim_max_position,
+            start_position=min(50.0, self._tier_anim_max_position),
+            decay=False,
+        )
         
         self._anim_segments = []
         self._anim_total_dist = 0.0
@@ -3105,7 +3254,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                 pos = seg["start"] + (seg["end"] - seg["start"]) * local
                 break
         
-        pos = max(0, min(100, pos))
+        pos = max(0.0, min(self._tier_anim_max_position, pos))
         self._anim_slider.set_position(pos)
         
         # Show current tier - only update style if tier changed
@@ -3242,11 +3391,12 @@ class WaterTierSliderWidget(QtWidgets.QWidget):
     }
     TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     
-    def __init__(self, glass_number: int, parent=None):
+    def __init__(self, glass_number: int, locked_tiers: Optional[list] = None, parent=None):
         super().__init__(parent)
         self.glass_number = glass_number
         self.position = 0.0
         self.zone_widths = self._calculate_zone_widths()
+        self.locked_tiers = _normalize_locked_tiers(locked_tiers)
         self.setMinimumSize(400, 60)
     
     # Moving window: [5, 15, 60, 15, 5] centered on glass tier (same as merge)
@@ -3285,9 +3435,9 @@ class WaterTierSliderWidget(QtWidgets.QWidget):
             if width <= 0:
                 continue
             if pos < cumulative + width:
-                return tier
+                return _coerce_unlocked_tier(tier, self.TIERS, self.locked_tiers)
             cumulative += width
-        return "Legendary"
+        return _coerce_unlocked_tier("Legendary", self.TIERS, self.locked_tiers)
     
     def get_position_in_tier(self, tier: str) -> float:
         """Get center position for a tier zone."""
@@ -3316,21 +3466,31 @@ class WaterTierSliderWidget(QtWidgets.QWidget):
                 continue
             zone_width = (width / 100) * bar_width
             color = _PaintCache.get_tier_color(tier)
+            tier_locked = tier in self.locked_tiers
+            painter.setOpacity(0.4 if tier_locked else 1.0)
             painter.fillRect(
                 int(cumulative_x), bar_y,
                 int(zone_width), bar_height,
                 color
             )
+            if tier_locked:
+                painter.setOpacity(0.7)
+                painter.fillRect(
+                    int(cumulative_x), bar_y,
+                    int(zone_width), bar_height,
+                    QtGui.QColor(0, 0, 0, 120)
+                )
             # Zone label (only if wide enough)
             if zone_width > 35:
-                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setPen(_PaintCache.COLOR_GRAY if tier_locked else _PaintCache.COLOR_WHITE)
                 painter.setFont(_PaintCache.FONT_LABEL_SMALL)
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
-                    QtCore.Qt.AlignCenter, tier[:3]
+                    QtCore.Qt.AlignCenter, "🔒" if tier_locked else tier[:3]
                 )
             cumulative_x += zone_width
+        painter.setOpacity(1.0)
         
         # Draw border
         painter.setPen(_PaintCache.PEN_BORDER)
@@ -3470,6 +3630,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         story_id: str = None,
         pre_rolled_outcome: Optional[dict] = None,
         pre_rolled_item: Optional[dict] = None,
+        adhd_buster: Optional[dict] = None,
         parent: Optional[QtWidgets.QWidget] = None,
     ):
         """
@@ -3488,12 +3649,19 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         if not required_roll_keys.issubset(self._pre_rolled_outcome.keys()):
             try:
                 from gamification import roll_water_reward_outcome
-                fallback_outcome = roll_water_reward_outcome(glass_number=glass_number)
+                fallback_outcome = roll_water_reward_outcome(
+                    glass_number=glass_number,
+                    adhd_buster=adhd_buster,
+                )
                 if isinstance(fallback_outcome, dict):
                     self._pre_rolled_outcome = fallback_outcome
             except Exception:
                 # Keep deterministic fallback behavior below if backend roll is unavailable.
                 pass
+
+        self.tier_locked_tiers, self.tier_roll_ceiling, self.tier_lock_message = _extract_power_gate_ui_state(
+            self._pre_rolled_outcome.get("power_gating")
+        )
         
         # Success rate decreases with each glass: 99%, 80%, 60%, 40%, 20%
         success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
@@ -3516,12 +3684,13 @@ class WaterLotteryDialog(QtWidgets.QDialog):
             self.tier_roll = float(pre_tier_roll)
         except (TypeError, ValueError):
             self.tier_roll = 0.0
-        self.tier_roll = max(0.0, min(100.0, self.tier_roll))
+        self.tier_roll = max(0.0, min(self.tier_roll_ceiling, self.tier_roll))
 
         if isinstance(pre_rolled_tier, str) and pre_rolled_tier in self.TIERS:
             self.rolled_tier = pre_rolled_tier
         else:
             self.rolled_tier = self._determine_tier(self.tier_roll)
+        self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.tier_locked_tiers)
 
         fallback_won = bool(self._pre_rolled_outcome.get("won", False))
         eps = 0.000001
@@ -3675,8 +3844,14 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         )
         stage1_layout.addWidget(self.stage1_title)
         
-        self.tier_slider = WaterTierSliderWidget(self.glass_number)
+        self.tier_slider = WaterTierSliderWidget(self.glass_number, locked_tiers=list(self.tier_locked_tiers))
         stage1_layout.addWidget(self.tier_slider)
+
+        if self.tier_lock_message and self.tier_locked_tiers:
+            self.stage1_lock_label = QtWidgets.QLabel(f"🔒 {self.tier_lock_message}")
+            self.stage1_lock_label.setWordWrap(True)
+            self.stage1_lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
+            stage1_layout.addWidget(self.stage1_lock_label)
         
         self.stage1_result = QtWidgets.QLabel("Rolling...")
         self.stage1_result.setFont(QtGui.QFont("Arial", 10))
@@ -3749,17 +3924,13 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         # Highlight active stage with brighter background
         self.stage1_frame.setStyleSheet("QFrame { background: #2a2a50; border: none; border-radius: 8px; }")
         
-        # Generate bounce path (same as merge dialog)
-        self._stage1_path_points = [50.0]
-        going_up = random.choice([True, False])
-        num_bounces = random.randint(4, 6)
-        
-        for _ in range(num_bounces):
-            if going_up:
-                self._stage1_path_points.extend([100.0, 0.0])
-            else:
-                self._stage1_path_points.extend([0.0, 100.0])
-        self._stage1_path_points.append(self.tier_roll)
+        # Generate bounce path constrained to unlocked span.
+        self._stage1_path_points = _build_bounce_path(
+            self.tier_roll,
+            max_position=self.tier_roll_ceiling,
+            start_position=min(50.0, self.tier_roll_ceiling),
+            decay=False,
+        )
         
         # Pre-compute segments for smoother animation
         self._stage1_segments = []
@@ -3806,7 +3977,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
                 pos = seg["start"] + (seg["end"] - seg["start"]) * local
                 break
         
-        pos = max(0, min(100, pos))
+        pos = max(0.0, min(self.tier_roll_ceiling, pos))
         self.tier_slider.set_position(pos)
         
         # Show current tier during animation - only update style if tier changed
@@ -3824,6 +3995,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
     
     def _finish_stage_1(self):
         """Finish tier roll, show result and start stage 2."""
+        self.rolled_tier = self.tier_slider.get_tier_at_position(self.tier_roll)
         tier_colors = {
             "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
             "Epic": "#9c27b0", "Legendary": "#ff9800"
@@ -4014,6 +4186,7 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
         session_minutes: int,
         streak_days: int = 0,
         tier_weights: Optional[list] = None,
+        locked_tiers: Optional[list] = None,
         parent=None,
     ):
         super().__init__(parent)
@@ -4023,6 +4196,7 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
             list(tier_weights) if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == 5 else None
         )
         self.zone_widths = self._calculate_zone_widths()
+        self.locked_tiers = _normalize_locked_tiers(locked_tiers)
         self.position = 50.0
         self.result_tier = None
         self.setMinimumSize(400, 70)
@@ -4101,9 +4275,9 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
             if width <= 0:
                 continue
             if pos < cumulative + width:
-                return tier
+                return _coerce_unlocked_tier(tier, self.TIERS, self.locked_tiers)
             cumulative += width
-        return "Legendary"
+        return _coerce_unlocked_tier("Legendary", self.TIERS, self.locked_tiers)
     
     def get_position_for_tier(self, tier: str) -> float:
         """Get a random position within the tier zone."""
@@ -4139,25 +4313,34 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
                 continue
             zone_width = (width / 100) * bar_width
             color = _PaintCache.get_tier_color(tier)
+            tier_locked = tier in self.locked_tiers
             
             # Highlight winning tier
             if self.result_tier and tier == self.result_tier:
                 painter.setOpacity(1.0)
             else:
-                painter.setOpacity(0.7 if self.result_tier else 1.0)
+                painter.setOpacity(0.35 if tier_locked else (0.7 if self.result_tier else 1.0))
             
             painter.fillRect(
                 int(cumulative_x), bar_y,
                 int(zone_width), bar_height,
                 color
             )
+
+            if tier_locked:
+                painter.setOpacity(0.7)
+                painter.fillRect(
+                    int(cumulative_x), bar_y,
+                    int(zone_width), bar_height,
+                    QtGui.QColor(0, 0, 0, 120)
+                )
             
             # Zone label with tier name and percentage
             if zone_width > 45:
                 painter.setOpacity(1.0)
-                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setPen(_PaintCache.COLOR_GRAY if tier_locked else _PaintCache.COLOR_WHITE)
                 painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
-                label = f"{tier[:3]}:{width:.0f}%"
+                label = f"{'🔒' if tier_locked else tier[:3]}:{width:.0f}%"
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
@@ -4165,9 +4348,9 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
                 )
             elif zone_width > 30:
                 painter.setOpacity(1.0)
-                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setPen(_PaintCache.COLOR_GRAY if tier_locked else _PaintCache.COLOR_WHITE)
                 painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
-                label = f"{tier[:3]}"
+                label = "🔒" if tier_locked else f"{tier[:3]}"
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
@@ -4230,6 +4413,7 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         item: dict,
         tier_weights: Optional[list] = None,
         tier_roll: Optional[float] = None,
+        power_gating: Optional[dict] = None,
         parent=None,
     ):
         """
@@ -4244,6 +4428,7 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         self.item = item
         self.tier_weights = tier_weights if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == 5 else None
         self.rolled_tier = item.get("rarity", "Common")
+        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(power_gating)
         
         # Calculate target position in the slider
         self._setup_ui()
@@ -4256,7 +4441,7 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
                 self.tier_roll = float(tier_roll)
             except (TypeError, ValueError):
                 self.tier_roll = self._calculate_roll_for_tier(self.rolled_tier)
-            self.tier_roll = max(0.0, min(100.0, self.tier_roll))
+        self.tier_roll = max(0.0, min(self.roll_ceiling, self.tier_roll))
         
         QtCore.QTimer.singleShot(300, self._start_animation)
     
@@ -4337,9 +4522,16 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
             self.session_minutes,
             self.streak_days,
             tier_weights=self.tier_weights,
+            locked_tiers=list(self.locked_tiers),
         )
         self.tier_slider.setFixedHeight(70)
         lottery_layout.addWidget(self.tier_slider)
+
+        if self.lock_message and self.locked_tiers:
+            self.lock_label = QtWidgets.QLabel(f"🔒 {self.lock_message}")
+            self.lock_label.setWordWrap(True)
+            self.lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
+            lottery_layout.addWidget(self.lock_label)
         
         # Result label (percentages shown in bar zones)
         self.lottery_result = QtWidgets.QLabel("🎲 Rolling...")
@@ -4390,17 +4582,13 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
     
     def _start_animation(self):
         """Start tier roll animation using bounce path (same as merge dialog)."""
-        # Generate bounce path (same as merge dialog)
-        self._path_points = [50.0]
-        going_up = random.choice([True, False])
-        num_bounces = random.randint(4, 6)
-        
-        for _ in range(num_bounces):
-            if going_up:
-                self._path_points.extend([100.0, 0.0])
-            else:
-                self._path_points.extend([0.0, 100.0])
-        self._path_points.append(self.tier_roll)
+        # Generate bounce path constrained to unlocked span.
+        self._path_points = _build_bounce_path(
+            self.tier_roll,
+            max_position=self.roll_ceiling,
+            start_position=min(50.0, self.roll_ceiling),
+            decay=False,
+        )
         
         # Pre-compute segments for smoother animation
         self._segments = []
@@ -4447,7 +4635,7 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
                 pos = seg["start"] + (seg["end"] - seg["start"]) * local
                 break
         
-        pos = max(0, min(100, pos))
+        pos = max(0.0, min(self.roll_ceiling, pos))
         self.tier_slider.set_position(pos)
         
         # Update rolling text - only update style if tier changed
@@ -4552,7 +4740,8 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
                  story_id: str = None, parent: Optional[QtWidgets.QWidget] = None,
                  item: Optional[dict] = None,
                  tier_roll: Optional[float] = None,
-                 tier_weights: Optional[list] = None):
+                 tier_weights: Optional[list] = None,
+                 power_gating: Optional[dict] = None):
         """
         Args:
             effective_minutes: Calculated effective minutes for display
@@ -4565,8 +4754,10 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.effective_minutes = effective_minutes
         self.item = item if isinstance(item, dict) else None
         self.rolled_tier = (self.item or {}).get("rarity", pre_rolled_rarity or "Common")
+        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(power_gating)
         if self.rolled_tier not in self.TIERS:
             self.rolled_tier = pre_rolled_rarity if pre_rolled_rarity in self.TIERS else "Common"
+        self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
         self.story_id = story_id
         
         # Calculate tier distribution for display
@@ -4584,7 +4775,7 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
                 self.tier_roll = float(tier_roll)
             except (TypeError, ValueError):
                 self.tier_roll = self._get_position_for_tier(self.rolled_tier)
-            self.tier_roll = max(0.0, min(100.0, self.tier_roll))
+        self.tier_roll = max(0.0, min(self.roll_ceiling, self.tier_roll))
         
         self._setup_ui()
         QtCore.QTimer.singleShot(300, self._start_animation)
@@ -4659,7 +4850,8 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         container_layout.setContentsMargins(24, 18, 24, 18)
         
         # Header
-        header = QtWidgets.QLabel(f"🏃 Activity Reward - {self.effective_minutes:.0f} eff. min")
+        effective_text = f"{self.effective_minutes:.1f}".rstrip("0").rstrip(".")
+        header = QtWidgets.QLabel(f"🏃 Activity Reward - {effective_text} eff. min")
         header.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
         header.setAlignment(QtCore.Qt.AlignCenter)
         container_layout.addWidget(header)
@@ -4680,9 +4872,15 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         lottery_layout.setContentsMargins(14, 12, 14, 12)
         
         # Tier slider widget
-        self.tier_slider = ActivityTierSliderWidget(self.tier_weights)
+        self.tier_slider = ActivityTierSliderWidget(self.tier_weights, locked_tiers=list(self.locked_tiers))
         self.tier_slider.setMinimumHeight(60)
         lottery_layout.addWidget(self.tier_slider)
+
+        if self.lock_message and self.locked_tiers:
+            self.lock_label = QtWidgets.QLabel(f"🔒 {self.lock_message}")
+            self.lock_label.setWordWrap(True)
+            self.lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
+            lottery_layout.addWidget(self.lock_label)
         
         # Result label
         self.result_label = QtWidgets.QLabel("Rolling...")
@@ -4724,17 +4922,13 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
     
     def _start_animation(self):
         """Start the tier roll animation using bounce path."""
-        # Build bounce path (same logic as other lottery dialogs)
-        self._path_points = [50.0]  # Start at center
-        
-        # 5 full bar sweeps with decreasing amplitude
-        for bounce in range(5):
-            amplitude = 1.0 - (bounce * 0.18)
-            self._path_points.append(100 * amplitude)
-            self._path_points.append(0)
-        
-        # Final approach to target
-        self._path_points.append(self.tier_roll)
+        # Build bounce path constrained to unlocked span.
+        self._path_points = _build_bounce_path(
+            self.tier_roll,
+            max_position=self.roll_ceiling,
+            start_position=min(50.0, self.roll_ceiling),
+            decay=False,
+        )
         
         # Calculate segment distances
         self._segments = []
@@ -4782,7 +4976,7 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
                 pos = seg["start"] + (seg["end"] - seg["start"]) * local
                 break
         
-        pos = max(0, min(100, pos))
+        pos = max(0.0, min(self.roll_ceiling, pos))
         self.tier_slider.set_position(pos)
         
         # Show current tier during animation - only update style if tier changed
@@ -4855,9 +5049,10 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
     }
     TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     
-    def __init__(self, tier_weights: list, parent=None):
+    def __init__(self, tier_weights: list, locked_tiers: Optional[list] = None, parent=None):
         super().__init__(parent)
         self.tier_weights = tier_weights  # [Common%, Uncommon%, Rare%, Epic%, Legendary%]
+        self.locked_tiers = _normalize_locked_tiers(locked_tiers)
         self.position = 0.0
         self.result_tier = None  # For glow effect after result
         self.setMinimumSize(400, 60)
@@ -4877,9 +5072,9 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
         cumulative = 0.0
         for tier, weight in zip(self.TIERS, self.tier_weights):
             if pos < cumulative + weight:
-                return tier
+                return _coerce_unlocked_tier(tier, self.TIERS, self.locked_tiers)
             cumulative += weight
-        return "Legendary"
+        return _coerce_unlocked_tier("Legendary", self.TIERS, self.locked_tiers)
     
     def get_position_for_tier(self, tier: str) -> float:
         """Get a random position within a tier zone."""
@@ -4912,25 +5107,34 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
                 continue
             zone_width = (weight / 100) * bar_width
             color = _PaintCache.get_tier_color(tier)
+            tier_locked = tier in self.locked_tiers
             
             # Highlight winning tier, dim others
             if self.result_tier and tier == self.result_tier:
                 painter.setOpacity(1.0)
             else:
-                painter.setOpacity(0.7 if self.result_tier else 1.0)
+                painter.setOpacity(0.35 if tier_locked else (0.7 if self.result_tier else 1.0))
             
             painter.fillRect(
                 int(cumulative_x), bar_y,
                 int(zone_width), bar_height,
                 color
             )
+
+            if tier_locked:
+                painter.setOpacity(0.7)
+                painter.fillRect(
+                    int(cumulative_x), bar_y,
+                    int(zone_width), bar_height,
+                    QtGui.QColor(0, 0, 0, 120)
+                )
             
             # Zone label with tier name and percentage (matches FocusTimerTierSliderWidget)
             if zone_width > 45:
                 painter.setOpacity(1.0)
-                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setPen(_PaintCache.COLOR_GRAY if tier_locked else _PaintCache.COLOR_WHITE)
                 painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
-                label = f"{tier[:3]}:{weight:.0f}%"
+                label = f"{'🔒' if tier_locked else tier[:3]}:{weight:.0f}%"
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
@@ -4938,13 +5142,13 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
                 )
             elif zone_width > 30:
                 painter.setOpacity(1.0)
-                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setPen(_PaintCache.COLOR_GRAY if tier_locked else _PaintCache.COLOR_WHITE)
                 painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
                     QtCore.Qt.AlignCenter,
-                    tier[:3]  # First 3 letters
+                    "🔒" if tier_locked else tier[:3]
                 )
             cumulative_x += zone_width
         
@@ -5007,6 +5211,7 @@ class WeightLotteryDialog(QtWidgets.QDialog):
     def __init__(self, item: dict, reward_source: str = "Weight Tracking",
                  extra_items: list = None, tier_weights: Optional[list] = None,
                  odds_tooltip: Optional[str] = None,
+                 power_gating: Optional[dict] = None,
                  parent: Optional[QtWidgets.QWidget] = None):
         """
         Args:
@@ -5023,6 +5228,8 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         self.extra_items = extra_items or []
         self.rolled_tier = item.get("rarity", "Common")
         self.odds_tooltip = odds_tooltip
+        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(power_gating)
+        self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
         
         # Calculate tier weights based on rarity tier (higher tier = better weights shown)
         self.tier_weights = tier_weights if tier_weights is not None else self._calculate_tier_weights()
@@ -5031,6 +5238,7 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         
         # Calculate target position using the slider's method
         self.tier_roll = self.tier_slider.get_position_for_tier(self.rolled_tier)
+        self.tier_roll = max(0.0, min(self.roll_ceiling, self.tier_roll))
         
         QtCore.QTimer.singleShot(300, self._start_animation)
     
@@ -5113,11 +5321,17 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         lottery_layout.addWidget(lottery_title)
         
         # Tier slider
-        self.tier_slider = ActivityTierSliderWidget(self.tier_weights)
+        self.tier_slider = ActivityTierSliderWidget(self.tier_weights, locked_tiers=list(self.locked_tiers))
         self.tier_slider.setFixedHeight(70)
         if self.odds_tooltip:
             self.tier_slider.setToolTip(self.odds_tooltip)
         lottery_layout.addWidget(self.tier_slider)
+
+        if self.lock_message and self.locked_tiers:
+            self.lock_label = QtWidgets.QLabel(f"🔒 {self.lock_message}")
+            self.lock_label.setWordWrap(True)
+            self.lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
+            lottery_layout.addWidget(self.lock_label)
         
         # Result label
         self.lottery_result = QtWidgets.QLabel("🎲 Rolling...")
@@ -5174,17 +5388,13 @@ class WeightLotteryDialog(QtWidgets.QDialog):
     
     def _start_animation(self):
         """Start tier roll animation using bounce path (same as FocusTimerLotteryDialog)."""
-        # Generate bounce path with randomized direction (matches FocusTimerLotteryDialog)
-        self._path_points = [50.0]
-        going_up = random.choice([True, False])
-        num_bounces = random.randint(4, 6)
-        
-        for _ in range(num_bounces):
-            if going_up:
-                self._path_points.extend([100.0, 0.0])
-            else:
-                self._path_points.extend([0.0, 100.0])
-        self._path_points.append(self.tier_roll)
+        # Generate bounce path constrained to unlocked span.
+        self._path_points = _build_bounce_path(
+            self.tier_roll,
+            max_position=self.roll_ceiling,
+            start_position=min(50.0, self.roll_ceiling),
+            decay=False,
+        )
         
         # Pre-compute segments for smoother animation
         self._segments = []
@@ -5225,7 +5435,7 @@ class WeightLotteryDialog(QtWidgets.QDialog):
                 pos = seg["start"] + (seg["end"] - seg["start"]) * local
                 break
         
-        pos = max(0, min(100, pos))
+        pos = max(0.0, min(self.roll_ceiling, pos))
         self.tier_slider.set_position(pos)
         
         # Update rolling text - only update style if tier changed
@@ -5331,6 +5541,7 @@ class SleepLotteryDialog(QtWidgets.QDialog):
     def __init__(self, item: dict, reward_source: str = "Sleep Tracking",
                  extra_items: list = None, tier_weights: Optional[list] = None,
                  odds_tooltip: Optional[str] = None,
+                 power_gating: Optional[dict] = None,
                  parent: Optional[QtWidgets.QWidget] = None):
         """
         Args:
@@ -5347,6 +5558,8 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         self.extra_items = extra_items or []
         self.rolled_tier = item.get("rarity", "Common")
         self.odds_tooltip = odds_tooltip
+        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(power_gating)
+        self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
         
         # Calculate tier weights based on rarity tier (higher tier = better weights shown)
         self.tier_weights = tier_weights if tier_weights is not None else self._calculate_tier_weights()
@@ -5355,6 +5568,7 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         
         # Calculate target position using the slider's method
         self.tier_roll = self.tier_slider.get_position_for_tier(self.rolled_tier)
+        self.tier_roll = max(0.0, min(self.roll_ceiling, self.tier_roll))
         
         QtCore.QTimer.singleShot(300, self._start_animation)
     
@@ -5437,11 +5651,17 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         lottery_layout.addWidget(lottery_title)
         
         # Tier slider
-        self.tier_slider = ActivityTierSliderWidget(self.tier_weights)
+        self.tier_slider = ActivityTierSliderWidget(self.tier_weights, locked_tiers=list(self.locked_tiers))
         self.tier_slider.setFixedHeight(70)
         if self.odds_tooltip:
             self.tier_slider.setToolTip(self.odds_tooltip)
         lottery_layout.addWidget(self.tier_slider)
+
+        if self.lock_message and self.locked_tiers:
+            self.lock_label = QtWidgets.QLabel(f"🔒 {self.lock_message}")
+            self.lock_label.setWordWrap(True)
+            self.lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
+            lottery_layout.addWidget(self.lock_label)
         
         # Result label
         self.lottery_result = QtWidgets.QLabel("🎲 Rolling...")
@@ -5499,17 +5719,13 @@ class SleepLotteryDialog(QtWidgets.QDialog):
     
     def _start_animation(self):
         """Start tier roll animation using bounce path (same as FocusTimerLotteryDialog)."""
-        # Generate bounce path with randomized direction
-        self._path_points = [50.0]
-        going_up = random.choice([True, False])
-        num_bounces = random.randint(4, 6)
-        
-        for _ in range(num_bounces):
-            if going_up:
-                self._path_points.extend([100.0, 0.0])
-            else:
-                self._path_points.extend([0.0, 100.0])
-        self._path_points.append(self.tier_roll)
+        # Generate bounce path constrained to unlocked span.
+        self._path_points = _build_bounce_path(
+            self.tier_roll,
+            max_position=self.roll_ceiling,
+            start_position=min(50.0, self.roll_ceiling),
+            decay=False,
+        )
         
         # Pre-compute segments for smoother animation
         self._segments = []
@@ -5550,7 +5766,7 @@ class SleepLotteryDialog(QtWidgets.QDialog):
                 pos = seg["start"] + (seg["end"] - seg["start"]) * local
                 break
         
-        pos = max(0, min(100, pos))
+        pos = max(0.0, min(self.roll_ceiling, pos))
         self.tier_slider.set_position(pos)
         
         # Update rolling text - only update style if tier changed

@@ -2679,13 +2679,13 @@ class EyeProtectionTab(QtWidgets.QWidget):
             pass
         
         # Import backend roller + merge lottery dialog for moving window animation
-        from gamification import roll_merge_lottery
+        from gamification import roll_eye_routine_reward_outcome
         from lottery_animation import MergeTwoStageLotteryDialog
         
-        lottery_roll = roll_merge_lottery(
+        lottery_roll = roll_eye_routine_reward_outcome(
             success_threshold=success_rate,
             base_rarity=base_rarity,
-            tier_upgrade_enabled=False,
+            adhd_buster=getattr(self.blocker, "adhd_buster", None),
         )
         # Show the animated two-stage lottery dialog with moving window
         lottery = MergeTwoStageLotteryDialog(
@@ -2698,6 +2698,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             tier_roll=lottery_roll["tier_roll"],
             rolled_tier=lottery_roll["rolled_tier"],
             tier_weights=lottery_roll["tier_weights"],
+            power_gating=lottery_roll.get("power_gating"),
         )
         lottery.exec()
         
@@ -2716,10 +2717,10 @@ class EyeProtectionTab(QtWidgets.QWidget):
                     f"\"If I can survive fluorescent lights, you can survive this!\""
                 )
                 
-                reroll_outcome = roll_merge_lottery(
+                reroll_outcome = roll_eye_routine_reward_outcome(
                     success_threshold=success_rate,
                     base_rarity=base_rarity,
-                    tier_upgrade_enabled=False,
+                    adhd_buster=getattr(self.blocker, "adhd_buster", None),
                 )
                 # Do the reroll with same parameters
                 lottery2 = MergeTwoStageLotteryDialog(
@@ -2732,6 +2733,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
                     tier_roll=reroll_outcome["tier_roll"],
                     rolled_tier=reroll_outcome["rolled_tier"],
                     tier_weights=reroll_outcome["tier_weights"],
+                    power_gating=reroll_outcome.get("power_gating"),
                 )
                 lottery2.exec()
                 won_item, tier = lottery2.get_results()

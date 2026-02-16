@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
     <defs>
         <linearGradient id="magmaBody" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#fb923c"/> <!-- Light Orange -->
-            <stop offset="50%" stop-color="#ea580c"/> <!-- Orange -->
-            <stop offset="100%" stop-color="#7c2d12"/> <!-- Dark Red-Orange -->
+            <stop offset="0%" stop-color="#ffb74d"/> <!-- Light Legendary -->
+            <stop offset="50%" stop-color="#ff9800"/> <!-- Iconic Legendary -->
+            <stop offset="100%" stop-color="#f57c00"/> <!-- Dark Legendary -->
         </linearGradient>
         <radialGradient id="eyeGlow" cx="0.5" cy="0.5" r="0.5">
             <stop offset="0%" stop-color="#fef08a" stop-opacity="1"/>
@@ -26,7 +26,7 @@
     
     <!-- Legendary Petite Molten Pitbull 
          Scale 0.45 (Small/Cute) -->
-    <g transform="translate(45, 175) scale(0.45)">
+    <g transform="translate(35, 180) scale(0.45)">
         
         <!-- Lava Pool Shadow -->
         <ellipse cx="0" cy="55" rx="55" ry="12" fill="#7c2d12" opacity="0.6">
@@ -35,7 +35,7 @@
         </ellipse>
 
         <!-- Burning Tail -->
-        <path d="M25 -5 L50 -20" stroke="#ea580c" stroke-width="5" fill="none" stroke-linecap="round">
+        <path d="M25 -5 L50 -20" stroke="#ff9800" stroke-width="5" fill="none" stroke-linecap="round">
              <animateTransform attributeName="transform" type="rotate" values="0 25 -5; 20 25 -5; 0 25 -5" dur="0.15s" repeatCount="indefinite"/>
         </path>
         <!-- Flame Sparks -->
@@ -48,10 +48,9 @@
             <animate attributeName="opacity" values="1;0" dur="0.6s" repeatCount="indefinite"/>
         </circle>
 
-
         <!-- Back Legs -->
-        <path d="M-25 15 L-32 45 L-38 55 L-20 55 L-12 40 Z" fill="#9a3412"/>
-        <path d="M25 15 L32 45 L38 55 L20 55 L12 40 Z" fill="#9a3412"/>
+        <path d="M-25 15 L-32 45 L-38 55 L-20 55 L-12 40 Z" fill="#e65100"/>
+        <path d="M25 15 L32 45 L38 55 L20 55 L12 40 Z" fill="#e65100"/>
 
         <!-- Torso (Magma) -->
         <path d="M-35 -15 L35 -15 L30 35 L-30 35 Z" fill="url(#magmaBody)" stroke="#431407" stroke-width="1" filter="url(#fireGlow)">
@@ -80,30 +79,72 @@
             <path d="M-22 -25 L22 -25 L18 10 L-18 10 Z" fill="url(#magmaBody)" filter="url(#fireGlow)"/>
             
             <!-- Ears -->
-            <path d="M-20 -25 L-35 -15 L-20 -10 Z" fill="#9a3412"/>
-            <path d="M20 -25 L35 -15 L20 -10 Z" fill="#9a3412"/>
+            <path d="M-20 -25 L-35 -15 L-20 -10 Z" fill="#e65100"/>
+            <path d="M20 -25 L35 -15 L20 -10 Z" fill="#e65100"/>
 
             <!-- Snout -->
             <path d="M-12 -5 Q0 0 12 -5 L10 12 Q0 15 -10 12 Z" fill="#fdba74"/>
-            
-            <!-- Mouth/Smile -->
-            <path d="M-8 8 Q0 14 8 8" stroke="#431407" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-            <path d="M-3 10 Q0 15 3 10 Z" fill="#ef4444"/>
+            <path d="M-10 12 Q0 20 10 12" stroke="#431407" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 
+            <!-- Tongue (Sticking out and breathing) -->
+            <path d="M-4 13 Q0 13 4 13 L2 20 Q0 22 -2 20 Z" fill="#ef4444">
+                <animate attributeName="d" values="M-4 13 Q0 13 4 13 L2 20 Q0 22 -2 20 Z; M-4 13 Q0 16 4 13 L3 24 Q0 26 -3 24 Z; M-4 13 Q0 13 4 13 L2 20 Q0 22 -2 20 Z" dur="0.8s" repeatCount="indefinite"/>
+            </path>
+            
             <!-- Nose -->
             <ellipse cx="0" cy="-2" rx="6" ry="3.5" fill="#431407"/>
             <circle cx="-2" cy="-3" r="1" fill="#fff" opacity="0.4"/>
 
-            <!-- Eyes (Glowing) -->
-            <circle cx="-10" cy="-10" r="4" fill="#431407"/>
-            <circle cx="-10" cy="-10" r="2" fill="#fbbf24">
-                 <animate attributeName="r" values="2;2.5;2" dur="1s" repeatCount="indefinite"/>
-            </circle>
+            <!-- Eyes (Normal Brown with Blinking & Synchronized Saccadic Movement) -->
+            <!-- Left Eye Group -->
+            <g transform="translate(-10, -10)">
+                <circle r="4.5" fill="#fff"/> <!-- Sclera -->
+                <g>
+                    <!-- Saccadic Group for Iris/Pupil - Synchronized -->
+                    <animateTransform attributeName="transform" type="translate" 
+                        values="0 0; 1 0; 0 0; -1 1; 0 0" 
+                        dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+                    
+                    <circle r="3" fill="#4e342e"/> <!-- Iris (Dark Brown) -->
+                    <circle r="1.5" fill="#000"/> <!-- Pupil -->
+                    <circle cx="1" cy="-1" r="0.8" fill="#fff" opacity="0.6"/> <!-- Shine -->
+                </g>
+                
+                <!-- Eyelid Blink - Coordinated & Fast -->
+                <path fill="#e65100" d="M-5 -6 L5 -6 L5 -6 L-5 -6 Z">
+                    <animate attributeName="d" 
+                        values="M-5 -6 L5 -6 L5 -6 L-5 -6 Z; M-5 -6 L5 -6 L5 6 L-5 6 Z; M-5 -6 L5 -6 L5 -6 L-5 -6 Z; M-5 -6 L5 -6 L5 -6 L-5 -6 Z" 
+                        keyTimes="0; 0.02; 0.04; 1"
+                        dur="4s" 
+                        repeatCount="indefinite"
+                        begin="0s"/>
+                </path>
+            </g>
             
-            <circle cx="10" cy="-10" r="4" fill="#431407"/>
-            <circle cx="10" cy="-10" r="2" fill="#fbbf24">
-                 <animate attributeName="r" values="2;2.5;2" dur="1s" repeatCount="indefinite"/>
-            </circle>
+            <!-- Right Eye Group -->
+            <g transform="translate(10, -10)">
+                <circle r="4.5" fill="#fff"/> <!-- Sclera -->
+                <g>
+                    <!-- Saccadic Group for Iris/Pupil - Synchronized -->
+                    <animateTransform attributeName="transform" type="translate" 
+                        values="0 0; 1 0; 0 0; -1 1; 0 0" 
+                        dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+
+                    <circle r="3" fill="#4e342e"/> <!-- Iris (Dark Brown) -->
+                    <circle r="1.5" fill="#000"/> <!-- Pupil -->
+                    <circle cx="1" cy="-1" r="0.8" fill="#fff" opacity="0.6"/> <!-- Shine -->
+                </g>
+                
+                <!-- Eyelid Blink - Coordinated & Fast -->
+                <path fill="#e65100" d="M-5 -6 L5 -6 L5 -6 L-5 -6 Z">
+                     <animate attributeName="d" 
+                        values="M-5 -6 L5 -6 L5 -6 L-5 -6 Z; M-5 -6 L5 -6 L5 6 L-5 6 Z; M-5 -6 L5 -6 L5 -6 L-5 -6 Z; M-5 -6 L5 -6 L5 -6 L-5 -6 Z" 
+                        keyTimes="0; 0.02; 0.04; 1"
+                        dur="4s" 
+                        repeatCount="indefinite"
+                        begin="0s"/>
+                </path>
+            </g>
 
             <!-- Brows -->
             <path d="M-14 -16 Q-10 -20 -6 -16" stroke="#7c2d12" stroke-width="1.5" fill="none"/>

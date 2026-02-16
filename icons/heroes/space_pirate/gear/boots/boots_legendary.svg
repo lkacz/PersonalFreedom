@@ -1,13 +1,82 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+  <defs>
+    <!-- Human Skin Tone Gradients -->
+    <linearGradient id="skinToneLeg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#dcbfa6"/>
+      <stop offset="25%" style="stop-color:#f0d5be"/>
+      <stop offset="50%" style="stop-color:#ffe0c9"/> <!-- Highlight -->
+      <stop offset="75%" style="stop-color:#dfc2a9"/>
+      <stop offset="100%" style="stop-color:#c4a78e"/>
+    </linearGradient>
+
+    <!-- Legendary Gold Boot Gradients -->
+    <linearGradient id="goldBoot" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFECB3"/>
+      <stop offset="30%" style="stop-color:#FFC107"/>
+      <stop offset="80%" style="stop-color:#FF9800"/>
+      <stop offset="100%" style="stop-color:#FF6F00"/>
+    </linearGradient>
+
+    <!-- Epic Sock Gradient (Violet) -->
+    <linearGradient id="epicSock" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4a148c"/>
+      <stop offset="50%" style="stop-color:#9c27b0"/>
+      <stop offset="100%" style="stop-color:#4a148c"/>
+    </linearGradient>
+
+    <!-- Shiny Highlight for Boot -->
+    <linearGradient id="bootShine" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.6"/>
+        <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
 
   <g id="boots_legendary">
-    <path d="M44 188 L74 188 L76 202 L42 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M104 188 L134 188 L136 202 L102 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M42 201 L77 201 L79 209 L40 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M102 201 L137 201 L139 209 L100 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M46 192 L74 192" stroke="#FF9800" stroke-width="1.3" opacity="0.92"/>
-    <path d="M106 192 L134 192" stroke="#FF9800" stroke-width="1.3" opacity="0.92"/>
-    <path d="M45 194 L73 194 M106 194 L134 194" stroke="#5f789e" stroke-width="1" opacity="0.85"/><path d="M48 190 L44 192 L48 196 Z" fill="#FF9800" opacity="0.85"/><path d="M132 190 L136 192 L132 196 Z" fill="#FF9800" opacity="0.85"/><rect x="46.5" y="203.2" width="27" height="2.1" rx="1" fill="#FF9800" opacity="0.88"/><rect x="106.5" y="203.2" width="27" height="2.1" rx="1" fill="#FF9800" opacity="0.88"/><circle cx="60" cy="191.6" r="1.3" fill="#FF9800"/><circle cx="120" cy="191.6" r="1.3" fill="#FF9800"/><path d="M52 188 Q60 182 68 188" stroke="#FF9800" stroke-width="0.95" fill="none" opacity="0.9"/><path d="M112 188 Q120 182 128 188" stroke="#FF9800" stroke-width="0.95" fill="none" opacity="0.9"/>
-  </g>
+       <!-- Human Knee -->
+       <g id="knee">
+           <path d="M334,680 C334,670 362,670 362,680 C364,690 360,705 348,705 C336,705 332,690 334,680" fill="url(#skinToneLeg)" stroke="#c4a78e" stroke-width="0.5"/>
+       </g>
 
+       <!-- Human Calf (Skin) -->
+       <path d="M334,700 C324,720 328,750 336,760 C338,750 338,740 336,700" fill="url(#skinToneLeg)" stroke="#c4a78e" stroke-width="0.5"/>
+       <path d="M362,700 C372,720 368,750 360,760 C358,750 358,740 360,700" fill="url(#skinToneLeg)" stroke="#c4a78e" stroke-width="0.5"/>
+       
+       <!-- Inner Calf Shadow/Indentation -->
+       <path d="M338,710 Q348,720 358,710 L356,760 L340,760 Z" fill="url(#skinToneLeg)" opacity="0.9"/>
+       
+       <!-- Epic Sock (Violet) -->
+       <!-- Sock Tube -->
+       <path d="M334,755 C328,765 330,785 336,795 L360,795 C366,785 368,765 362,755 Z" fill="url(#epicSock)" stroke="#4a148c" stroke-width="1"/>
+       
+       <!-- Sock Ribbing Texture -->
+       <path d="M332,765 C340,768 356,768 364,765" fill="none" stroke="#ba68c8" stroke-width="1" opacity="0.5"/>
+       <path d="M332,775 C340,778 356,778 364,775" fill="none" stroke="#ba68c8" stroke-width="1" opacity="0.5"/>
+       <path d="M334,785 C340,788 356,788 362,785" fill="none" stroke="#ba68c8" stroke-width="1" opacity="0.5"/>
+
+       <!-- Legendary Boot (Golden High-Top) -->
+       <!-- Ankle/Tongue -->
+       <path d="M336,798 L336,825 L360,825 L360,798 C355,805 341,805 336,798" fill="url(#goldBoot)" stroke="#FF6F00" stroke-width="1.5"/>
+       
+       <!-- Boot Body -->
+       <path d="M336,820 C326,825 322,835 322,845 L374,845 C374,835 370,825 360,820 L336,820" fill="url(#goldBoot)" stroke="#FF6F00" stroke-width="1.5"/>
+
+       <!-- Boot Toe Cap (Shiny Gold) -->
+       <path d="M322,845 L374,845 L370,835 Q348,830 326,835 Z" fill="#FFD54F" stroke="#FF6F00" stroke-width="1"/>
+       <path d="M328,838 Q348,834 368,838" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.6"/> <!-- Shine -->
+
+       <!-- Laces (White/Orange) -->
+       <g stroke="#FFF" stroke-width="1.5" stroke-linecap="round">
+           <line x1="340" y1="805" x2="356" y2="805"/>
+           <line x1="340" y1="810" x2="356" y2="810"/>
+           <line x1="340" y1="815" x2="356" y2="815"/>
+       </g>
+
+       <!-- Sole (Dark Rubber with Gold Trim) -->
+       <rect x="322" y="845" width="52" height="6" rx="2" fill="#3E2723"/>
+       <line x1="322" y1="848" x2="374" y2="848" stroke="#FFC107" stroke-width="1"/>
+
+       <!-- Ankle Logo Orb (Subtle Legendary Mark) -->
+       <circle cx="362" cy="815" r="4" fill="#FFF" stroke="#FF6F00" stroke-width="1"/>
+       <circle cx="362" cy="815" r="2" fill="#FFC107"/>
+  </g>
 </svg>

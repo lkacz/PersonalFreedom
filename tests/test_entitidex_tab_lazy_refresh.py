@@ -27,3 +27,17 @@ def test_refresh_before_ui_build_does_not_crash(qtbot):
     # Progress mutations should still work even when UI is not built yet.
     tab.add_encountered_entity("warrior_001")
     assert tab.progress.get_encounter_count("warrior_001") == 1
+
+
+def test_on_window_restored_does_not_resume_when_tab_hidden(qtbot):
+    """Restore hook must not wake animations when Entitidex tab is not visible."""
+    blocker = _DummyBlocker()
+    tab = EntitidexTab(blocker)
+    qtbot.addWidget(tab)
+
+    tab._is_visible = False
+    assert not tab.isVisible()
+
+    tab.on_window_restored()
+
+    assert tab._is_visible is False

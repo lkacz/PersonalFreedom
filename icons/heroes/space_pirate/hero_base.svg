@@ -1,88 +1,606 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
   <defs>
-    <linearGradient id="coatGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#314566"/>
-      <stop offset="100%" stop-color="#1d2d49"/>
+    <!-- Skin tone -->
+    <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c8956c"/>
+      <stop offset="100%" style="stop-color:#b07a55"/>
     </linearGradient>
-    <linearGradient id="vestGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#47608a"/>
-      <stop offset="100%" stop-color="#2d4268"/>
+    <linearGradient id="skinShadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a06a48"/>
+      <stop offset="100%" style="stop-color:#8e5c3c"/>
     </linearGradient>
-    <linearGradient id="pantsGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#273b5d"/>
-      <stop offset="100%" stop-color="#17263f"/>
+    <!-- Pirate Pants -->
+    <linearGradient id="pantsGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2a2a30"/>
+      <stop offset="100%" stop-color="#111115"/>
     </linearGradient>
-    <linearGradient id="bootGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#424754"/>
-      <stop offset="100%" stop-color="#222834"/>
+    <linearGradient id="pantsHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#111115" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#4a4a50" stop-opacity="0.3"/>
+      <stop offset="60%" stop-color="#4a4a50" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#111115" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#f3ceb5"/>
-      <stop offset="100%" stop-color="#d5a88f"/>
+    <linearGradient id="pantsStripe" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9999aa"/>
+      <stop offset="50%" stop-color="#777788"/>
+      <stop offset="100%" stop-color="#666677"/>
     </linearGradient>
-    <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#4b352a"/>
-      <stop offset="100%" stop-color="#281a13"/>
+    <linearGradient id="sashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a2a30"/>
+      <stop offset="30%" stop-color="#3a3a40"/>
+      <stop offset="70%" stop-color="#222228"/>
+      <stop offset="100%" stop-color="#111115"/>
     </linearGradient>
-    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%" stop-color="#000" stop-opacity="0.34"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    <linearGradient id="sashSilk" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#808090" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#1a1a20" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="goldBuckle" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0e0e8"/>
+      <stop offset="30%" stop-color="#c0c0d0"/>
+      <stop offset="60%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#a0a0b0"/>
+    </linearGradient>
+    <linearGradient id="cuffGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2a2a30"/>
+      <stop offset="50%" stop-color="#3a3a40"/>
+      <stop offset="100%" stop-color="#1a1a20"/>
+    </linearGradient>
+    <!-- Cybernetic leg -->
+    <linearGradient id="cyberLegMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8a8ea0"/>
+      <stop offset="30%" style="stop-color:#6b7085"/>
+      <stop offset="60%" style="stop-color:#a0a4b8"/>
+      <stop offset="100%" style="stop-color:#6b7085"/>
+    </linearGradient>
+    <linearGradient id="cyberJoint" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#555870"/>
+      <stop offset="50%" style="stop-color:#787c96"/>
+      <stop offset="100%" style="stop-color:#555870"/>
+    </linearGradient>
+    <linearGradient id="cyberFoot" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#70748a"/>
+      <stop offset="100%" style="stop-color:#4a4e64"/>
+    </linearGradient>
+    <linearGradient id="pistonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c0c4d4"/>
+      <stop offset="50%" style="stop-color:#e0e2ee"/>
+      <stop offset="100%" style="stop-color:#c0c4d4"/>
+    </linearGradient>
+    <!-- Hair -->
+    <linearGradient id="hairGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2a"/>
+      <stop offset="100%" style="stop-color:#111120"/>
+    </linearGradient>
+    <!-- Hair sheen (top-down highlight) -->
+    <linearGradient id="hairSheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3a3a52" stop-opacity="0.6"/>
+      <stop offset="40%" stop-color="#2a2a40" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#111120" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Beard depth (top to chin) -->
+    <linearGradient id="beardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e30"/>
+      <stop offset="50%" stop-color="#141424"/>
+      <stop offset="100%" stop-color="#0e0e1c"/>
+    </linearGradient>
+    <!-- Braid metallic bead -->
+    <radialGradient id="beadGrad" cx="35%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#e8e8f0"/>
+      <stop offset="50%" stop-color="#a0a4b8"/>
+      <stop offset="100%" stop-color="#6b7085"/>
     </radialGradient>
+    <!-- Cyber eye -->
+    <radialGradient id="cyberEyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ff2244;stop-opacity:1"/>
+      <stop offset="60%" style="stop-color:#cc0033;stop-opacity:0.7"/>
+      <stop offset="100%" style="stop-color:#880022;stop-opacity:0"/>
+    </radialGradient>
+    <!-- Boot -->
+    <linearGradient id="bootGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2c2c3a"/>
+      <stop offset="100%" style="stop-color:#1a1a28"/>
+    </linearGradient>
+    <!-- Filters -->
+    <!-- Grey Legendary Boot Gradients -->
+    <linearGradient id="bootGrey" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5f5f5"/>
+      <stop offset="30%" style="stop-color:#e0e0e0"/>
+      <stop offset="80%" style="stop-color:#bdbdbd"/>
+      <stop offset="100%" style="stop-color:#9e9e9e"/>
+    </linearGradient>
+    <linearGradient id="sockGrey" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#424242"/>
+      <stop offset="50%" style="stop-color:#616161"/>
+      <stop offset="100%" style="stop-color:#424242"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="subtleShadow">
+      <feDropShadow dx="3" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+
+    <!-- Reusable eye patch shape -->
+    <path id="eyePatchShape" d="M308,195 C315,185 335,185 342,200 C345,210 335,220 322,220 C310,220 305,210 308,195 Z"/>
   </defs>
 
-  <ellipse cx="90" cy="206" rx="41" ry="7" fill="url(#shadowGrad)"/>
+  <!-- Ground shadow -->
+  <ellipse cx="300" cy="868" rx="110" ry="10" fill="#000000" opacity="0.12"/>
 
-  <g id="hero_body" transform="translate(0 0)">
-    <animateTransform attributeName="transform" type="translate" values="0 0;0 -0.9;0 0" dur="4.6s" repeatCount="indefinite"/>
+  <g id="character" filter="url(#subtleShadow)">
 
-    <path d="M65 166 Q63 185 66 201 L82 201 Q83 176 80 166 Z" fill="url(#pantsGrad)"/>
-    <path d="M99 166 Q97 176 98 201 L114 201 Q117 184 113 166 Z" fill="url(#pantsGrad)"/>
+    <!-- ===== CYBERNETIC RIGHT LEG (Base "Peg Leg") ===== -->
+    <g id="cyberLeg">
+       <!-- Knee ball joint -->
+       <circle cx="348" cy="690" r="14" fill="url(#cyberJoint)" stroke="#44475c" stroke-width="1.5"/>
 
-    <path d="M64 193 L84 193 L86 201 L63 201 Z" fill="url(#bootGrad)"/>
-    <path d="M96 193 L116 193 L118 201 L95 201 Z" fill="url(#bootGrad)"/>
+       <!-- Main Rod (Extended to match boot length) -->
+       <path d="M342,700 L340,845 L356,845 L354,700 Z" fill="url(#pistonGrad)" stroke="#555870" stroke-width="1" stroke-linejoin="miter"/>
 
-    <circle cx="70" cy="88" r="8" fill="#273a59"/>
-    <circle cx="110" cy="88" r="8" fill="#273a59"/>
-    <path d="M71 72 Q60 86 62 104 L67 166 L113 166 L118 104 Q120 86 109 72 Z" fill="url(#coatGrad)"/>
-    <path d="M77 78 L103 78 L105 152 L75 152 Z" fill="url(#vestGrad)"/>
+       <!-- Rod Details/Shading -->
+       <path d="M342,700 L340,845" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.15"/>
+       <path d="M354,700 L356,845" fill="none" stroke="#000000" stroke-width="3" opacity="0.2"/>
 
-    <path d="M76 79 L82 92 M104 79 L98 92" stroke="#ff9f43" stroke-width="1.2" opacity="0.65"/>
-    <path d="M73 93 L67 108 Q65 116 66 122" stroke="#1a2942" stroke-width="1.1" opacity="0.75" fill="none"/>
-    <path d="M107 93 L113 108 Q115 116 114 122" stroke="#1a2942" stroke-width="1.1" opacity="0.75" fill="none"/>
+       <!-- Simple Foot Pad — bottom at y=851 to match boot sole -->
+       <path d="M336,845 L360,845 L362,851 L334,851 Z" fill="#2c3040" stroke="#1a1e2c" stroke-width="1" stroke-linejoin="miter"/>
+       <rect x="338" y="845" width="20" height="3" fill="#555870" opacity="0.5"/>
 
-    <path d="M75 161 L105 161 Q104 167 102 171 L78 171 Q76 167 75 161 Z" fill="#664638"/>
-    <rect x="88" y="161" width="4" height="8" rx="1" fill="#c89f67"/>
-
-    <path d="M62 92 Q56 103 57 117 L58 145 Q58 151 62 151 Q66 151 67 145 L68 116 Q68 102 72 93 Z" fill="url(#coatGrad)"/>
-    <path d="M118 92 Q124 103 123 117 L122 145 Q122 151 118 151 Q114 151 113 145 L112 116 Q112 102 108 93 Z" fill="url(#coatGrad)"/>
-    <ellipse cx="59" cy="149" rx="3.8" ry="4.2" fill="url(#skinGrad)"/>
-    <ellipse cx="121" cy="149" rx="3.8" ry="4.2" fill="url(#skinGrad)"/>
-
-    <rect x="85" y="63" width="10" height="10" rx="4" fill="url(#skinGrad)"/>
-    <ellipse cx="90" cy="49" rx="14" ry="16" fill="url(#skinGrad)"/>
-
-    <path d="M76 45 Q80 35 90 34 Q100 35 104 45 L102 48 Q90 44 78 48 Z" fill="url(#hairGrad)"/>
-    <path d="M77 44 Q90 40 103 44 L103 47 Q90 45 77 47 Z" fill="#20324e"/>
-
-    <g id="eyes" transform="translate(0 0)">
-      <animateTransform attributeName="transform" type="translate"
-        values="0 0; -0.7 0.1; 0.8 -0.2; 0 0; 0.35 0.1; 0 0"
-        keyTimes="0;0.12;0.23;0.55;0.73;1" dur="4.1s" repeatCount="indefinite"/>
-      <ellipse cx="85" cy="50" rx="2.4" ry="2" fill="#f6fbff">
-        <animate attributeName="ry" values="2;2;0.2;2;2;0.2;2" keyTimes="0;0.18;0.2;0.22;0.66;0.68;1" dur="5.1s" repeatCount="indefinite"/>
-      </ellipse>
-      <ellipse cx="95" cy="50" rx="2.4" ry="2" fill="#f6fbff">
-        <animate attributeName="ry" values="2;2;0.2;2;2;0.2;2" keyTimes="0;0.18;0.2;0.22;0.66;0.68;1" dur="5.1s" repeatCount="indefinite"/>
-      </ellipse>
-      <circle cx="85" cy="50" r="0.8" fill="#26303e"/>
-      <circle cx="95" cy="50" r="0.8" fill="#26303e"/>
+       <!-- Upper connection ring -->
+       <rect x="338" y="705" width="20" height="6" rx="1" fill="#44475c"/>
     </g>
 
-    <path d="M88 53 L89 57 L91 57 L92 53" fill="#b5846d"/>
-    <path d="M84 59 Q90 62 96 59" stroke="#724a3d" stroke-width="1" fill="none" stroke-linecap="round"/>
-    <path d="M82 57 Q86 55 88 57" stroke="#724a3d" stroke-width="0.9" fill="none"/>
-    <path d="M98 57 Q94 55 92 57" stroke="#724a3d" stroke-width="0.9" fill="none"/>
+    <!-- ===== LEFT LEG (organic + boot) ===== -->
+    <g id="leftLeg">
 
-    <path d="M66 167 Q90 172 114 167" stroke="#132338" stroke-width="1.1" fill="none" opacity="0.58"/>
+      <!-- Mirror of Legendary Boot (Only the Sneaker) -->
+      <g transform="translate(600,0) scale(-1,1)">
+           <!-- Grey Legendary Boot -->
+           <path d="M336,798 L336,825 L360,825 L360,798 C355,805 341,805 336,798 Z" fill="url(#bootGrey)" stroke="#616161" stroke-width="1.5" stroke-linejoin="round"/>
+           <path d="M336,820 C326,825 322,835 322,845 L374,845 C374,835 370,825 360,820 Z" fill="url(#bootGrey)" stroke="#616161" stroke-width="1.5" stroke-linejoin="round"/>
+
+           <!-- Boot Toe Cap (Silver) -->
+           <path d="M322,845 L374,845 L370,835 Q348,830 326,835 Z" fill="#E0E0E0" stroke="#757575" stroke-width="1"/>
+           <path d="M328,838 Q348,834 368,838" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.6"/>
+
+           <!-- Laces (White/Grey) -->
+           <g fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round">
+               <line x1="340" y1="805" x2="356" y2="805"/>
+               <line x1="340" y1="810" x2="356" y2="810"/>
+               <line x1="340" y1="815" x2="356" y2="815"/>
+           </g>
+
+           <!-- Sole (Dark Grey) -->
+           <rect x="322" y="845" width="52" height="6" rx="2" fill="#212121"/>
+           <line x1="322" y1="848" x2="374" y2="848" fill="none" stroke="#757575" stroke-width="1"/>
+
+           <!-- Ankle Logo Orb (Silver) -->
+           <circle cx="362" cy="815" r="4" fill="#FFF" stroke="#616161" stroke-width="1"/>
+           <circle cx="362" cy="815" r="2" fill="#BDBDBD"/>
+      </g>
+
+      <!-- Full Pirate Pants Leg — starts at low waist y=550 -->
+      <path d="M244,550 C238,570 232,600 228,630 C224,680 224,730 230,770 L236,808 L276,808 L280,770 C286,730 286,680 282,630 C278,600 276,570 288,550 Z" fill="url(#pantsGrad)" stroke="#1a1a20" stroke-width="1"/>
+      <!-- Fabric highlight (silk sheen) -->
+      <path d="M250,560 C246,580 240,610 238,650 C236,700 238,750 242,792" fill="none" stroke="#4a4a50" stroke-width="3" opacity="0.2" stroke-linecap="round"/>
+      <path d="M274,560 C276,580 280,610 280,650 C280,700 278,750 272,792" fill="none" stroke="#4a4a50" stroke-width="2" opacity="0.15" stroke-linecap="round"/>
+
+      <!-- Gold side stripes -->
+      <path d="M246,555 C240,575 234,600 230,630 C226,680 226,732 232,775" fill="none" stroke="url(#pantsStripe)" stroke-width="2" opacity="0.7" stroke-linecap="round"/>
+      <path d="M286,555 C282,575 280,600 280,630 C280,680 282,732 278,775" fill="none" stroke="url(#pantsStripe)" stroke-width="2" opacity="0.7" stroke-linecap="round"/>
+
+      <!-- Fabric folds/wrinkles -->
+      <path d="M250,570 C258,566 272,567 280,572" fill="none" stroke="#1a1a20" stroke-width="0.8" opacity="0.5"/>
+      <path d="M246,585 C254,581 270,582 278,587" fill="none" stroke="#1a1a20" stroke-width="0.8" opacity="0.45"/>
+      <path d="M240,605 C250,600 266,601 276,607" fill="none" stroke="#1a1a20" stroke-width="0.7" opacity="0.4"/>
+      <path d="M234,645 C244,640 262,641 272,647" fill="none" stroke="#1a1a20" stroke-width="0.7" opacity="0.35"/>
+      <path d="M230,690 C240,686 260,687 270,692" fill="none" stroke="#1a1a20" stroke-width="0.7" opacity="0.35"/>
+      <path d="M228,730 C240,726 260,727 270,732" fill="none" stroke="#1a1a20" stroke-width="0.6" opacity="0.3"/>
+      <path d="M232,760 C242,756 260,757 268,762" fill="none" stroke="#1a1a20" stroke-width="0.6" opacity="0.25"/>
+      <path d="M236,782 C244,779 260,780 268,783" fill="none" stroke="#1a1a20" stroke-width="0.6" opacity="0.25"/>
+      <!-- Deep central fold -->
+      <path d="M262,515 C260,560 256,620 255,680 C254,740 256,780 257,805" fill="none" stroke="#1a1a20" stroke-width="0.6" opacity="0.2"/>
+
+      <!-- Gathered cuff band -->
+      <path d="M234,800 C238,796 248,794 256,794 C264,794 272,796 278,800 L276,808 L236,808 Z" fill="url(#cuffGrad)" stroke="#1a1a20" stroke-width="0.8"/>
+      <!-- Cuff gold trim -->
+      <path d="M235,801 C243,797 262,796 277,801" fill="none" stroke="url(#pantsStripe)" stroke-width="1.5" opacity="0.8" stroke-linecap="round"/>
+      <!-- Cuff gather lines -->
+      <path d="M242,802 L243,808" fill="none" stroke="#1a1a20" stroke-width="0.5" opacity="0.4"/>
+      <path d="M250,800 L250,808" fill="none" stroke="#1a1a20" stroke-width="0.5" opacity="0.4"/>
+      <path d="M258,799 L257,808" fill="none" stroke="#1a1a20" stroke-width="0.5" opacity="0.4"/>
+      <path d="M266,800 L265,808" fill="none" stroke="#1a1a20" stroke-width="0.5" opacity="0.4"/>
+      <path d="M272,802 L271,808" fill="none" stroke="#1a1a20" stroke-width="0.5" opacity="0.4"/>
+    </g>
+
+    <!-- ===== RIGHT LEG UPPER (pirate pants, starts at low waist y=550, cut at knee) ===== -->
+    <g id="rightLegUpper">
+      <!-- Billowy shape from waist to knee -->
+      <path d="M312,550 C316,570 320,600 324,620 C326,650 328,668 330,682 L370,682 C368,668 366,650 364,620 C362,600 360,570 358,550 Z" fill="url(#pantsGrad)" stroke="#1a1a20" stroke-width="1"/>
+      <!-- Fabric highlight -->
+      <path d="M320,558 C322,578 324,600 326,630 C328,660 330,678 330,680" fill="none" stroke="#4a4a50" stroke-width="2.5" opacity="0.2" stroke-linecap="round"/>
+      <path d="M354,558 C354,578 356,600 358,630 C360,660 362,678 362,680" fill="none" stroke="#4a4a50" stroke-width="2" opacity="0.15" stroke-linecap="round"/>
+
+      <!-- Gold side stripes -->
+      <path d="M314,555 C316,572 320,600 324,622 C326,652 328,670 330,680" fill="none" stroke="url(#pantsStripe)" stroke-width="2" opacity="0.7" stroke-linecap="round"/>
+      <path d="M356,555 C358,572 362,600 364,622 C366,652 368,670 368,680" fill="none" stroke="url(#pantsStripe)" stroke-width="2" opacity="0.7" stroke-linecap="round"/>
+
+      <!-- Fabric folds -->
+      <path d="M318,570 C328,566 348,567 356,572" fill="none" stroke="#1a1a20" stroke-width="0.8" opacity="0.5"/>
+      <path d="M320,585 C330,581 348,582 358,587" fill="none" stroke="#1a1a20" stroke-width="0.8" opacity="0.45"/>
+      <path d="M322,605 C332,600 348,601 360,607" fill="none" stroke="#1a1a20" stroke-width="0.7" opacity="0.4"/>
+      <path d="M324,640 C334,636 350,637 362,642" fill="none" stroke="#1a1a20" stroke-width="0.7" opacity="0.35"/>
+      <path d="M326,662 C336,658 350,659 364,664" fill="none" stroke="#1a1a20" stroke-width="0.6" opacity="0.3"/>
+      <!-- Central fold -->
+      <path d="M338,515 C337,550 336,600 336,650 C336,668 336,678 336,680" fill="none" stroke="#1a1a20" stroke-width="0.5" opacity="0.2"/>
+
+      <!-- Ragged torn edge (pirate style — frayed) -->
+      <path d="M328,678 L330,686 L334,676 L338,688 L342,674 L346,686 L350,676 L354,688 L358,674 L362,686 L366,678 L370,684" fill="url(#pantsGrad)" stroke="#1a1a20" stroke-width="0.8" stroke-linejoin="round"/>
+      <!-- Frayed threads hanging -->
+      <path d="M334,686 L332,694" fill="none" stroke="#2a2a30" stroke-width="0.6" opacity="0.5" stroke-linecap="round"/>
+      <path d="M342,688 L341,696" fill="none" stroke="#2a2a30" stroke-width="0.5" opacity="0.4" stroke-linecap="round"/>
+      <path d="M350,686 L349,693" fill="none" stroke="#2a2a30" stroke-width="0.6" opacity="0.45" stroke-linecap="round"/>
+      <path d="M358,688 L357,695" fill="none" stroke="#2a2a30" stroke-width="0.5" opacity="0.4" stroke-linecap="round"/>
+      <!-- Gold thread in torn edge -->
+      <path d="M338,688 L337,694" fill="none" stroke="#d4a84a" stroke-width="0.4" opacity="0.5" stroke-linecap="round"/>
+      <path d="M354,688 L353,694" fill="none" stroke="#d4a84a" stroke-width="0.4" opacity="0.5" stroke-linecap="round"/>
+
+      <!-- Skin above socket -->
+      <path d="M332,678 C335,682 340,685 348,685 C356,685 361,682 364,678" fill="url(#skinShadow)" stroke="#8e5c3c" stroke-width="0.5" opacity="0.5"/>
+    </g>
+
+    <!-- ===== TORSO (bare skin) ===== -->
+    <g id="torso">
+      <!-- Torso skin — extended to much lower waist y=550 -->
+      <path d="M248,300 C238,370 240,500 243,550 L357,550 C360,500 362,370 352,300 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
+      <!-- Center line -->
+      <path d="M300,320 L300,450" fill="none" stroke="#a06a48" stroke-width="0.7" opacity="0.25"/>
+      <!-- Chest lines -->
+      <path d="M275,340 C285,335 295,333 300,335" fill="none" stroke="#a06a48" stroke-width="0.6" opacity="0.2"/>
+      <path d="M325,340 C315,335 305,333 300,335" fill="none" stroke="#a06a48" stroke-width="0.6" opacity="0.2"/>
+      <path d="M268,350 C280,365 295,370 300,368" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.15"/>
+      <path d="M332,350 C320,365 305,370 300,368" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.15"/>
+      <!-- Abs (including lower pack now visible) -->
+      <path d="M285,422 C290,420 310,420 315,422" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.12"/>
+      <path d="M286,447 C292,445 308,445 314,447" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.12"/>
+      <path d="M287,472 C293,470 307,470 313,472" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.1"/>
+      <path d="M289,497 C294,495 306,495 311,497" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.1"/>
+      <path d="M290,522 C295,520 305,520 310,522" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.08"/>
+
+      <!-- ===== PIRATE SASH & BELT (shifted down to y=550) ===== -->
+      <!-- Main sash (wide, draped fabric) -->
+      <path d="M240,468 C248,458 352,458 360,468 L358,550 L242,550 Z" fill="url(#sashGrad)" stroke="#1a1a20" stroke-width="1"/>
+      <!-- Silk sheen overlay -->
+      <path d="M244,468 C250,461 350,461 356,468 L354,546 L246,546 Z" fill="url(#sashSilk)"/>
+
+      <!-- Sash wrap folds -->
+      <path d="M250,482 C268,478 332,478 350,482" fill="none" stroke="#4a4a50" stroke-width="0.8" opacity="0.5"/>
+      <path d="M248,498 C266,494 334,494 352,498" fill="none" stroke="#4a4a50" stroke-width="0.7" opacity="0.4"/>
+      <path d="M246,516 C264,512 336,512 354,516" fill="none" stroke="#4a4a50" stroke-width="0.7" opacity="0.35"/>
+      <path d="M244,534 C262,530 338,530 356,534" fill="none" stroke="#4a4a50" stroke-width="0.6" opacity="0.3"/>
+      <!-- Diagonal drape lines -->
+      <path d="M264,464 C272,494 274,520 270,550" fill="none" stroke="#4a4a50" stroke-width="0.5" opacity="0.2"/>
+      <path d="M336,464 C328,494 326,520 330,550" fill="none" stroke="#4a4a50" stroke-width="0.5" opacity="0.2"/>
+
+      <!-- Sash tails hanging on left side (shifted down) -->
+      <path d="M246,498 C238,502 230,514 228,532 C226,550 228,565 232,582" fill="url(#sashGrad)" stroke="#1a1a20" stroke-width="0.8"/>
+      <path d="M244,490 C234,496 226,508 224,525 C222,544 224,560 226,575" fill="url(#sashGrad)" stroke="#1a1a20" stroke-width="0.8"/>
+      <!-- Tail sheen -->
+      <path d="M236,508 C232,520 230,538 232,562" fill="none" stroke="#808090" stroke-width="1.5" opacity="0.2" stroke-linecap="round"/>
+      <!-- Tail fringe -->
+      <path d="M230,578 L228,588" fill="none" stroke="#4a4a50" stroke-width="0.8" opacity="0.5" stroke-linecap="round"/>
+      <path d="M234,584 L233,594" fill="none" stroke="#4a4a50" stroke-width="0.7" opacity="0.4" stroke-linecap="round"/>
+      <path d="M224,572 L222,582" fill="none" stroke="#4a4a50" stroke-width="0.8" opacity="0.5" stroke-linecap="round"/>
+      <path d="M228,578 L227,588" fill="none" stroke="#4a4a50" stroke-width="0.7" opacity="0.4" stroke-linecap="round"/>
+      <!-- Gold trim on tails -->
+      <path d="M246,498 C239,504 232,516 230,532" fill="none" stroke="url(#pantsStripe)" stroke-width="1" opacity="0.6" stroke-linecap="round"/>
+
+      <!-- Belt over sash (shifted down) -->
+      <path d="M244,498 C254,492 346,492 356,498 L356,514 C346,508 254,508 244,514 Z" fill="#2c1a12" stroke="#1a0e0a" stroke-width="0.8"/>
+      <!-- Belt texture (leather grain) -->
+      <path d="M256,500 C272,497 328,497 344,500" fill="none" stroke="#3a2418" stroke-width="0.5" opacity="0.4"/>
+      <path d="M254,506 C270,503 330,503 346,506" fill="none" stroke="#3a2418" stroke-width="0.5" opacity="0.3"/>
+      <!-- Belt edge stitching -->
+      <path d="M250,499 C264,496 336,496 350,499" fill="none" stroke="#4a3020" stroke-width="0.4" opacity="0.5" stroke-dasharray="3,3"/>
+      <path d="M250,513 C264,510 336,510 350,513" fill="none" stroke="#4a3020" stroke-width="0.4" opacity="0.5" stroke-dasharray="3,3"/>
+
+      <!-- Sci-Fi Tech Buckle (shifted down) -->
+      <!-- Main Chassis (chamfered hex) -->
+      <path d="M288,498 L292,494 L310,494 L314,498 L314,511 L310,515 L292,515 L288,511 Z" fill="url(#goldBuckle)" stroke="#70707a" stroke-width="0.8"/>
+      
+      <!-- Inner Dark Interface -->
+      <path d="M293,500 L309,500 L309,509 L293,509 Z" fill="#111115" stroke="none"/>
+      
+      <!-- Power Core (Pulse Animation) -->
+      <rect x="296" y="502" width="10" height="5" rx="1" fill="#00e5ff" stroke="#ffffff" stroke-width="0.5">
+        <animate attributeName="opacity" values="1;0.7;1" dur="3s" repeatCount="indefinite" />
+      </rect>
+      <rect x="297" y="503" width="8" height="3" rx="0.5" fill="#ffffff" opacity="0.6"/>
+      
+      <!-- Flashing Red Status Point -->
+      <circle cx="308" cy="505" r="1.5" fill="#ff0000" stroke="#880000" stroke-width="0.3">
+         <animate attributeName="fill" values="#ff0000;#550000;#ff0000" dur="0.8s" repeatCount="indefinite" />
+         <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
+      </circle>
+
+      <!-- Glow Aura -->
+      <rect x="294" y="500" width="14" height="9" rx="2" fill="#00e5ff" opacity="0.15">
+        <animate attributeName="opacity" values="0.15;0.05;0.15" dur="3s" repeatCount="indefinite" />
+      </rect>
+
+      <!-- Tech Detail Lines -->
+      <path d="M290,504 L292,504" fill="none" stroke="#50505a" stroke-width="1"/>
+      <!-- Metallic Highlights -->
+      <path d="M294,496 L308,496" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.6"/>
+      <path d="M290,500 L290,508" fill="none" stroke="#ffffff" stroke-width="0.6" opacity="0.3"/>
+
+      <!-- Torso scar -->
+      <path d="M278,380 C290,395 305,400 320,395" fill="none" stroke="#d4a088" stroke-width="1.8" opacity="0.3" stroke-linecap="round"/>
+    </g>
+
+    <!-- ===== ARMS ===== -->
+    <g id="arms">
+      <!-- Left arm -->
+      <path d="M248,300 C215,325 192,385 182,440 C175,480 175,510 180,540 L206,535 C203,510 203,480 208,445 C218,395 238,345 258,318" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
+      <path d="M225,370 C222,390 218,410 216,430" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.18"/>
+      <!-- Left hand -->
+      <path d="M176,535 C168,545 164,558 168,568 C172,576 182,578 188,572 L192,562 C195,570 200,574 206,570 C212,565 210,555 206,545 L206,535" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
+      <path d="M178,558 C180,562 183,565 186,564" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.25"/>
+
+      <!-- Right arm -->
+      <path d="M352,300 C385,325 408,385 418,440 C425,480 425,510 420,540 L394,535 C397,510 397,480 392,445 C382,395 362,345 342,318" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
+      <path d="M375,370 C378,390 382,410 384,430" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.18"/>
+      <!-- Right hand -->
+      <path d="M424,535 C432,545 436,558 432,568 C428,576 418,578 412,572 L408,562 C405,570 400,574 394,570 C388,565 390,555 394,545 L394,535" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
+      <path d="M422,558 C420,562 417,565 414,564" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.25"/>
+    </g>
+
+    <!-- ===== NECK ===== -->
+    <g id="neck">
+      <!-- Better curved shoulders/traps connection -->
+      <!-- Neck base flares out to shoulders using paths instead of simple rect -->
+      <path d="M282,248 L282,275 Q265,290 250,305 L350,305 Q335,290 318,275 L318,248 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+      <ellipse cx="300" cy="265" rx="3" ry="4" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.15"/>
+    </g>
+
+    <!-- ===== HEAD ===== -->
+    <g id="head">
+      <ellipse cx="300" cy="195" rx="62" ry="68" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
+      <!-- Jaw -->
+      <path d="M252,220 C265,255 290,268 300,270 C310,268 335,255 348,220" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.15"/>
+
+      <!-- ===== HAIR (reworked — layered, textured) ===== -->
+      <g id="hair">
+        <!-- Base hair mass — slightly fuller -->
+        <path d="M243,188 C237,155 255,125 284,117 C300,113 322,115 340,126 C361,140 366,166 360,188" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.8"/>
+
+        <!-- Hair volume layer (darker underlap for depth) -->
+        <path d="M246,185 C244,165 254,138 278,126 C294,118 316,120 332,130 C350,143 358,168 356,186" fill="url(#beardGrad)" opacity="0.4"/>
+
+        <!-- Sheen overlay -->
+        <path d="M250,180 C248,158 260,135 284,124 C298,118 318,120 335,130 C352,142 358,162 356,180" fill="url(#hairSheen)"/>
+
+        <!-- Strand texture lines (many, varied opacity for depth) -->
+        <path d="M258,170 C260,155 268,140 280,132" fill="none" stroke="#2a2a42" stroke-width="0.6" opacity="0.35"/>
+        <path d="M265,175 C268,158 276,142 290,130" fill="none" stroke="#2a2a42" stroke-width="0.5" opacity="0.25"/>
+        <path d="M275,172 C278,155 286,138 300,126" fill="none" stroke="#2a2a42" stroke-width="0.6" opacity="0.3"/>
+        <path d="M290,170 C292,152 298,136 312,128" fill="none" stroke="#2a2a42" stroke-width="0.5" opacity="0.2"/>
+        <path d="M305,170 C306,154 312,138 325,130" fill="none" stroke="#2a2a42" stroke-width="0.6" opacity="0.3"/>
+        <path d="M318,172 C320,156 328,142 340,136" fill="none" stroke="#2a2a42" stroke-width="0.5" opacity="0.25"/>
+        <path d="M330,176 C334,162 340,148 350,142" fill="none" stroke="#2a2a42" stroke-width="0.5" opacity="0.2"/>
+        <path d="M248,180 C252,168 255,155 262,145" fill="none" stroke="#2a2a42" stroke-width="0.4" opacity="0.2"/>
+        <path d="M340,178 C344,166 348,155 354,148" fill="none" stroke="#2a2a42" stroke-width="0.4" opacity="0.2"/>
+
+        <!-- Hair highlight streaks (subtle shine) -->
+        <path d="M270,168 C274,150 282,136 298,125" fill="none" stroke="#44446a" stroke-width="0.8" opacity="0.2"/>
+        <path d="M310,168 C314,152 322,138 338,132" fill="none" stroke="#44446a" stroke-width="0.8" opacity="0.2"/>
+
+        <!-- Spikes (varied sizes, organic shapes) -->
+        <path d="M258,142 L248,116 L272,134 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <path d="M270,132 L262,108 L282,126 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <path d="M286,124 L280,96 L298,118 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <path d="M302,120 L308,92 L316,116 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <path d="M318,122 L328,100 L332,122 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <path d="M334,132 L346,108 L344,136 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <!-- Side wisps -->
+        <path d="M242,178 L232,166 L240,185 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <path d="M244,168 L236,154 L248,166 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.4" stroke-linejoin="round"/>
+        <path d="M358,178 L368,166 L360,185 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <path d="M356,168 L364,154 L352,166 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.4" stroke-linejoin="round"/>
+
+        <!-- Side hair flowing down near ears -->
+        <path d="M244,185 C240,195 238,208 240,218" fill="none" stroke="url(#hairGrad)" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+        <path d="M243,188 C240,198 239,210 240,216" fill="none" stroke="#1a1a2a" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+        <path d="M358,185 C362,195 364,208 362,218" fill="none" stroke="url(#hairGrad)" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+        <path d="M359,188 C362,198 363,210 362,216" fill="none" stroke="#1a1a2a" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+      </g>
+
+      <!-- Ears -->
+      <ellipse cx="240" cy="205" rx="8" ry="14" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.6"/>
+      <ellipse cx="360" cy="205" rx="8" ry="14" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.6"/>
+
+      <!-- Left eye (normal) -->
+      <ellipse cx="278" cy="205" rx="12" ry="8" fill="#ffffff" stroke="#6b5040" stroke-width="0.8"/>
+      <circle cx="280" cy="205" r="5" fill="#3a5a3a"/>
+      <circle cx="280" cy="205" r="2.5" fill="#111111"/>
+      <circle cx="282" cy="203" r="1.2" fill="#ffffff" opacity="0.7"/>
+      <path d="M264,192 C272,188 286,189 292,193" fill="none" stroke="url(#hairGrad)" stroke-width="2.5" stroke-linecap="round"/>
+
+      <!-- Right eye (Eye Patch) — FIX: uses <use> to avoid duplicate path -->
+      <g id="eyePatch">
+        <use href="#eyePatchShape" fill="#1a1a20" stroke="#000000" stroke-width="1"/>
+        <use href="#eyePatchShape" fill="url(#skinShadow)" opacity="0.1"/>
+      </g>
+      <path d="M310,192 C318,187 330,187 340,190" fill="none" stroke="#555570" stroke-width="2" stroke-linecap="round"/>
+
+      <!-- Nose -->
+      <path d="M298,210 C296,220 294,228 298,232 C300,234 304,232 306,228" fill="none" stroke="#a06a48" stroke-width="0.7" opacity="0.35"/>
+
+      <!-- Mouth (smirk) -->
+      <path d="M282,242 C290,248 310,248 322,243" fill="none" stroke="#8b5e4a" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M322,243 C325,241 327,243" fill="none" stroke="#8b5e4a" stroke-width="1" stroke-linecap="round"/>
+
+      <!-- Cheek scar -->
+      <path d="M260,218 C265,228 268,240 264,248" fill="none" stroke="#d4a088" stroke-width="1.5" opacity="0.35" stroke-linecap="round"/>
+
+      <!-- ===== PIRATE BEARD (reworked — full, textured, braided) ===== -->
+      <g id="beard">
+
+        <!-- Sideburns connecting hair to jaw -->
+        <path d="M248,218 C246,228 245,240 248,250 C250,256 254,258 258,256" fill="url(#beardGrad)" stroke="#0e0e1c" stroke-width="0.6" opacity="0.9"/>
+        <path d="M352,218 C354,228 355,240 352,250 C350,256 346,258 342,256" fill="url(#beardGrad)" stroke="#0e0e1c" stroke-width="0.6" opacity="0.9"/>
+        <!-- Sideburn texture -->
+        <path d="M249,222 C248,232 248,242 250,250" fill="none" stroke="#0e0e1c" stroke-width="0.4" opacity="0.3"/>
+        <path d="M251,220 C250,230 249,240 252,252" fill="none" stroke="#22223a" stroke-width="0.3" opacity="0.25"/>
+        <path d="M351,222 C352,232 352,242 350,250" fill="none" stroke="#0e0e1c" stroke-width="0.4" opacity="0.3"/>
+        <path d="M349,220 C350,230 351,240 348,252" fill="none" stroke="#22223a" stroke-width="0.3" opacity="0.25"/>
+
+        <!-- Main beard mass + strands + braids shifted up 14px to cover chin -->
+        <g transform="translate(0,-14)">
+
+          <!-- Main beard mass — fuller, rounder, more shaped -->
+          <path d="
+            M254,248
+            C250,255 248,265 250,276
+            C252,288 260,298 272,306
+            C280,312 288,320 294,330
+            L300,338
+            L306,330
+            C312,320 320,312 328,306
+            C340,298 348,288 350,276
+            C352,265 350,255 346,248
+            C340,262 325,274 300,278
+            C275,274 260,262 254,248 Z
+          " fill="url(#beardGrad)" stroke="#0e0e1c" stroke-width="0.8"/>
+
+          <!-- Beard secondary volume (lighter inner layer) -->
+          <path d="
+            M260,252
+            C257,260 256,270 258,280
+            C260,290 268,300 278,308
+            C286,314 294,324 300,332
+            C306,324 314,314 322,308
+            C332,300 340,290 342,280
+            C344,270 343,260 340,252
+            C334,264 320,272 300,275
+            C280,272 266,264 260,252 Z
+          " fill="#181830" opacity="0.3"/>
+
+          <!-- Beard texture strands (many, varied, organic) -->
+          <!-- Left side -->
+          <path d="M260,256 C266,270 276,284 288,296" fill="none" stroke="#0e0e1c" stroke-width="0.6" opacity="0.35"/>
+          <path d="M256,260 C262,274 270,286 280,296" fill="none" stroke="#0e0e1c" stroke-width="0.5" opacity="0.25"/>
+          <path d="M264,254 C270,268 280,280 292,292" fill="none" stroke="#1a1a30" stroke-width="0.5" opacity="0.3"/>
+          <path d="M258,264 C264,278 274,290 286,302" fill="none" stroke="#0e0e1c" stroke-width="0.4" opacity="0.2"/>
+          <path d="M268,258 C274,270 284,282 296,294" fill="none" stroke="#22223a" stroke-width="0.4" opacity="0.2"/>
+          <path d="M262,270 C268,282 276,294 290,306" fill="none" stroke="#0e0e1c" stroke-width="0.3" opacity="0.18"/>
+          <path d="M270,266 C278,278 288,290 298,304" fill="none" stroke="#1e1e34" stroke-width="0.4" opacity="0.22"/>
+          <!-- Right side (mirrored) -->
+          <path d="M340,256 C334,270 324,284 312,296" fill="none" stroke="#0e0e1c" stroke-width="0.6" opacity="0.35"/>
+          <path d="M344,260 C338,274 330,286 320,296" fill="none" stroke="#0e0e1c" stroke-width="0.5" opacity="0.25"/>
+          <path d="M336,254 C330,268 320,280 308,292" fill="none" stroke="#1a1a30" stroke-width="0.5" opacity="0.3"/>
+          <path d="M342,264 C336,278 326,290 314,302" fill="none" stroke="#0e0e1c" stroke-width="0.4" opacity="0.2"/>
+          <path d="M332,258 C326,270 316,282 304,294" fill="none" stroke="#22223a" stroke-width="0.4" opacity="0.2"/>
+          <path d="M338,270 C332,282 324,294 310,306" fill="none" stroke="#0e0e1c" stroke-width="0.3" opacity="0.18"/>
+          <path d="M330,266 C322,278 312,290 302,304" fill="none" stroke="#1e1e34" stroke-width="0.4" opacity="0.22"/>
+          <!-- Center strands converging to chin -->
+          <path d="M280,278 C288,298 296,318 300,334" fill="none" stroke="#0e0e1c" stroke-width="0.5" opacity="0.3"/>
+          <path d="M320,278 C312,298 304,318 300,334" fill="none" stroke="#0e0e1c" stroke-width="0.5" opacity="0.3"/>
+          <path d="M290,280 C294,300 298,320 300,332" fill="none" stroke="#1a1a30" stroke-width="0.4" opacity="0.2"/>
+          <path d="M310,280 C306,300 302,320 300,332" fill="none" stroke="#1a1a30" stroke-width="0.4" opacity="0.2"/>
+
+          <!-- Wispy stray hairs at beard edges -->
+          <path d="M252,272 C248,276 246,282 248,286" fill="none" stroke="#1a1a2a" stroke-width="0.5" opacity="0.3" stroke-linecap="round"/>
+          <path d="M348,272 C352,276 354,282 352,286" fill="none" stroke="#1a1a2a" stroke-width="0.5" opacity="0.3" stroke-linecap="round"/>
+          <path d="M256,282 C252,288 250,294 252,298" fill="none" stroke="#1a1a2a" stroke-width="0.4" opacity="0.25" stroke-linecap="round"/>
+          <path d="M344,282 C348,288 350,294 348,298" fill="none" stroke="#1a1a2a" stroke-width="0.4" opacity="0.25" stroke-linecap="round"/>
+
+          <!-- Left braid (woven pattern) -->
+          <g id="braidLeft">
+            <!-- Braid body — two interweaving strands -->
+            <path d="M278,306 C274,314 270,318 272,326 C274,334 280,336 278,344 C276,352 272,356 274,364 C276,372 278,376 276,382" fill="none" stroke="#14142a" stroke-width="5" stroke-linecap="round"/>
+            <path d="M278,306 C282,314 284,318 282,326 C280,334 274,336 276,344 C278,352 282,356 280,364 C278,372 276,376 278,382" fill="none" stroke="#1e1e34" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Cross-hatching for woven look -->
+            <path d="M273,316 L283,314" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M273,326 L283,324" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M273,336 L283,334" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M273,346 L283,344" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M273,356 L283,354" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M273,366 L283,364" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M274,374 L282,372" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <!-- Braid tie (leather wrap) -->
+            <rect x="273" y="378" width="8" height="5" rx="1.5" fill="#6b4a30" stroke="#4a3020" stroke-width="0.6"/>
+            <line x1="274" y1="380" x2="280" y2="380" fill="none" stroke="#8b6a50" stroke-width="0.5" opacity="0.5"/>
+            <!-- Metal bead -->
+            <circle cx="277" cy="390" r="3.5" fill="url(#beadGrad)" stroke="#6b7085" stroke-width="0.6"/>
+            <circle cx="276" cy="388" r="1" fill="#ffffff" opacity="0.5"/>
+            <!-- Bead ring -->
+            <ellipse cx="277" cy="386" rx="4" ry="1.5" fill="none" stroke="#888" stroke-width="0.5" opacity="0.6"/>
+          </g>
+
+          <!-- Right braid (woven pattern, mirrored) -->
+          <g id="braidRight">
+            <path d="M322,306 C326,314 330,318 328,326 C326,334 320,336 322,344 C324,352 328,356 326,364 C324,372 322,376 324,382" fill="none" stroke="#14142a" stroke-width="5" stroke-linecap="round"/>
+            <path d="M322,306 C318,314 316,318 318,326 C320,334 326,336 324,344 C322,352 318,356 320,364 C322,372 324,376 322,382" fill="none" stroke="#1e1e34" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Cross-hatching -->
+            <path d="M317,316 L327,314" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M317,326 L327,324" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M317,336 L327,334" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M317,346 L327,344" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M317,356 L327,354" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M317,366 L327,364" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <path d="M318,374 L326,372" fill="none" stroke="#0e0e1c" stroke-width="0.8" opacity="0.4"/>
+            <!-- Braid tie -->
+            <rect x="319" y="378" width="8" height="5" rx="1.5" fill="#6b4a30" stroke="#4a3020" stroke-width="0.6"/>
+            <line x1="320" y1="380" x2="326" y2="380" fill="none" stroke="#8b6a50" stroke-width="0.5" opacity="0.5"/>
+            <!-- Metal bead -->
+            <circle cx="323" cy="390" r="3.5" fill="url(#beadGrad)" stroke="#6b7085" stroke-width="0.6"/>
+            <circle cx="322" cy="388" r="1" fill="#ffffff" opacity="0.5"/>
+            <!-- Bead ring -->
+            <ellipse cx="323" cy="386" rx="4" ry="1.5" fill="none" stroke="#888" stroke-width="0.5" opacity="0.6"/>
+          </g>
+
+        </g><!-- end translate(0,-14) -->
+
+        <!-- Mustache (thick handlebar with body) — stays at mouth level -->
+        <g id="mustache">
+          <!-- Mustache base fill -->
+          <path d="M282,236 C290,232 300,231 310,232 C318,234 322,236 318,240 C312,244 300,245 288,244 C282,242 280,240 282,236 Z" fill="url(#beardGrad)" stroke="#0e0e1c" stroke-width="0.5"/>
+          <!-- Handlebar curls -->
+          <path d="M282,238 C276,240 268,244 262,242 C258,240 256,236 260,234" fill="none" stroke="url(#hairGrad)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M318,238 C324,240 332,244 338,242 C342,240 344,236 340,234" fill="none" stroke="url(#hairGrad)" stroke-width="3" stroke-linecap="round"/>
+          <!-- Curl inner detail -->
+          <path d="M280,238 C274,240 268,242 264,240" fill="none" stroke="#1e1e34" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <path d="M320,238 C326,240 332,242 336,240" fill="none" stroke="#1e1e34" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <!-- Mustache texture -->
+          <path d="M288,236 C296,234 304,234 312,236" fill="none" stroke="#22223a" stroke-width="0.5" opacity="0.3"/>
+          <path d="M286,240 C294,238 306,238 314,240" fill="none" stroke="#22223a" stroke-width="0.4" opacity="0.25"/>
+          <!-- Subtle highlight on top -->
+          <path d="M290,234 C298,232 306,233 314,235" fill="none" stroke="#3a3a52" stroke-width="0.6" opacity="0.2"/>
+        </g>
+
+      </g>
+    </g>
+
   </g>
+
+  <!-- Animated glows -->
+  <!-- (Moved to boots_rare.svg) -->
+
+  <!-- Item slots (invisible guides) -->
+  <g id="itemSlots" opacity="0">
+    <rect id="slot_head" x="260" y="90" width="80" height="60"/>
+    <rect id="slot_chest" x="255" y="300" width="90" height="150"/>
+    <rect id="slot_belt" x="240" y="590" width="120" height="30"/>
+    <rect id="slot_leftHand" x="150" y="530" width="50" height="50"/>
+    <rect id="slot_rightHand" x="400" y="530" width="50" height="50"/>
+    <rect id="slot_shoulders" x="195" y="290" width="210" height="45"/>
+    <rect id="slot_back" x="265" y="300" width="70" height="180"/>
+  </g>
+
 </svg>

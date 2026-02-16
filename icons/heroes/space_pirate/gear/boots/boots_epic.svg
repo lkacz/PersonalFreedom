@@ -1,13 +1,91 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+  <defs>
+    <!-- Epic Organic Void Gradients -->
+    <linearGradient id="muscleFiber" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2a0a2a"/>
+      <stop offset="25%" style="stop-color:#4a1a4a"/>
+      <stop offset="50%" style="stop-color:#6a1a8a"/> <!-- Highlight ridge -->
+      <stop offset="75%" style="stop-color:#3a1a3a"/>
+      <stop offset="100%" style="stop-color:#1a0a1a"/>
+    </linearGradient>
 
-  <g id="boots_epic">
-    <path d="M44 188 L74 188 L76 202 L42 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M104 188 L134 188 L136 202 L102 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
-    <path d="M42 201 L77 201 L79 209 L40 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M102 201 L137 201 L139 209 L100 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
-    <path d="M46 192 L74 192" stroke="#9C27B0" stroke-width="1.3" opacity="0.92"/>
-    <path d="M106 192 L134 192" stroke="#9C27B0" stroke-width="1.3" opacity="0.92"/>
-    <path d="M45 194 L73 194 M106 194 L134 194" stroke="#5f789e" stroke-width="1" opacity="0.85"/><path d="M48 190 L44 192 L48 196 Z" fill="#9C27B0" opacity="0.85"/><path d="M132 190 L136 192 L132 196 Z" fill="#9C27B0" opacity="0.85"/><rect x="46.5" y="203.2" width="27" height="2.1" rx="1" fill="#9C27B0" opacity="0.88"/><rect x="106.5" y="203.2" width="27" height="2.1" rx="1" fill="#9C27B0" opacity="0.88"/>
+    <linearGradient id="tendonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#aa88aa"/>
+      <stop offset="100%" style="stop-color:#664466"/>
+    </linearGradient>
+    
+    <!-- Pulsing Veins -->
+    <linearGradient id="veinGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+       <stop offset="0%" style="stop-color:#e040fb;stop-opacity:0"/>
+       <stop offset="50%" style="stop-color:#ff80ab;stop-opacity:0.8"/>
+       <stop offset="100%" style="stop-color:#e040fb;stop-opacity:0"/>
+    </linearGradient>
+
+    <!-- Aura Filter for Epic Glow -->
+    <filter id="epicTissueGlow">
+       <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+       <feMerge>
+         <feMergeNode in="coloredBlur"/>
+         <feMergeNode in="SourceGraphic"/>
+       </feMerge>
+    </filter>
+  </defs>
+
+  <g id="boots_epic" filter="url(#epicTissueGlow)">
+       <!-- Knee Joint (Cap) -->
+       <g id="knee">
+           <path d="M334,680 C334,670 362,670 362,680 C366,695 360,705 348,705 C336,705 330,695 334,680" fill="#3a1a4a" stroke="#1a0a1a" stroke-width="1"/>
+           <!-- Knee Core/Gem -->
+           <ellipse cx="348" cy="690" rx="6" ry="8" fill="#9c27b0" opacity="0.8"/>
+           <ellipse cx="348" cy="690" rx="3" ry="5" fill="#e040fb">
+               <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+           </ellipse>
+       </g>
+
+       <!-- Calf Muscle (Gastrocnemius - Synthetic) -->
+       <g id="calf">
+           <path d="M336,700 C320,720 325,760 338,780 C342,760 342,740 340,700" fill="url(#muscleFiber)" stroke="#1a0a1a" stroke-width="0.5"/>
+           <path d="M360,700 C376,720 371,760 358,780 C354,760 354,740 356,700" fill="url(#muscleFiber)" stroke="#1a0a1a" stroke-width="0.5"/>
+           
+           <!-- Striations / Fiber texture -->
+           <path d="M332,720 C336,730 338,740 338,750" fill="none" stroke="#5a2a5a" stroke-width="0.5" opacity="0.5"/>
+           <path d="M364,720 C360,730 358,740 358,750" fill="none" stroke="#5a2a5a" stroke-width="0.5" opacity="0.5"/>
+       </g>
+
+       <!-- Shin Bone/Plate (Tibialis Anterior - Armored) -->
+       <path d="M342,705 L346,801 L350,801 L354,705" fill="#4a1a4a" stroke="#2a0a2a" stroke-width="1"/>
+       <path d="M344,705 L346,801 L350,801 L352,705" fill="#e040fb" opacity="0.1"/> <!-- Glow overlay -->
+
+       <!-- Achilles Tendon (Exposed Tech) -->
+       <path d="M346,780 L344,821 L352,821 L350,780" fill="url(#tendonGrad)" stroke="#1a0a1a" stroke-width="0.5"/>
+       <rect x="345" y="791" width="6" height="25" fill="none" stroke="#e040fb" stroke-width="0.5" opacity="0.4" stroke-dasharray="2,1"/>
+
+       <!-- Energy Veins (Pulsing) -->
+       <path d="M334,710 C328,730 330,750 336,770" fill="none" stroke="url(#veinGlow)" stroke-width="1.5" opacity="0.8">
+           <animate attributeName="stroke-opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+       </path>
+       <path d="M362,710 C368,730 366,750 360,770" fill="none" stroke="url(#veinGlow)" stroke-width="1.5" opacity="0.8">
+           <animate attributeName="stroke-opacity" values="0.4;1;0.4" dur="1.7s" repeatCount="indefinite"/>
+       </path>
+
+       <!-- Floating Ankle Orbs (Biotech Sensors) -->
+       <circle cx="334" cy="811" r="3" fill="#9c27b0">
+          <animate attributeName="cy" values="811;809;811" dur="3s" repeatCount="indefinite"/>
+       </circle>
+       <circle cx="362" cy="811" r="3" fill="#9c27b0">
+          <animate attributeName="cy" values="811;813;811" dur="3s" repeatCount="indefinite"/>
+       </circle>
+
+       <!-- Foot (Biomechanical) -->
+       <path d="M336,821 C326,831 322,841 322,844 L374,844 C374,841 370,831 360,821 L336,821" fill="#2a0a2a" stroke="#1a0a1a" stroke-width="1"/>
+       
+       <!-- Toe Armor -->
+       <path d="M322,844 L374,844 L372,836 L324,836 Z" fill="#4a1a4a"/>
+       
+       <!-- Energy Sole -->
+       <path d="M322,844 L374,844" stroke="#e040fb" stroke-width="2" opacity="0.8" filter="url(#epicTissueGlow)"/>
+       
+       <!-- Sole shadow -->
+       <path d="M336,844 L340,848 L356,848 L360,844" fill="#1a0a1a" opacity="0.8"/>
   </g>
-
 </svg>
