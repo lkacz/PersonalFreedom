@@ -43,6 +43,9 @@ def test_merge_tier_upgrade_keeps_animation_and_award_in_sync(monkeypatch, qapp)
             "base_rarity": "Rare",
             "tier_upgraded": True,
             "tier_jump": 2,
+            "legendary_count": 11,
+            "celestial_chance": 0.07,
+            "celestial_triggered": False,
             "final_rarity": "Epic",
             "result_item": {
                 "name": "Epic Test Item",
@@ -78,6 +81,25 @@ def test_merge_tier_upgrade_keeps_animation_and_award_in_sync(monkeypatch, qapp)
     assert dialog.merge_result["tier_upgraded"] is True
     assert captured_animation_kwargs["rolled_tier"] == "Epic"
     assert captured_animation_kwargs["tier_roll"] == 83.5
+    assert captured_animation_kwargs["celestial_chance"] == 0.07
+    assert captured_animation_kwargs["legendary_count"] == 11
+    assert captured_animation_kwargs["final_rarity"] == "Epic"
+
+
+def test_merge_tier_slider_displays_celestial_zone_when_unlocked(qapp):
+    from lottery_animation import MergeTierSliderWidget
+
+    slider = MergeTierSliderWidget(
+        result_rarity="Legendary",
+        upgraded=False,
+        celestial_chance=0.07,
+    )
+    zones = slider.get_display_zone_weights()
+
+    zone_map = {name: pct for name, pct in zones}
+    assert "Celestial" in zone_map
+    assert zone_map["Celestial"] == pytest.approx(7.0, abs=0.01)
+    assert sum(zone_map.values()) == pytest.approx(100.0, abs=0.01)
 
 
 def test_activity_lottery_can_reveal_pre_awarded_item_without_rarity_drift(qapp):

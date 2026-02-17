@@ -36,12 +36,11 @@
     <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
         <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
         <feOffset dx="2" dy="2" result="offsetblur"/>
-        <feComponentTransfer>
-            <feFuncA type="linear" slope="0.3"/>
-        </feComponentTransfer>
-        <feMerge> 
-            <feMergeNode/>
-            <feMergeNode in="SourceGraphic"/> 
+        <feFlood flood-color="#000000" flood-opacity="0.3" result="shadowColor"/>
+        <feComposite in="shadowColor" in2="offsetblur" operator="in" result="shadow"/>
+        <feMerge>
+            <feMergeNode in="shadow"/>
+            <feMergeNode in="SourceGraphic"/>
         </feMerge>
     </filter>
   </defs>

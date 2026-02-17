@@ -16,10 +16,10 @@
     
     <!-- Disconnected Feet -->
     <path d="M40 185 L70 185 L65 200 L45 200 Z" fill="#4A148C" stroke="#7B1FA2">
-       <animate attributeName="transform" type="translate" values="0 0; 0 -3; 0 0" dur="2s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -3; 0 0" dur="2s" repeatCount="indefinite"/>
     </path>
     <path d="M110 185 L140 185 L135 200 L115 200 Z" fill="#4A148C" stroke="#7B1FA2">
-       <animate attributeName="transform" type="translate" values="0 0; 0 -3; 0 0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -3; 0 0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
     </path>
     
     <!-- Void Field (Shadow) -->

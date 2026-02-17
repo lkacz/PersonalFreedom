@@ -260,7 +260,7 @@ def test_city_animated_widget_ensure_loaded_requires_visibility() -> None:
 
 
 def test_character_canvas_web_page_active_toggles_visibility_and_css(monkeypatch):
-    """Hero canvas should explicitly pause/resume WebEngine page lifecycle + CSS animation state."""
+    """Hero canvas should pause/resume lifecycle, SMIL timelines, and CSS animations."""
     page = _DummyPage()
     dummy = type("Dummy", (), {})()
     dummy.web_view = _DummyWebView(page)
@@ -271,12 +271,14 @@ def test_character_canvas_web_page_active_toggles_visibility_and_css(monkeypatch
     focus_blocker_qt.CharacterCanvas._set_web_page_active(dummy, True)
     assert page.visible_calls[-1] is True
     assert page.js_calls and "animationPlayState = ''" in page.js_calls[-1]
+    assert "unpauseAnimations" in page.js_calls[-1]
     if focus_blocker_qt.QWebEnginePage is not None:
         assert page.lifecycle_calls[-1] == focus_blocker_qt.QWebEnginePage.LifecycleState.Active
 
     focus_blocker_qt.CharacterCanvas._set_web_page_active(dummy, False)
     assert page.visible_calls[-1] is False
     assert page.js_calls and "animationPlayState = 'paused'" in page.js_calls[-1]
+    assert "pauseAnimations" in page.js_calls[-1]
     if focus_blocker_qt.QWebEnginePage is not None:
         assert page.lifecycle_calls[-1] == focus_blocker_qt.QWebEnginePage.LifecycleState.Frozen
 
@@ -526,3 +528,248 @@ def test_character_canvas_defers_web_html_update_while_hidden(monkeypatch) -> No
     focus_blocker_qt.CharacterCanvas._update_web_engine_content(dummy)
     assert dummy._web_content_dirty is False
     assert dummy._inject_calls == 1
+
+
+def test_character_canvas_schedule_web_update_immediate_flushes_pending_timer() -> None:
+    class _Timer:
+        def __init__(self) -> None:
+            self._active = True
+            self.stop_calls = 0
+            self.start_calls: list[int] = []
+
+        def isActive(self) -> bool:
+            return self._active
+
+        def stop(self) -> None:
+            self.stop_calls += 1
+            self._active = False
+
+        def start(self, value: int) -> None:
+            self.start_calls.append(int(value))
+            self._active = True
+
+    dummy = type("Dummy", (), {})()
+    dummy.web_view = object()
+    dummy._web_update_debounce_ms = 24
+    dummy._web_update_timer = _Timer()
+    dummy._pending_web_update = True
+    dummy._update_calls = 0
+
+    def _update() -> None:
+        dummy._update_calls += 1
+
+    dummy._update_web_engine_content = _update
+
+    focus_blocker_qt.CharacterCanvas._schedule_web_engine_content_update(dummy, immediate=True)
+    assert dummy._update_calls == 1
+    assert dummy._pending_web_update is False
+    assert dummy._web_update_timer.stop_calls == 1
+    assert dummy._web_update_timer.start_calls == []
+
+
+def test_character_canvas_schedule_web_update_coalesces_until_flush() -> None:
+    class _Timer:
+        def __init__(self) -> None:
+            self._active = False
+            self.stop_calls = 0
+            self.start_calls: list[int] = []
+
+        def isActive(self) -> bool:
+            return self._active
+
+        def stop(self) -> None:
+            self.stop_calls += 1
+            self._active = False
+
+        def start(self, value: int) -> None:
+            self.start_calls.append(int(value))
+            self._active = True
+
+    dummy = type("Dummy", (), {})()
+    dummy.web_view = object()
+    dummy._web_update_debounce_ms = 24
+    dummy._web_update_timer = _Timer()
+    dummy._pending_web_update = False
+    dummy._update_calls = 0
+
+    def _update() -> None:
+        dummy._update_calls += 1
+
+    dummy._update_web_engine_content = _update
+
+    focus_blocker_qt.CharacterCanvas._schedule_web_engine_content_update(dummy, immediate=False)
+    assert dummy._update_calls == 0
+    assert dummy._pending_web_update is True
+    assert dummy._web_update_timer.start_calls == [24]
+
+    focus_blocker_qt.CharacterCanvas._schedule_web_engine_content_update(dummy, immediate=False)
+    assert dummy._update_calls == 0
+    assert dummy._web_update_timer.stop_calls == 1
+    assert dummy._web_update_timer.start_calls == [24, 24]
+
+    focus_blocker_qt.CharacterCanvas._flush_scheduled_web_update(dummy)
+    assert dummy._update_calls == 1
+    assert dummy._pending_web_update is False
+
+
+def test_character_canvas_schedule_web_scale_update_immediate_flushes_pending_timer() -> None:
+    class _Timer:
+        def __init__(self) -> None:
+            self._active = True
+            self.stop_calls = 0
+            self.start_calls: list[int] = []
+
+        def isActive(self) -> bool:
+            return self._active
+
+        def stop(self) -> None:
+            self.stop_calls += 1
+            self._active = False
+
+        def start(self, value: int) -> None:
+            self.start_calls.append(int(value))
+            self._active = True
+
+    dummy = type("Dummy", (), {})()
+    dummy.web_view = object()
+    dummy._web_scale_update_debounce_ms = 16
+    dummy._web_scale_update_timer = _Timer()
+    dummy._pending_web_scale_update = True
+    dummy._scale_calls = 0
+
+    def _update_scale() -> None:
+        dummy._scale_calls += 1
+
+    dummy._update_web_view_scale = _update_scale
+
+    focus_blocker_qt.CharacterCanvas._schedule_web_view_scale_update(dummy, immediate=True)
+    assert dummy._scale_calls == 1
+    assert dummy._pending_web_scale_update is False
+    assert dummy._web_scale_update_timer.stop_calls == 1
+    assert dummy._web_scale_update_timer.start_calls == []
+
+
+def test_character_canvas_schedule_web_scale_update_coalesces_until_flush() -> None:
+    class _Timer:
+        def __init__(self) -> None:
+            self._active = False
+            self.stop_calls = 0
+            self.start_calls: list[int] = []
+
+        def isActive(self) -> bool:
+            return self._active
+
+        def stop(self) -> None:
+            self.stop_calls += 1
+            self._active = False
+
+        def start(self, value: int) -> None:
+            self.start_calls.append(int(value))
+            self._active = True
+
+    dummy = type("Dummy", (), {})()
+    dummy.web_view = object()
+    dummy._web_scale_update_debounce_ms = 16
+    dummy._web_scale_update_timer = _Timer()
+    dummy._pending_web_scale_update = False
+    dummy._scale_calls = 0
+
+    def _update_scale() -> None:
+        dummy._scale_calls += 1
+
+    dummy._update_web_view_scale = _update_scale
+
+    focus_blocker_qt.CharacterCanvas._schedule_web_view_scale_update(dummy, immediate=False)
+    assert dummy._scale_calls == 0
+    assert dummy._pending_web_scale_update is True
+    assert dummy._web_scale_update_timer.start_calls == [16]
+
+    focus_blocker_qt.CharacterCanvas._schedule_web_view_scale_update(dummy, immediate=False)
+    assert dummy._scale_calls == 0
+    assert dummy._web_scale_update_timer.stop_calls == 1
+    assert dummy._web_scale_update_timer.start_calls == [16, 16]
+
+    focus_blocker_qt.CharacterCanvas._flush_scheduled_web_scale_update(dummy)
+    assert dummy._scale_calls == 1
+    assert dummy._pending_web_scale_update is False
+
+
+def test_mini_hero_widget_set_data_skips_render_when_hash_unchanged(monkeypatch) -> None:
+    dummy = type("Dummy", (), {})()
+    dummy._equipped = {}
+    dummy._power = 0
+    dummy._story_theme = "warrior"
+    dummy._cached_pixmap = object()
+    dummy._scaled_pixmap = object()
+    dummy._last_data_hash = "stable"
+    dummy._render_calls = 0
+    dummy._refresh_scaled_calls = 0
+    dummy._update_calls = 0
+    dummy._tooltip_calls = 0
+
+    dummy._compute_data_hash = lambda: "stable"
+
+    def _render_thumbnail_pixmap():
+        dummy._render_calls += 1
+        return object()
+
+    def _refresh_scaled_pixmap():
+        dummy._refresh_scaled_calls += 1
+
+    dummy._render_thumbnail_pixmap = _render_thumbnail_pixmap
+    dummy._refresh_scaled_pixmap = _refresh_scaled_pixmap
+    dummy.setToolTip = lambda _text: setattr(dummy, "_tooltip_calls", dummy._tooltip_calls + 1)
+    dummy.update = lambda: setattr(dummy, "_update_calls", dummy._update_calls + 1)
+
+    monkeypatch.setattr(focus_blocker_qt, "GAMIFICATION_AVAILABLE", False)
+    focus_blocker_qt.MiniHeroWidget.set_hero_data(dummy, {}, 0, "warrior")
+
+    assert dummy._render_calls == 0
+    assert dummy._refresh_scaled_calls == 0
+    assert dummy._update_calls == 0
+    assert dummy._tooltip_calls == 0
+
+
+def test_mini_hero_widget_set_data_rerenders_when_hash_changes(monkeypatch) -> None:
+    dummy = type("Dummy", (), {})()
+    dummy._equipped = {}
+    dummy._power = 0
+    dummy._story_theme = "warrior"
+    dummy._cached_pixmap = object()
+    dummy._scaled_pixmap = None
+    dummy._last_data_hash = "old"
+    dummy._render_calls = 0
+    dummy._refresh_scaled_calls = 0
+    dummy._update_calls = 0
+    dummy._tooltip_calls = 0
+
+    def _compute_data_hash():
+        return f"{dummy._power}|{dummy._story_theme}|{len(dummy._equipped)}"
+
+    def _render_thumbnail_pixmap():
+        dummy._render_calls += 1
+        return "pixmap-sentinel"
+
+    def _refresh_scaled_pixmap():
+        dummy._refresh_scaled_calls += 1
+
+    dummy._compute_data_hash = _compute_data_hash
+    dummy._render_thumbnail_pixmap = _render_thumbnail_pixmap
+    dummy._refresh_scaled_pixmap = _refresh_scaled_pixmap
+    dummy.setToolTip = lambda _text: setattr(dummy, "_tooltip_calls", dummy._tooltip_calls + 1)
+    dummy.update = lambda: setattr(dummy, "_update_calls", dummy._update_calls + 1)
+
+    monkeypatch.setattr(focus_blocker_qt, "GAMIFICATION_AVAILABLE", False)
+    focus_blocker_qt.MiniHeroWidget.set_hero_data(
+        dummy,
+        {"Helmet": {"id": "h1", "rarity": "Epic", "power": 42}},
+        123,
+        "robot",
+    )
+
+    assert dummy._render_calls == 1
+    assert dummy._cached_pixmap == "pixmap-sentinel"
+    assert dummy._refresh_scaled_calls == 1
+    assert dummy._update_calls == 1
+    assert dummy._tooltip_calls == 1
+    assert dummy._last_data_hash == "123|robot|1"
