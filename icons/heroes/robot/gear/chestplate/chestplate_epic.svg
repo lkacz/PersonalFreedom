@@ -9,10 +9,10 @@
   <g id="chestplate_epic">
     <!-- Floating Shoulder Pads -->
     <path d="M55 55 L75 55 L70 80 L50 80 Z" fill="#4A148C" stroke="#E040FB" stroke-width="1">
-       <animate attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="2s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="2s" repeatCount="indefinite"/>
     </path>
     <path d="M125 55 L105 55 L110 80 L130 80 Z" fill="#4A148C" stroke="#E040FB" stroke-width="1">
-       <animate attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
     </path>
     
     <!-- Hovering Main Plate -->

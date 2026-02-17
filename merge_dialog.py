@@ -419,14 +419,24 @@ class RarityDistributionWidget(QtWidgets.QWidget):
         cumulative_x = margin
         bar_width = w - 2 * margin
         
-        # Get ordered rarities (only those in distribution)
-        ordered_rarities = [r for r in MERGE_TIER_ORDER if r in self.distribution]
-        
-        for i, rarity in enumerate(ordered_rarities):
-            pct = self.distribution[rarity]
-            if pct <= 0:
-                continue
-            
+        # Display base lottery zones scaled by non-Celestial share, then append Celestial.
+        base_scale = max(0.0, 1.0 - self.celestial_chance)
+        display_zones = []
+        for rarity in MERGE_TIER_ORDER:
+            pct = float(self.distribution.get(rarity, 0.0)) * base_scale
+            if pct > 0.0:
+                display_zones.append((rarity, pct))
+        if self.celestial_chance > 0.0:
+            display_zones.append(("Celestial", self.celestial_chance * 100.0))
+
+        # Keep widths visually flush with right edge despite float drift.
+        total_pct = sum(pct for _, pct in display_zones)
+        if display_zones and abs(100.0 - total_pct) > 0.001:
+            largest_idx = max(range(len(display_zones)), key=lambda idx: display_zones[idx][1])
+            rarity_name, pct = display_zones[largest_idx]
+            display_zones[largest_idx] = (rarity_name, max(0.0, pct + (100.0 - total_pct)))
+
+        for i, (rarity, pct) in enumerate(display_zones):
             zone_width = (pct / 100) * bar_width
             color = ITEM_RARITIES.get(rarity, {}).get("color", "#666")
             
@@ -439,7 +449,7 @@ class RarityDistributionWidget(QtWidgets.QWidget):
                 path = QtGui.QPainterPath()
                 path.addRoundedRect(rect, 4, 4)
                 painter.drawPath(path)
-            elif i == len(ordered_rarities) - 1:
+            elif i == len(display_zones) - 1:
                 path = QtGui.QPainterPath()
                 path.addRoundedRect(rect, 4, 4)
                 painter.drawPath(path)
@@ -450,12 +460,13 @@ class RarityDistributionWidget(QtWidgets.QWidget):
             if zone_width > 35:
                 painter.setPen(QtGui.QColor("#fff"))
                 painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
-                label = f"{rarity[:3]}:{pct:.0f}%"
+                label_name = "Cel" if rarity == "Celestial" else rarity[:3]
+                label = f"{label_name}:{pct:.0f}%"
                 label_rect = QtCore.QRectF(cumulative_x, bar_y, zone_width, bar_height)
                 painter.drawText(label_rect, QtCore.Qt.AlignCenter, label)
             
             # Draw separator
-            if i < len(ordered_rarities) - 1:
+            if i < len(display_zones) - 1:
                 painter.setPen(QtGui.QPen(QtGui.QColor("#1a1a2e"), 2))
                 sep_x = cumulative_x + zone_width
                 painter.drawLine(int(sep_x), bar_y, int(sep_x), bar_y + bar_height)
@@ -1990,6 +2001,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             tier_roll=merge_backend.get("tier_roll"),
             rolled_tier=merge_backend.get("rolled_tier"),
             tier_weights=merge_backend.get("tier_weights"),
+            celestial_chance=merge_backend.get("celestial_chance", 0.0),
+            legendary_count=merge_backend.get("legendary_count", 0),
+            final_rarity=merge_backend.get("final_rarity"),
+            celestial_triggered=merge_backend.get("celestial_triggered", False),
         )
         animation_dialog.exec_()
 

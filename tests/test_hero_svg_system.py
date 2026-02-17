@@ -1,11 +1,13 @@
 from pathlib import Path
 
+import hero_svg_system
 from PySide6 import QtCore
 from PySide6.QtSvg import QSvgRenderer
 
 from hero_svg_system import (
     HeroLayer,
     build_hero_layer_plan,
+    generate_hero_composed_html,
     load_hero_manifest,
     resolve_layer_target_rect,
     resolve_hero_base_layer,
@@ -242,3 +244,236 @@ def test_resolve_base_layer_with_default_names(tmp_path: Path) -> None:
     base_layer = resolve_hero_base_layer("space_pirate", base_dir=tmp_path)
     assert base_layer is not None
     assert base_layer.name == "hero.svg"
+
+
+def test_generate_hero_composed_html_inlines_svg_layers(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(hero_svg_system, "_INLINE_SVG_COMPOSITION_ENABLED", True)
+
+    theme_root = tmp_path / "icons" / "heroes" / "robot"
+    theme_root.mkdir(parents=True, exist_ok=True)
+    (theme_root / "hero_base.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <linearGradient id="grad"><stop offset="0%" stop-color="#fff"/></linearGradient>
+  </defs>
+  <rect id="body" x="0" y="0" width="180" height="220" fill="url(#grad)"/>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+    (theme_root / "gear" / "helmet").mkdir(parents=True, exist_ok=True)
+    (theme_root / "gear" / "helmet" / "helmet_common.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <linearGradient id="grad"><stop offset="100%" stop-color="#000"/></linearGradient>
+  </defs>
+  <rect id="visor" x="70" y="20" width="40" height="20" fill="url(#grad)"/>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+
+    html = generate_hero_composed_html(
+        story_theme="robot",
+        equipped={"Helmet": {"rarity": "Common"}},
+        power_tier=None,
+        base_dir=tmp_path,
+    )
+
+    assert "<img" not in html
+    assert '<div class="layer svg-layer"' in html
+    assert 'id="layer0_base_grad"' in html
+    assert 'id="layer1_gear_helmet_grad"' in html
+    assert 'url(#layer0_base_grad)' in html
+    assert 'url(#layer1_gear_helmet_grad)' in html
+    assert 'preserveAspectRatio="none"' in html
+
+
+def test_generate_hero_composed_html_namespaces_smil_timing_refs(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(hero_svg_system, "_INLINE_SVG_COMPOSITION_ENABLED", True)
+
+    theme_root = tmp_path / "icons" / "heroes" / "thief"
+    theme_root.mkdir(parents=True, exist_ok=True)
+    (theme_root / "hero_base.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g id="spark">
+    <animate id="pulse" attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+  </g>
+  <circle id="orb" cx="90" cy="110" r="20" opacity="0.8">
+    <animate begin="pulse.end+0.2s" attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/>
+  </circle>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+
+    html = generate_hero_composed_html(
+        story_theme="thief",
+        equipped={},
+        power_tier=None,
+        base_dir=tmp_path,
+    )
+
+    assert 'id="layer0_base_pulse"' in html
+    assert 'begin="layer0_base_pulse.end+0.2s"' in html
+
+
+def test_runtime_budget_drops_fx_animations_before_base(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(hero_svg_system, "_INLINE_SVG_COMPOSITION_ENABLED", True)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_SVG_BUDGETS_ENABLED", True)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_ANIMATIONS", 1)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_HEAVY_FILTERS", 99)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_BLUR_FILTERS", 99)
+
+    theme_root = tmp_path / "icons" / "heroes" / "robot"
+    (theme_root / "fx").mkdir(parents=True, exist_ok=True)
+    (theme_root / "hero_base.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <rect x="0" y="0" width="180" height="220" fill="#111">
+    <animate id="basePulse" attributeName="opacity" values="1;0.9;1" dur="3s" repeatCount="indefinite"/>
+  </rect>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+    (theme_root / "fx" / "tier_legendary.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <circle id="fxRing" cx="90" cy="110" r="70" fill="#f80" opacity="0.2">
+    <animate id="fxPulseA" attributeName="opacity" values="0.2;0.9;0.2" dur="0.4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="90" cy="110" r="55" fill="#ff0" opacity="0.2">
+    <animate id="fxPulseB" attributeName="opacity" values="0.2;0.7;0.2" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+
+    html = generate_hero_composed_html(
+        story_theme="robot",
+        equipped={},
+        power_tier="legendary",
+        base_dir=tmp_path,
+    )
+
+    assert 'id="layer1_base_basePulse"' in html
+    assert "layer0_fx_fxPulseA" not in html
+    assert "layer0_fx_fxPulseB" not in html
+
+
+def test_runtime_budget_drops_heavy_filters_from_low_priority_layers(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(hero_svg_system, "_INLINE_SVG_COMPOSITION_ENABLED", True)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_SVG_BUDGETS_ENABLED", True)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_ANIMATIONS", 99)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_HEAVY_FILTERS", 0)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_BLUR_FILTERS", 99)
+
+    theme_root = tmp_path / "icons" / "heroes" / "thief"
+    (theme_root / "fx").mkdir(parents=True, exist_ok=True)
+    (theme_root / "hero_base.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <rect id="body" x="0" y="0" width="180" height="220" fill="#222"/>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+    (theme_root / "fx" / "tier_celestial.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <filter id="warpFx">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2"/>
+      <feDisplacementMap in="SourceGraphic" scale="8"/>
+    </filter>
+  </defs>
+  <rect id="fxPlate" x="10" y="10" width="160" height="200" fill="#0ff" filter="url(#warpFx)" opacity="0.2"/>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+
+    html = generate_hero_composed_html(
+        story_theme="thief",
+        equipped={},
+        power_tier="celestial",
+        base_dir=tmp_path,
+    )
+
+    assert "feTurbulence" not in html
+    assert "feDisplacementMap" not in html
+    assert "warpFx" not in html
+    assert 'id="layer0_fx_fxPlate"' in html
+
+
+def test_runtime_budget_preserves_celestial_gear_heavy_filters_before_non_celestial(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(hero_svg_system, "_INLINE_SVG_COMPOSITION_ENABLED", True)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_SVG_BUDGETS_ENABLED", True)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_ANIMATIONS", 99)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_HEAVY_FILTERS", 1)
+    monkeypatch.setattr(hero_svg_system, "_RUNTIME_MAX_BLUR_FILTERS", 99)
+
+    theme_root = tmp_path / "icons" / "heroes" / "thief"
+    (theme_root / "fx").mkdir(parents=True, exist_ok=True)
+    (theme_root / "gear" / "amulet").mkdir(parents=True, exist_ok=True)
+    (theme_root / "gear" / "shield").mkdir(parents=True, exist_ok=True)
+    (theme_root / "hero_base.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <rect id="body" x="0" y="0" width="180" height="220" fill="#111"/>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+    (theme_root / "fx" / "tier_celestial.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <filter id="warpFx"><feTurbulence type="fractalNoise" baseFrequency="0.02"/></filter>
+  </defs>
+  <rect id="fxLayer" x="10" y="10" width="160" height="200" fill="#0ff" filter="url(#warpFx)" opacity="0.2"/>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+    (theme_root / "gear" / "amulet" / "amulet_celestial.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <filter id="warpAmulet"><feTurbulence type="fractalNoise" baseFrequency="0.03"/></filter>
+  </defs>
+  <circle id="amuletCore" cx="90" cy="100" r="14" fill="#8df" filter="url(#warpAmulet)"/>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+    (theme_root / "gear" / "shield" / "shield_common.svg").write_text(
+        """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <filter id="warpShield"><feTurbulence type="fractalNoise" baseFrequency="0.04"/></filter>
+  </defs>
+  <rect id="shieldPlate" x="30" y="80" width="40" height="60" fill="#8a8" filter="url(#warpShield)"/>
+</svg>
+""".strip(),
+        encoding="utf-8",
+    )
+
+    html = generate_hero_composed_html(
+        story_theme="thief",
+        equipped={
+            "Amulet": {"rarity": "Celestial"},
+            "Shield": {"rarity": "Common"},
+        },
+        power_tier="celestial",
+        base_dir=tmp_path,
+    )
+
+    assert "layer2_gear_amulet_warpAmulet" in html
+    assert "layer0_fx_warpFx" not in html
+    assert "layer3_gear_shield_warpShield" not in html

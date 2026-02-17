@@ -5,6 +5,7 @@ import random
 import platform
 import copy
 import math
+import time
 import logging
 import threading
 import functools
@@ -78,10 +79,16 @@ from hero_svg_system import (
     retain_hero_svg_renderer_paths,
     generate_hero_composed_html,
 )
+from hero_performance_telemetry import HeroPerfTelemetry
 
 try:
-    from PySide6.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
+    from PySide6.QtWebEngineWidgets import QWebEngineView
     from PySide6.QtWebEngineCore import QWebEnginePage
+    try:
+        from PySide6.QtWebEngineCore import QWebEngineSettings
+    except ImportError:
+        # Compatibility for older PySide builds.
+        from PySide6.QtWebEngineWidgets import QWebEngineSettings
     HAS_WEBENGINE = True
 except ImportError:
     HAS_WEBENGINE = False
@@ -18765,11 +18772,52 @@ class CharacterCanvas(QtWidgets.QWidget):
         self._last_repaint_ms = 0
         self._repaint_clock = QtCore.QElapsedTimer()
         self._repaint_clock.start()
+        self._perf_telemetry = HeroPerfTelemetry.from_env(scope="hero_canvas")
+        self._web_update_debounce_ms = 0
+        self._web_update_timer: Optional[QtCore.QTimer] = None
+        self._pending_web_update = False
+        self._web_scale_update_debounce_ms = 0
+        self._web_scale_update_timer: Optional[QtCore.QTimer] = None
+        self._pending_web_scale_update = False
+        self._web_resize_settle_ms = 0
+        self._web_resize_settle_timer: Optional[QtCore.QTimer] = None
+        self._web_paused_for_resize = False
+        self._web_page_active_state: Optional[bool] = None
+        self._last_web_scale_signature: Optional[tuple[int, int, float, float, float]] = None
+        if HAS_WEBENGINE and self._manage_svg_animations:
+            try:
+                self._web_update_debounce_ms = max(0, int(os.environ.get("PF_HERO_WEB_UPDATE_DEBOUNCE_MS", "24")))
+            except (TypeError, ValueError):
+                self._web_update_debounce_ms = 24
+            self._web_update_timer = QtCore.QTimer(self)
+            self._web_update_timer.setSingleShot(True)
+            self._web_update_timer.timeout.connect(self._flush_scheduled_web_update)
+            try:
+                self._web_scale_update_debounce_ms = max(
+                    0,
+                    int(os.environ.get("PF_HERO_WEB_SCALE_UPDATE_DEBOUNCE_MS", "24")),
+                )
+            except (TypeError, ValueError):
+                self._web_scale_update_debounce_ms = 24
+            self._web_scale_update_timer = QtCore.QTimer(self)
+            self._web_scale_update_timer.setSingleShot(True)
+            self._web_scale_update_timer.timeout.connect(self._flush_scheduled_web_scale_update)
+            try:
+                self._web_resize_settle_ms = max(
+                    0,
+                    int(os.environ.get("PF_HERO_WEB_RESIZE_SETTLE_MS", "140")),
+                )
+            except (TypeError, ValueError):
+                self._web_resize_settle_ms = 140
+            self._web_resize_settle_timer = QtCore.QTimer(self)
+            self._web_resize_settle_timer.setSingleShot(True)
+            self._web_resize_settle_timer.timeout.connect(self._on_web_resize_settled)
         
         # WebEngine setup for full SVG animation support (fallback to QSvgRenderer if unavailable)
         self.web_view: Optional[QWebEngineView] = None
         self._web_content_loaded = False
         self._web_content_dirty = False
+        self._last_loaded_html = None
         if HAS_WEBENGINE and self._manage_svg_animations:
             self._setup_web_engine()
 
@@ -18796,49 +18844,182 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         # Match widget geometry
         self.web_view.resize(self.size())
-        
-    def _update_web_engine_content(self) -> None:
-        """Update WebEngine HTML content based on current hero state."""
+
+    def _flush_scheduled_web_update(self) -> None:
+        self._pending_web_update = False
+        self._update_web_engine_content()
+
+    def _schedule_web_engine_content_update(self, *, immediate: bool = False) -> None:
         if not self.web_view:
             return
-            
-        html = generate_hero_composed_html(
-            story_theme=self.story_theme,
-            equipped=self.equipped,
-            power_tier=self.tier,
-            canvas_width=self.BASE_W,
-            canvas_height=self.BASE_H,
-        )
-        if not html:
-            self._set_web_page_active(False)
-            self.web_view.hide()
-            self._web_content_loaded = False
+        if immediate or self._web_update_debounce_ms <= 0:
+            if self._web_update_timer and self._web_update_timer.isActive():
+                self._web_update_timer.stop()
+            self._pending_web_update = False
+            self._update_web_engine_content()
+            return
+
+        self._pending_web_update = True
+        if not self._web_update_timer:
+            self._update_web_engine_content()
+            self._pending_web_update = False
+            return
+        if self._web_update_timer.isActive():
+            self._web_update_timer.stop()
+        self._web_update_timer.start(self._web_update_debounce_ms)
+
+    def _flush_scheduled_web_scale_update(self) -> None:
+        self._pending_web_scale_update = False
+        self._update_web_view_scale()
+
+    def _on_web_resize_settled(self) -> None:
+        """Resume WebEngine animations after resize drag settles."""
+        self._web_paused_for_resize = False
+        if not self.web_view:
+            return
+        is_visible = True
+        if hasattr(self, "isVisible"):
+            try:
+                is_visible = bool(self.isVisible())
+            except Exception:
+                is_visible = True
+        if self._is_web_renderer_active() and self._animations_requested and is_visible:
+            self._set_web_page_active(True)
+        self._schedule_web_view_scale_update(immediate=True)
+
+    def _note_web_resize_activity(self) -> None:
+        """Pause heavy WebEngine animation work while splitter/window is actively resizing."""
+        if (
+            not self.web_view
+            or not self._web_resize_settle_timer
+            or self._web_resize_settle_ms <= 0
+        ):
+            return
+        is_visible = True
+        if hasattr(self, "isVisible"):
+            try:
+                is_visible = bool(self.isVisible())
+            except Exception:
+                is_visible = True
+        if self._is_web_renderer_active() and self._animations_requested and is_visible:
+            if not self._web_paused_for_resize:
+                self._set_web_page_active(False)
+                self._web_paused_for_resize = True
+        if self._web_resize_settle_timer.isActive():
+            self._web_resize_settle_timer.stop()
+        self._web_resize_settle_timer.start(self._web_resize_settle_ms)
+
+    def _schedule_web_view_scale_update(self, *, immediate: bool = False) -> None:
+        if not self.web_view:
+            return
+        is_visible = True
+        if hasattr(self, "isVisible"):
+            try:
+                is_visible = bool(self.isVisible())
+            except Exception:
+                is_visible = True
+        if not immediate and not is_visible:
+            self._pending_web_scale_update = True
+            return
+        if immediate or self._web_scale_update_debounce_ms <= 0:
+            if self._web_scale_update_timer and self._web_scale_update_timer.isActive():
+                self._web_scale_update_timer.stop()
+            self._pending_web_scale_update = False
+            self._update_web_view_scale()
+            return
+
+        self._pending_web_scale_update = True
+        if not self._web_scale_update_timer:
+            self._update_web_view_scale()
+            self._pending_web_scale_update = False
+            return
+        if self._web_scale_update_timer.isActive():
+            self._web_scale_update_timer.stop()
+        self._web_scale_update_timer.start(self._web_scale_update_debounce_ms)
+
+    def _update_web_engine_content(self) -> None:
+        """Update WebEngine HTML content based on current hero state."""
+        total_start = time.perf_counter()
+        record_perf = getattr(self, "_record_perf", None)
+        html = ""
+        try:
+            if not self.web_view:
+                return
+
+            compose_start = time.perf_counter()
+            html = generate_hero_composed_html(
+                story_theme=self.story_theme,
+                equipped=self.equipped,
+                power_tier=self.tier,
+                canvas_width=self.BASE_W,
+                canvas_height=self.BASE_H,
+            )
+            if callable(record_perf):
+                record_perf(
+                    "web.compose_html_ms",
+                    compose_start,
+                    story_theme=self.story_theme,
+                    tier=self.tier,
+                )
+            if not html:
+                self._set_web_page_active(False)
+                self.web_view.hide()
+                self._web_content_loaded = False
+                self._web_content_dirty = False
+                if self._manage_svg_animations:
+                    self._svg_bindings_dirty = True
+                    self._sync_svg_renderer_bindings(force=True)
+                self._mark_render_dirty()
+                return
+
+            # Avoid loading HTML while hidden. Hidden initial loads can start in
+            # throttled state; mark dirty and inject when visible again.
+            if not self.isVisible():
+                self._web_content_dirty = True
+                return
+
             self._web_content_dirty = False
-            if self._manage_svg_animations:
-                self._svg_bindings_dirty = True
-                self._sync_svg_renderer_bindings(force=True)
-            self._mark_render_dirty()
-            return
-
-        # Avoid loading HTML while hidden. Hidden initial loads can start in
-        # throttled state; mark dirty and inject when visible again.
-        if not self.isVisible():
-            self._web_content_dirty = True
-            return
-
-        self._web_content_dirty = False
-        self._inject_scaled_html(html)
+            self._inject_scaled_html(html)
+        finally:
+            if callable(record_perf):
+                record_perf(
+                    "web.update_content_ms",
+                    total_start,
+                    visible=self.isVisible(),
+                    has_html=bool(html),
+                )
 
     def _inject_scaled_html(self, raw_html: str) -> None:
         """Inject HTML with dynamic scaling script/styles."""
-        if not self.web_view:
-            return
-            
-        # We need a base URL for local file access
-        base_url = QtCore.QUrl.fromLocalFile(str(get_app_dir()) + '/')
-        self._web_content_loaded = False
-        self._web_content_dirty = False
-        self.web_view.setHtml(raw_html, base_url)
+        start_s = time.perf_counter()
+        record_perf = getattr(self, "_record_perf", None)
+        skip_reason = None
+        try:
+            if not self.web_view:
+                skip_reason = "no_web_view"
+                return
+
+            # Avoid reloading identical content to prevent flicker/reset animations
+            if raw_html == self._last_loaded_html:
+                skip_reason = "unchanged_html"
+                return
+            self._last_loaded_html = raw_html
+
+            # We need a base URL for local file access
+            base_url = QtCore.QUrl.fromLocalFile(str(APP_DIR) + '/')
+            self._web_content_loaded = False
+            self._web_content_dirty = False
+            self._web_page_active_state = None
+            self._last_web_scale_signature = None
+            self.web_view.setHtml(raw_html, base_url)
+        finally:
+            if callable(record_perf):
+                record_perf(
+                    "web.inject_html_ms",
+                    start_s,
+                    skipped=bool(skip_reason),
+                    reason=skip_reason,
+                )
 
     def _update_web_view_scale(self) -> None:
         if not self.web_view:
@@ -18855,6 +19036,17 @@ class CharacterCanvas(QtWidgets.QWidget):
         scale = min(sx, sy)
         offset_x = (width - self.BASE_W * scale) / 2.0
         offset_y = (height - self.BASE_H * scale) / 2.0
+
+        scale_signature = (
+            width,
+            height,
+            round(float(scale), 6),
+            round(float(offset_x), 3),
+            round(float(offset_y), 3),
+        )
+        if self._last_web_scale_signature == scale_signature:
+            return
+        self._last_web_scale_signature = scale_signature
         
         # Keep aspect ratio and center content inside the canvas widget.
         script = f"""
@@ -18872,6 +19064,7 @@ class CharacterCanvas(QtWidgets.QWidget):
     def _on_web_view_load_finished(self, ok: bool) -> None:
         self._web_content_loaded = bool(ok)
         if not ok:
+            self._web_paused_for_resize = False
             self._set_web_page_active(False)
             if self.web_view:
                 self.web_view.hide()
@@ -18883,22 +19076,28 @@ class CharacterCanvas(QtWidgets.QWidget):
             return
         if self.web_view:
             self.web_view.show()
+        self._web_paused_for_resize = False
         self._suspend_svg_renderer_bindings()
         self._set_web_page_active(self._animations_requested and self.isVisible())
-        self._update_web_view_scale()
+        self._schedule_web_view_scale_update(immediate=True)
 
     def _is_web_renderer_active(self) -> bool:
         return bool(self.web_view and self.web_view.isVisible())
 
     def _set_web_page_active(self, active: bool) -> None:
-        """Pause/resume WebEngine SVG/CSS animations via visibility lifecycle APIs."""
+        """Pause/resume WebEngine SVG/CSS animations via lifecycle + SMIL controls."""
         if not self.web_view or not HAS_WEBENGINE:
             return
+        target_active = bool(active)
+        current_state = getattr(self, "_web_page_active_state", None)
+        if current_state is target_active and self._web_content_loaded:
+            return
+        self._web_page_active_state = target_active
         page = self.web_view.page()
-        page.setVisible(bool(active))
+        page.setVisible(target_active)
         if QWebEnginePage is not None:
             try:
-                if active:
+                if target_active:
                     page.setLifecycleState(QWebEnginePage.LifecycleState.Active)
                 else:
                     page.setLifecycleState(QWebEnginePage.LifecycleState.Frozen)
@@ -18906,13 +19105,39 @@ class CharacterCanvas(QtWidgets.QWidget):
                 pass
         if not self._web_content_loaded:
             return
-        if active:
+        if target_active:
             page.runJavaScript(
-                "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = '');"
+                """
+                (() => {
+                    document.querySelectorAll('svg').forEach(svg => {
+                        try {
+                            if (typeof svg.unpauseAnimations === 'function') {
+                                svg.unpauseAnimations();
+                            }
+                        } catch (_err) {}
+                    });
+                    document.querySelectorAll('*').forEach(el => {
+                        el.style.animationPlayState = '';
+                    });
+                })();
+                """
             )
         else:
             page.runJavaScript(
-                "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = 'paused');"
+                """
+                (() => {
+                    document.querySelectorAll('svg').forEach(svg => {
+                        try {
+                            if (typeof svg.pauseAnimations === 'function') {
+                                svg.pauseAnimations();
+                            }
+                        } catch (_err) {}
+                    });
+                    document.querySelectorAll('*').forEach(el => {
+                        el.style.animationPlayState = 'paused';
+                    });
+                })();
+                """
             )
 
     def _suspend_svg_renderer_bindings(self) -> None:
@@ -18982,6 +19207,23 @@ class CharacterCanvas(QtWidgets.QWidget):
         self._render_revision += 1
         self._render_cache_pixmap = None
 
+    def _record_perf(self, metric: str, start_s: float, **context: Any) -> None:
+        if not self._perf_telemetry.enabled:
+            return
+        elapsed_ms = (time.perf_counter() - float(start_s)) * 1000.0
+        ctx = {k: v for k, v in context.items() if v is not None}
+        self._perf_telemetry.record(metric, elapsed_ms, context=ctx)
+
+    def get_performance_snapshot(self) -> dict:
+        return {
+            "scope": "hero_canvas",
+            "web_renderer_active": bool(self._is_web_renderer_active()),
+            "web_content_loaded": bool(self._web_content_loaded),
+            "has_animated_svg_layers": bool(self._has_animated_svg_layers),
+            "metrics": self._perf_telemetry.snapshot(),
+            "breaches": self._perf_telemetry.breach_snapshot(),
+        }
+
     def set_character_state(
         self,
         equipped: dict,
@@ -18992,13 +19234,17 @@ class CharacterCanvas(QtWidgets.QWidget):
     ) -> None:
         snapshot = self._snapshot_equipped(equipped)
         tier = self._resolve_tier(power)
+        previous_signature = self._state_signature
         new_signature = (
             story_theme,
-            int(power),
             tier,
             self._equipment_signature(snapshot),
         )
         if new_signature == self._state_signature:
+            # Still update power value for particle reseeding, but skip redraw
+            if self.power != int(power):
+                self.power = int(power)
+                self._reseed_particles()
             return
 
         self._state_signature = new_signature
@@ -19011,7 +19257,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         # Update WebEngine content if enabled
         if self.web_view:
-            self._update_web_engine_content()
+            self._schedule_web_engine_content_update(immediate=previous_signature is None)
 
         if self._manage_svg_animations and not self._is_web_renderer_active():
             self._svg_bindings_dirty = True
@@ -19102,6 +19348,10 @@ class CharacterCanvas(QtWidgets.QWidget):
         if not self._animations_requested:
             return
         self._animations_requested = False
+        self._web_paused_for_resize = False
+        resize_settle_timer = getattr(self, "_web_resize_settle_timer", None)
+        if resize_settle_timer and resize_settle_timer.isActive():
+            resize_settle_timer.stop()
         self._update_svg_animation_activity()
         if self.web_view:
             self._set_web_page_active(False)
@@ -19109,6 +19359,10 @@ class CharacterCanvas(QtWidgets.QWidget):
     def resume_animations(self) -> None:
         if not self._manage_svg_animations:
             return
+        self._web_paused_for_resize = False
+        resize_settle_timer = getattr(self, "_web_resize_settle_timer", None)
+        if resize_settle_timer and resize_settle_timer.isActive():
+            resize_settle_timer.stop()
         if self._animations_requested:
             self._sync_svg_renderer_bindings()
             if self._is_web_renderer_active() and self.isVisible():
@@ -19166,12 +19420,17 @@ class CharacterCanvas(QtWidgets.QWidget):
         if self._is_web_renderer_active():
             if self._web_content_loaded:
                 self._set_web_page_active(self._animations_requested)
-            self._update_web_view_scale()
+            self._schedule_web_view_scale_update(immediate=True)
+            self._web_paused_for_resize = False
         else:
             self._sync_svg_renderer_bindings()
 
     def hideEvent(self, event: QtGui.QHideEvent) -> None:
         super().hideEvent(event)
+        self._web_paused_for_resize = False
+        resize_settle_timer = getattr(self, "_web_resize_settle_timer", None)
+        if resize_settle_timer and resize_settle_timer.isActive():
+            resize_settle_timer.stop()
         if self._is_web_renderer_active():
             self._set_web_page_active(False)
         else:
@@ -19179,6 +19438,10 @@ class CharacterCanvas(QtWidgets.QWidget):
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         try:
+            self._web_paused_for_resize = False
+            resize_settle_timer = getattr(self, "_web_resize_settle_timer", None)
+            if resize_settle_timer and resize_settle_timer.isActive():
+                resize_settle_timer.stop()
             self.release_svg_resources(evict_cache=False)
         finally:
             super().closeEvent(event)
@@ -19195,27 +19458,44 @@ class CharacterCanvas(QtWidgets.QWidget):
         """Return preferred size based on canonical dimensions."""
         return QtCore.QSize(self.BASE_W, self.BASE_H)
 
+    def _aspect_fit_transform(self) -> tuple[float, float, float]:
+        """Return uniform scale + offsets to preserve canonical aspect ratio."""
+        width = max(1.0, float(self.width()))
+        height = max(1.0, float(self.height()))
+        sx = width / float(self.BASE_W or 1)
+        sy = height / float(self.BASE_H or 1)
+        scale = max(0.01, min(sx, sy))
+        offset_x = (width - float(self.BASE_W) * scale) * 0.5
+        offset_y = (height - float(self.BASE_H) * scale) * 0.5
+        return scale, offset_x, offset_y
+
     def resizeEvent(self, event) -> None:
         """Maintain aspect ratio on resize."""
         super().resizeEvent(event)
-        self._mark_render_dirty()
+        if not self._is_web_renderer_active():
+            self._mark_render_dirty()
         
-        # Force aspect ratio by adjusting height based on width
-        new_width = event.size().width()
-        ideal_height = self.heightForWidth(new_width)
-        if event.size().height() != ideal_height:
-            # Only adjust if significantly different to avoid infinite loops
-            if abs(event.size().height() - ideal_height) > 5:
-                self.setFixedHeight(ideal_height)
+        # Disabled recursive resize logic that causes jitter loops
+        # new_width = event.size().width()
+        # ideal_height = self.heightForWidth(new_width)
+        # if event.size().height() != ideal_height:
+        #    if abs(event.size().height() - ideal_height) > 5:
+        #        self.setFixedHeight(ideal_height)
         
         # Update WebEngine scale if active
         if self.web_view:
-            self._update_web_view_scale()
+            self._note_web_resize_activity()
+            self._schedule_web_view_scale_update(immediate=False)
 
     def paintEvent(self, event) -> None:
         """Dispatch to theme-specific drawing method."""
+        paint_start = time.perf_counter()
+        paint_mode = "unknown"
+
         # If WebEngine view is active, we don't need to paint anything manually
         if self.web_view and self.web_view.isVisible():
+            paint_mode = "web_view_passthrough"
+            self._record_perf("paint_event_ms", paint_start, mode=paint_mode)
             return
 
         if self._manage_svg_animations:
@@ -19239,9 +19519,9 @@ class CharacterCanvas(QtWidgets.QWidget):
                     pm.fill(QtCore.Qt.transparent)
                     cache_painter = QtGui.QPainter(pm)
                     try:
-                        sx = self.width() / self.BASE_W if self.BASE_W else 1
-                        sy = self.height() / self.BASE_H if self.BASE_H else 1
-                        cache_painter.scale(sx, sy)
+                        scale, offset_x, offset_y = self._aspect_fit_transform()
+                        cache_painter.translate(offset_x, offset_y)
+                        cache_painter.scale(scale, scale)
                         self.render_content(cache_painter)
                     finally:
                         cache_painter.end()
@@ -19255,17 +19535,20 @@ class CharacterCanvas(QtWidgets.QWidget):
                     painter.drawPixmap(0, 0, self._render_cache_pixmap)
                 finally:
                     painter.end()
+                paint_mode = "cache_blit"
+                self._record_perf("paint_event_ms", paint_start, mode=paint_mode)
                 return
 
         painter = QtGui.QPainter(self)
         try:
-            # Apply scaling to map canonical coords (BASE_W x BASE_H) to actual widget size
-            sx = self.width() / self.BASE_W if self.BASE_W else 1
-            sy = self.height() / self.BASE_H if self.BASE_H else 1
-            painter.scale(sx, sy)
+            scale, offset_x, offset_y = self._aspect_fit_transform()
+            painter.translate(offset_x, offset_y)
+            painter.scale(scale, scale)
             self.render_content(painter)
         finally:
             painter.end()
+        paint_mode = "direct_render"
+        self._record_perf("paint_event_ms", paint_start, mode=paint_mode)
 
     def render_content(self, painter: QtGui.QPainter) -> None:
         """Render the character using the provided painter.
@@ -19273,6 +19556,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         Draws using canonical coordinates (BASE_W x BASE_H = 180x220).
         Caller is responsible for any scaling/translation needed.
         """
+        start_s = time.perf_counter()
         painter.save()
         try:
             # SVG-first rendering path (theme-specific hero + gear layers).
@@ -19313,6 +19597,13 @@ class CharacterCanvas(QtWidgets.QWidget):
                 self._draw_warrior_character(painter)
         finally:
             painter.restore()
+            self._record_perf(
+                "render_content_ms",
+                start_s,
+                story_theme=self.story_theme,
+                tier=self.tier,
+                web_active=self._is_web_renderer_active(),
+            )
 
     def _draw_warrior_character(self, painter: QtGui.QPainter) -> None:
         """Draw the classic fantasy warrior character."""
@@ -26452,6 +26743,287 @@ def get_story_main_character_name(story_id: Optional[str]) -> str:
     return STORY_MAIN_CHARACTER_NAMES.get(story_id, story_id.replace("_", " ").title())
 
 
+class InventoryTableModel(QtCore.QAbstractTableModel):
+    """Virtualized inventory table model for Hero tab."""
+
+    COLUMNS = [
+        "đź”€", "Eq", "Name", "Slot", "Tier", "Pwr", "Set",
+        "đź’°", "â­", "đźŽ˛"
+    ]
+
+    HEADER_TOOLTIPS = [
+        "Select for Merge\nâ‘ = Selected for merging\nClick to toggle selection",
+        "Equipped Status\nâś“ = Currently equipped on your hero\nEquipped items cannot be merged",
+        "Item Name\nThe name of the item including its rarity adjective\nHigher tier items have more impressive names",
+        "Equipment Slot\nWhere this item is equipped:\nâ€˘ Helmet, Chestplate, Gauntlets, Boots\nâ€˘ Shield, Weapon, Ring, Necklace",
+        "Rarity Tier\nItem quality from Common to Legendary:\nC=Common, U=Uncommon, R=Rare, E=Epic, L=Legendary\nHigher tiers have better stats and bonuses",
+        "Power Level\nThe item's combat power contribution\nHigher power = stronger hero\nTotal power from all equipped items is shown in hero stats",
+        "Item Set\nItems from the same set provide bonus effects\nCollect matching set pieces for additional power",
+        "đź’° Coin Discount\nReduces costs for merge operations\nHigher % = cheaper merges (up to 90% off)\nGreat for saving coins while upgrading gear",
+        "â­ XP Bonus\nBonus experience points from focus sessions\nHigher % = faster leveling\nLevel up to unlock new features and rewards",
+        "đźŽ˛ Merge Luck\nIncreases success chance in Lucky Merge\nBase merge success is 25%, this adds to it\nVery valuable for upgrading your gear!",
+    ]
+
+    RARITY_COLORS = {
+        "Common": "#9e9e9e",
+        "Uncommon": "#4caf50",
+        "Rare": "#2196f3",
+        "Epic": "#9c27b0",
+        "Legendary": "#ff9800",
+        "Celestial": "#00e5ff",
+    }
+
+    def __init__(self, parent: Optional[QtCore.QObject] = None) -> None:
+        super().__init__(parent)
+        self._rows: list[dict] = []
+        self._row_template_cache: Dict[tuple, dict] = {}
+
+    def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+        if parent.isValid():
+            return 0
+        return len(self._rows)
+
+    def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+        if parent.isValid():
+            return 0
+        return len(self.COLUMNS)
+
+    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole):
+        if orientation == QtCore.Qt.Horizontal:
+            if role == QtCore.Qt.DisplayRole and 0 <= section < len(self.COLUMNS):
+                return self.COLUMNS[section]
+            if role == QtCore.Qt.ToolTipRole and 0 <= section < len(self.HEADER_TOOLTIPS):
+                return self.HEADER_TOOLTIPS[section]
+        return None
+
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        row_idx = index.row()
+        col = index.column()
+        if row_idx < 0 or row_idx >= len(self._rows):
+            return None
+        row = self._rows[row_idx]
+
+        if role == QtCore.Qt.DisplayRole:
+            if col == 0:
+                if row["is_equipped"]:
+                    return "đź”’"
+                return "âś…" if row["checked"] else "â"
+            if col == 1:
+                return "âś“" if row["is_equipped"] else ""
+            if col == 2:
+                return row["name_display"]
+            if col == 3:
+                return row["slot_short"]
+            if col == 4:
+                return row["tier_short"]
+            if col == 5:
+                return row["power_display"]
+            if col == 6:
+                return row["set_display"]
+            if col == 7:
+                return row["coin_display"]
+            if col == 8:
+                return row["xp_display"]
+            if col == 9:
+                return row["merge_display"]
+
+        if role == QtCore.Qt.TextAlignmentRole:
+            if col == 2:
+                return int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            return int(QtCore.Qt.AlignCenter)
+
+        if role == QtCore.Qt.ForegroundRole:
+            if col == 0:
+                if row["is_equipped"]:
+                    return QtGui.QColor("#666666")
+                return QtGui.QColor("#00ff00" if row["checked"] else "#888888")
+            if col == 1 and row["is_equipped"]:
+                return QtGui.QColor("#4caf50")
+            if col in {2, 4}:
+                return QtGui.QColor(row["rarity_color"])
+            if col == 7 and row["coin_discount"] > 0:
+                return QtGui.QColor("#fbbf24")
+            if col == 8 and row["xp_bonus"] > 0:
+                return QtGui.QColor("#8b5cf6")
+            if col == 9 and row["merge_luck"] > 0:
+                return QtGui.QColor("#06b6d4")
+
+        if role == QtCore.Qt.ToolTipRole:
+            tooltips = row.get("tooltips", [])
+            if 0 <= col < len(tooltips):
+                return tooltips[col]
+
+        if role == QtCore.Qt.BackgroundRole and row["checked"] and not row["is_equipped"]:
+            return QtGui.QColor("#2a4a2a")
+
+        if role == QtCore.Qt.UserRole:
+            return row["orig_idx"]
+        if role == QtCore.Qt.UserRole + 1:
+            return row["checked"]
+        if role == QtCore.Qt.UserRole + 2:
+            return row["is_equipped"]
+
+        return None
+
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+        if not index.isValid():
+            return QtCore.Qt.NoItemFlags
+        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+    def set_inventory(
+        self,
+        inventory: list[dict],
+        equipped: dict,
+        active_story: str,
+        sort_key: str,
+        is_item_equipped_fn: Callable[[dict, dict], bool],
+    ) -> None:
+        rarity_tiers = _get_item_rarity_order(include_unreleased=True)
+        rarity_order = {rarity: idx for idx, rarity in enumerate(rarity_tiers)}
+        indexed = list(enumerate(inventory))
+
+        if sort_key == "rarity":
+            indexed.sort(key=lambda x: rarity_order.get(x[1].get("rarity", "Common"), 0), reverse=True)
+        elif sort_key == "slot":
+            indexed.sort(key=lambda x: x[1].get("slot", ""))
+        elif sort_key == "power":
+            indexed.sort(key=lambda x: x[1].get("power", 10), reverse=True)
+        elif sort_key == "lucky":
+            def lucky_sort_key(item_tuple):
+                item = item_tuple[1]
+                lucky_opts = item.get("lucky_options", {})
+                has_lucky = 1 if lucky_opts else 0
+                num_opts = len(lucky_opts) if lucky_opts else 0
+                power = item.get("power", 10)
+                return (has_lucky, num_opts, power)
+            indexed.sort(key=lucky_sort_key, reverse=True)
+        else:
+            indexed.reverse()
+
+        slot_display_cache: Dict[str, str] = {}
+        used_template_keys: set[tuple] = set()
+        rows: list[dict] = []
+        for orig_idx, item in indexed:
+            is_eq = bool(is_item_equipped_fn(item, equipped))
+            item_name = item.get("name", "Unknown Item")
+            item_rarity = item.get("rarity", "Common")
+            power = item.get("power", RARITY_POWER.get(item_rarity, 10))
+            item_set = item.get("set", "")
+            slot = item.get("slot", "Unknown")
+            slot_display = slot_display_cache.get(slot)
+            if slot_display is None:
+                slot_display = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
+                slot_display_cache[slot] = slot_display
+            rarity_color = self.RARITY_COLORS.get(item_rarity, "#9e9e9e")
+
+            lucky_options = item.get("lucky_options", {})
+            coin_discount = int(lucky_options.get("coin_discount", 0) or 0)
+            xp_bonus = int(lucky_options.get("xp_bonus", 0) or 0)
+            merge_luck = int(lucky_options.get("merge_luck", 0) or 0)
+
+            lucky_present = bool(lucky_options)
+            template_key = (
+                active_story,
+                bool(is_eq),
+                item.get("item_id"),
+                item.get("id"),
+                item.get("obtained_at"),
+                slot,
+                item_name,
+                item_rarity,
+                int(power),
+                item_set,
+                coin_discount,
+                xp_bonus,
+                merge_luck,
+                lucky_present,
+            )
+            used_template_keys.add(template_key)
+            template = self._row_template_cache.get(template_key)
+            if template is None:
+                name_prefix = "âś¨ " if lucky_present else ""
+                name_display = f"{name_prefix}{item_name}"
+                row_tooltips = [
+                    "Equipped items cannot be merged" if is_eq else "Click to select for merge",
+                    "Equipped" if is_eq else "Not Equipped",
+                    f"{item_name}\nRarity: {item_rarity}\n{'Equipped' if is_eq else 'In Inventory'}",
+                    f"Slot: {slot_display}",
+                    f"Rarity: {item_rarity}",
+                    f"Power Level: {power}",
+                    f"Set: {item_set}" if item_set else "No Set",
+                    f"Coin Discount: {coin_discount}% off merge costs",
+                    f"XP Bonus: +{xp_bonus}%",
+                    f"Merge Luck: +{merge_luck}%",
+                ]
+                template = {
+                    "is_equipped": is_eq,
+                    "name_display": name_display,
+                    "slot_short": slot_display[:4],
+                    "tier_short": item_rarity[:1],
+                    "power_display": str(power),
+                    "set_display": item_set if item_set else "-",
+                    "coin_display": f"{coin_discount}%" if coin_discount else "",
+                    "xp_display": f"{xp_bonus}%" if xp_bonus else "",
+                    "merge_display": f"{merge_luck}%" if merge_luck else "",
+                    "coin_discount": coin_discount,
+                    "xp_bonus": xp_bonus,
+                    "merge_luck": merge_luck,
+                    "rarity_color": rarity_color,
+                    "tooltips": row_tooltips,
+                }
+                self._row_template_cache[template_key] = template
+
+            row = dict(template)
+            row.update({"orig_idx": int(orig_idx), "checked": False})
+            rows.append(row)
+
+        # Keep cache bounded to avoid unbounded growth across many inventory churns.
+        max_allowed = max(2000, len(used_template_keys) * 4)
+        if len(self._row_template_cache) > max_allowed:
+            self._row_template_cache = {
+                key: value
+                for key, value in self._row_template_cache.items()
+                if key in used_template_keys
+            }
+
+        self.beginResetModel()
+        self._rows = rows
+        self.endResetModel()
+
+    def cache_stats(self) -> dict:
+        return {
+            "row_count": len(self._rows),
+            "template_cache_size": len(self._row_template_cache),
+        }
+
+    def toggle_merge_checked(self, row: int) -> bool:
+        if row < 0 or row >= len(self._rows):
+            return False
+        payload = self._rows[row]
+        if payload["is_equipped"]:
+            return False
+        payload["checked"] = not payload["checked"]
+        left = self.index(row, 0)
+        right = self.index(row, self.columnCount() - 1)
+        self.dataChanged.emit(
+            left,
+            right,
+            [
+                QtCore.Qt.DisplayRole,
+                QtCore.Qt.ForegroundRole,
+                QtCore.Qt.BackgroundRole,
+                QtCore.Qt.ToolTipRole,
+                QtCore.Qt.UserRole + 1,
+            ],
+        )
+        return True
+
+    def selected_original_indices(self) -> list[int]:
+        return [row["orig_idx"] for row in self._rows if row["checked"] and not row["is_equipped"]]
+
+
 class ADHDBusterTab(QtWidgets.QWidget):
     """Tab for viewing and managing the ADHD Buster character and inventory."""
 
@@ -26465,6 +27037,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self._session_active = False  # Track if a focus session is active
         self._shown_style_bonuses = set()  # Track which style bonuses have been shown
         self._is_visible = False
+        self._perf_telemetry = HeroPerfTelemetry.from_env(scope="hero_tab")
         self._resource_release_timer = QtCore.QTimer(self)
         self._resource_release_timer.setSingleShot(True)
         self._resource_release_timer.timeout.connect(self._release_hidden_resources)
@@ -26483,6 +27056,26 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         self._build_ui()
         self.refresh_all()  # Initial data load
+
+    def _record_perf(self, metric: str, start_s: float, **context: Any) -> None:
+        if not self._perf_telemetry.enabled:
+            return
+        elapsed_ms = (time.perf_counter() - float(start_s)) * 1000.0
+        ctx = {k: v for k, v in context.items() if v is not None}
+        self._perf_telemetry.record(metric, elapsed_ms, context=ctx)
+
+    def get_performance_snapshot(self) -> dict:
+        snapshot = {
+            "scope": "hero_tab",
+            "metrics": self._perf_telemetry.snapshot(),
+            "breaches": self._perf_telemetry.breach_snapshot(),
+        }
+        if hasattr(self, "char_canvas") and self.char_canvas and hasattr(self.char_canvas, "get_performance_snapshot"):
+            try:
+                snapshot["canvas"] = self.char_canvas.get_performance_snapshot()
+            except Exception:
+                pass
+        return snapshot
     
     # === Collapsible Section Management ===
     
@@ -26496,9 +27089,18 @@ class ADHDBusterTab(QtWidgets.QWidget):
     
     def _on_power_changed(self, new_power: int) -> None:
         """Handle power change - update power label."""
+        power_info = (
+            get_power_breakdown(self.blocker.adhd_buster)
+            if get_power_breakdown
+            else {
+                "base_power": new_power,
+                "set_bonus": 0,
+                "style_bonus": 0,
+                "entity_bonus": 0,
+                "total_power": new_power,
+            }
+        )
         if hasattr(self, 'power_lbl'):
-            power_info = get_power_breakdown(self.blocker.adhd_buster) if get_power_breakdown else {"base_power": new_power, "set_bonus": 0, "style_bonus": 0, "entity_bonus": 0, "total_power": new_power}
-            
             # Build power breakdown string showing all components (gear + sets + style + entity patrons)
             power_parts = [str(power_info['base_power'])]
             if power_info.get("set_bonus", 0) > 0:
@@ -26515,9 +27117,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
             else:
                 power_txt = f"âš” Power: {power_info['total_power']}"
             self.power_lbl.setText(power_txt)
-        # Also update character display
-        if hasattr(self, 'char_widget'):
-            self.char_widget.update_from_data(self.blocker.adhd_buster)
+        # Also update character display.
+        # Use char_canvas directly; char_widget is a stale/legacy reference.
+        if hasattr(self, 'char_canvas') and self.char_canvas:
+            equipped = self.blocker.adhd_buster.get("equipped", {})
+            active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+            total_power = int(power_info.get("total_power", new_power))
+            self.char_canvas.set_character_state(
+                equipped=equipped,
+                power=total_power,
+                story_theme=active_story,
+            )
         
         # Check for Legendary Minimalist style bonus
         self._check_style_bonus_unlocked()
@@ -26569,7 +27179,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
     def refresh_all(self) -> None:
         """Comprehensive refresh of all UI elements - call after any data change."""
+        start_s = time.perf_counter()
         if self._refreshing:
+            self._record_perf("hero.refresh_all_ms", start_s, skipped=True, reason="already_refreshing")
             return  # Prevent recursive refresh loops
         self._refreshing = True
         try:
@@ -26585,6 +27197,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self._update_optimize_button_label()
         finally:
             self._refreshing = False
+            self._record_perf("hero.refresh_all_ms", start_s, skipped=False)
     
     def _update_optimize_button_label(self) -> None:
         """Update the Optimize Gear button label based on Hobo/Robo Rat perk."""
@@ -26911,7 +27524,29 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Save splitter position when user adjusts it
         self.char_equip_splitter.splitterMoved.connect(self._save_hero_splitter_state)
         
-        self.inner_layout.addWidget(self.char_equip_splitter)
+        # Vertical splitter for hero panel height tuning (top: character/equipment,
+        # bottom: set bonuses/stats/diary). This enables downward stretching without
+        # losing the horizontal width splitter behavior.
+        self.hero_section_splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.hero_section_splitter.setChildrenCollapsible(False)
+        self.hero_section_splitter.addWidget(self.char_equip_splitter)
+        self.hero_section_splitter.setHandleWidth(6)
+        self.hero_section_splitter.setStyleSheet("""
+            QSplitter::handle:vertical {
+                background-color: #444;
+                border: 1px solid #555;
+                height: 6px;
+                margin: 0 2px;
+            }
+            QSplitter::handle:vertical:hover {
+                background-color: #666;
+            }
+        """)
+
+        hero_details_container = QtWidgets.QWidget()
+        self.hero_details_layout = QtWidgets.QVBoxLayout(hero_details_container)
+        self.hero_details_layout.setContentsMargins(0, 0, 0, 0)
+        self.hero_details_layout.setSpacing(6)
 
         # Active set bonuses (collapsible section)
         self.sets_section = CollapsibleSection(
@@ -26920,7 +27555,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         )
         self.sets_section.collapsed_changed.connect(self._on_section_collapsed)
         self._refresh_sets_display(power_info)
-        self.inner_layout.addWidget(self.sets_section)
+        self.hero_details_layout.addWidget(self.sets_section)
 
         # Entity Patrons - entities boosting hero power (collapsible section)
         self.entity_patrons_section = CollapsibleSection(
@@ -26929,7 +27564,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         )
         self.entity_patrons_section.collapsed_changed.connect(self._on_section_collapsed)
         self._refresh_entity_patrons_display()
-        self.inner_layout.addWidget(self.entity_patrons_section)
+        self.hero_details_layout.addWidget(self.entity_patrons_section)
 
         # Potential set bonuses from inventory (collapsible section)
         self.potential_sets_section = CollapsibleSection(
@@ -26938,7 +27573,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         )
         self.potential_sets_section.collapsed_changed.connect(self._on_section_collapsed)
         self._refresh_potential_sets_display()
-        self.inner_layout.addWidget(self.potential_sets_section)
+        self.hero_details_layout.addWidget(self.potential_sets_section)
         
         # Gear bonuses (collapsible section)
         self.lucky_bonuses_section = CollapsibleSection(
@@ -26947,7 +27582,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         )
         self.lucky_bonuses_section.collapsed_changed.connect(self._on_section_collapsed)
         self._refresh_lucky_bonuses_display()
-        self.inner_layout.addWidget(self.lucky_bonuses_section)
+        self.hero_details_layout.addWidget(self.lucky_bonuses_section)
 
         # Stats summary
         total_items = len(self.blocker.adhd_buster.get("inventory", []))
@@ -26955,7 +27590,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         streak = self.blocker.stats.get("streak_days", 0)
         self.stats_lbl = QtWidgets.QLabel(f"đź“¦ {total_items} in bag  |  đźŽ {total_collected} collected  |  đź”Ą {streak} day streak")
         self.stats_lbl.setStyleSheet("color: gray;")
-        self.inner_layout.addWidget(self.stats_lbl)
+        self.hero_details_layout.addWidget(self.stats_lbl)
 
         # XP info is now shown in the XP ring widget in the timeline header
         # Store None references to avoid attribute errors in update functions
@@ -27002,7 +27637,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.go_to_story_btn.clicked.connect(self._go_to_story_tab)
             story_indicator_layout.addWidget(self.go_to_story_btn)
             
-            self.inner_layout.addWidget(story_indicator)
+            self.hero_details_layout.addWidget(story_indicator)
             self._update_story_indicator()
 
         # Latest Diary Entry - Speech bubble from the character
@@ -27047,7 +27682,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.speech_bubble.setText("No adventures yet... Start a focus session to write your story!")
         
         diary_bubble_layout.addWidget(self.speech_bubble)
-        self.inner_layout.addWidget(diary_bubble_group)
+        self.hero_details_layout.addWidget(diary_bubble_group)
+
+        self.hero_details_layout.addStretch(1)
+        self.hero_section_splitter.addWidget(hero_details_container)
+        self._load_hero_vertical_splitter_state()
+        self.hero_section_splitter.splitterMoved.connect(self._save_hero_vertical_splitter_state)
+        self.inner_layout.addWidget(self.hero_section_splitter, 1)
         
         # End of upper section - set it in the scroll area
         upper_scroll.setWidget(container)
@@ -27090,30 +27731,34 @@ class ADHDBusterTab(QtWidgets.QWidget):
         sort_bar.addStretch()
         inv_main_layout.addLayout(sort_bar)
         
-        # Inventory Table
-        self.inv_table = QtWidgets.QTableWidget()
+        # Inventory Table (virtualized model/view for large inventories)
+        self.inv_table = QtWidgets.QTableView()
+        self._inv_model = InventoryTableModel(self)
+        self.inv_table.setModel(self._inv_model)
         self.inv_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.inv_table.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)  # Disable row selection, use checkboxes
-        self.inv_table.cellClicked.connect(self._on_inventory_cell_clicked)  # Handle checkbox clicks
+        self.inv_table.clicked.connect(lambda idx: self._on_inventory_cell_clicked(idx.row(), idx.column()))
         self.inv_table.setAlternatingRowColors(False)  # Disable striped rows for cleaner merge selection
         self.inv_table.verticalHeader().setVisible(False)
+        self.inv_table.verticalHeader().setDefaultSectionSize(24)
         self.inv_table.setShowGrid(False)
-        self.inv_table.setSortingEnabled(True) # Enable sorting
+        self.inv_table.setSortingEnabled(False)
+        self.inv_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         
         # Scrollbars are enabled by default
         
         self.inv_table.setStyleSheet("""
-            QTableWidget {
+            QTableView {
                 background-color: #2b2b2b;
                 color: #ddd;
                 border: 1px solid #444;
                 gridline-color: #3a3a3a;
             }
-            QTableWidget::item {
+            QTableView::item {
                 padding: 3px 5px;
                 border-bottom: 1px solid #3a3a3a;
             }
-            QTableWidget::item:selected {
+            QTableView::item:selected {
                 background-color: #4a6fa5;
             }
             QHeaderView::section {
@@ -27131,32 +27776,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
             }
         """)
         
-        # Set up columns: Merge checkbox, Eq, Name, Slot, Tier, Power, Set, +3 bonuses
-        columns = [
-            "đź”€", "Eq", "Name", "Slot", "Tier", "Pwr", "Set", 
-            "đź’°", "â­", "đźŽ˛"
-        ]
-        self.inv_table.setColumnCount(len(columns))
-        self.inv_table.setHorizontalHeaderLabels(columns)
-        
-        # Tooltips for headers - detailed explanations
-        header_tooltips = [
-            "Select for Merge\nâ‘ = Selected for merging\nClick to toggle selection",
-            "Equipped Status\nâś“ = Currently equipped on your hero\nEquipped items cannot be merged",
-            "Item Name\nThe name of the item including its rarity adjective\nHigher tier items have more impressive names",
-            "Equipment Slot\nWhere this item is equipped:\nâ€˘ Helmet, Chestplate, Gauntlets, Boots\nâ€˘ Shield, Weapon, Ring, Necklace",
-            "Rarity Tier\nItem quality from Common to Legendary:\nC=Common, U=Uncommon, R=Rare, E=Epic, L=Legendary\nHigher tiers have better stats and bonuses",
-            "Power Level\nThe item's combat power contribution\nHigher power = stronger hero\nTotal power from all equipped items is shown in hero stats",
-            "Item Set\nItems from the same set provide bonus effects\nCollect matching set pieces for additional power",
-            "đź’° Coin Discount\nReduces costs for merge operations\nHigher % = cheaper merges (up to 90% off)\nGreat for saving coins while upgrading gear",
-            "â­ XP Bonus\nBonus experience points from focus sessions\nHigher % = faster leveling\nLevel up to unlock new features and rewards",
-            "đźŽ˛ Merge Luck\nIncreases success chance in Lucky Merge\nBase merge success is 25%, this adds to it\nVery valuable for upgrading your gear!"
-        ]
-        for i, tooltip in enumerate(header_tooltips):
-            item = self.inv_table.horizontalHeaderItem(i)
-            if item:
-                item.setToolTip(tooltip)
-
         # Configure column resizing
         header = self.inv_table.horizontalHeader()
         header.setSectionResizeMode(QtWidgets.QHeaderView.Interactive) # Allow user resizing
@@ -27243,44 +27862,53 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
     def _on_equip_change(self, slot: str, combo: QtWidgets.QComboBox) -> None:
         """Handle equipment slot change - use GameState for reactive updates."""
+        start_s = time.perf_counter()
         idx = combo.currentIndex()
-        
-        # Rarity colors for combo styling
-        rarity_colors = {
-            "Common": "#9e9e9e",
-            "Uncommon": "#4caf50",
-            "Rare": "#2196f3",
-            "Epic": "#9c27b0",
-            "Legendary": "#ff9800"
-        }
-        
-        # Prepare item data
-        new_item = None
-        if idx > 0:
-            item = combo.currentData()
-            if item:
-                # Create deep copy to preserve lucky_options
-                new_item = item.copy()
-                if "lucky_options" in item and isinstance(item["lucky_options"], dict):
-                    new_item["lucky_options"] = item["lucky_options"].copy()
-                # Update combo color immediately for equipped item
-                item_rarity = item.get("rarity", "Common")
-                item_color = rarity_colors.get(item_rarity, "#9e9e9e")
-                combo.setStyleSheet(f"QComboBox {{ color: {item_color}; font-weight: bold; }}")
-        else:
-            # Empty selected - reset to white
-            combo.setStyleSheet("QComboBox { color: #ffffff; }")
-        
-        # Use GameState manager for reactive updates
-        if not self._game_state:
-            logger.error("GameStateManager not available - cannot change equipment")
-            return
-        
-        self._game_state.swap_equipped_item(slot, new_item)
-        # Sync changes to active hero
-        if GAMIFICATION_AVAILABLE:
-            sync_hero_data(self.blocker.adhd_buster)
-        # UI updates happen automatically via signals
+        selection_kind = "empty" if idx <= 0 else "item"
+        try:
+            # Rarity colors for combo styling
+            rarity_colors = {
+                "Common": "#9e9e9e",
+                "Uncommon": "#4caf50",
+                "Rare": "#2196f3",
+                "Epic": "#9c27b0",
+                "Legendary": "#ff9800"
+            }
+            
+            # Prepare item data
+            new_item = None
+            if idx > 0:
+                item = combo.currentData()
+                if item:
+                    # Create deep copy to preserve lucky_options
+                    new_item = item.copy()
+                    if "lucky_options" in item and isinstance(item["lucky_options"], dict):
+                        new_item["lucky_options"] = item["lucky_options"].copy()
+                    # Update combo color immediately for equipped item
+                    item_rarity = item.get("rarity", "Common")
+                    item_color = rarity_colors.get(item_rarity, "#9e9e9e")
+                    combo.setStyleSheet(f"QComboBox {{ color: {item_color}; font-weight: bold; }}")
+            else:
+                # Empty selected - reset to white
+                combo.setStyleSheet("QComboBox { color: #ffffff; }")
+            
+            # Use GameState manager for reactive updates
+            if not self._game_state:
+                logger.error("GameStateManager not available - cannot change equipment")
+                return
+            
+            self._game_state.swap_equipped_item(slot, new_item)
+            # Sync changes to active hero
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
+            # UI updates happen automatically via signals
+        finally:
+            self._record_perf(
+                "hero.equip_change_ms",
+                start_s,
+                slot=slot,
+                selection=selection_kind,
+            )
 
     def _refresh_sets_display(self, power_info: dict = None) -> None:
         """Refresh the active set bonuses display."""
@@ -27640,7 +28268,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
     def _refresh_character(self) -> None:
         """Refresh all power-related displays after gear changes."""
+        start_s = time.perf_counter()
         if not GAMIFICATION_AVAILABLE:
+            self._record_perf("hero.refresh_character_ms", start_s, skipped=True, reason="gamification_unavailable")
             return
         # Get updated power info
         equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -27707,8 +28337,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
             else:
                 self.speech_bubble.setText("No adventures yet... Start a focus session to write your story!")
 
+        self._record_perf("hero.refresh_character_ms", start_s, skipped=False)
+
     def _refresh_all_slot_combos(self) -> None:
         """Refresh all equipment slot combo boxes with current inventory."""
+        start_s = time.perf_counter()
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
         
@@ -27825,6 +28458,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 combo.setStyleSheet("QComboBox { color: #ffffff; }")  # White for empty slot
             
             combo.blockSignals(False)
+
+        self._record_perf(
+            "hero.refresh_slot_combos_ms",
+            start_s,
+            slot_count=len(self.slot_combos),
+            inventory_size=len(inventory),
+        )
     
     def _refresh_slot_combo(self, slot: str) -> None:
         """Refresh a single equipment slot combo box (for targeted updates)."""
@@ -27966,45 +28606,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
         return False
 
     def _refresh_inventory(self) -> None:
-        self.inv_table.setSortingEnabled(False)
-        self.inv_table.setRowCount(0)
+        start_s = time.perf_counter()
         self.merge_selected = []
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
 
-        # Basic sorting for initial list (Table widget handles UI sorting)
-        rarity_tiers = _get_item_rarity_order(include_unreleased=True)
-        rarity_order = {rarity: idx for idx, rarity in enumerate(rarity_tiers)}
-        rarity_colors = {
-            "Common": "#9e9e9e",
-            "Uncommon": "#4caf50",
-            "Rare": "#2196f3",
-            "Epic": "#9c27b0",
-            "Legendary": "#ff9800",
-            "Celestial": "#00e5ff",
-        }
         sort_key = self.sort_combo.currentData() or "newest"
-        indexed = list(enumerate(inventory))
-        
-        # Presort logic (optional now that table sorting is enabled)
-        if sort_key == "rarity":
-            indexed.sort(key=lambda x: rarity_order.get(x[1].get("rarity", "Common"), 0), reverse=True)
-        elif sort_key == "slot":
-            indexed.sort(key=lambda x: x[1].get("slot", ""))
-        elif sort_key == "power":
-            indexed.sort(key=lambda x: x[1].get("power", 10), reverse=True)
-        elif sort_key == "lucky":
-            def lucky_sort_key(item_tuple):
-                item = item_tuple[1]
-                lucky_opts = item.get("lucky_options", {})
-                has_lucky = 1 if lucky_opts else 0
-                num_opts = len(lucky_opts) if lucky_opts else 0
-                power = item.get("power", 10)
-                return (has_lucky, num_opts, power)
-            indexed.sort(key=lucky_sort_key, reverse=True)
-        else:
-            indexed.reverse()
 
         # Update inventory stats
         lucky_items_count = sum(1 for item in inventory if item.get("lucky_options", {}))
@@ -28024,113 +28632,28 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 stats_text += f" | âś¨ Lucky: {lucky_items_count} ({lucky_items_count*100//total_items if total_items > 0 else 0}%)"
             self.inv_stats_label.setText(stats_text)
 
-        self.inv_table.setRowCount(len(indexed))
-        
-        # Neighbor system removed - no longer needed
-
-        for row, (orig_idx, item) in enumerate(indexed):
-            is_eq = self._is_item_equipped(item, equipped)
-            item_name = item.get("name", "Unknown Item")
-            item_type = item.get("item_type", "")
-            item_rarity = item.get("rarity", "Common")
-            power = item.get("power", RARITY_POWER.get(item_rarity, 10))
-            item_set = item.get("set", "")
-            slot = item.get("slot", "Unknown")
-            slot_display = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
-            rarity_color = rarity_colors.get(item_rarity, "#9e9e9e")
-            
-            lucky_options = item.get("lucky_options", {})
-            coin_discount = lucky_options.get("coin_discount", 0)
-            xp_bonus = lucky_options.get("xp_bonus", 0)
-            merge_luck = lucky_options.get("merge_luck", 0)
-            
-            # Helper: Create read-only item
-            def create_item(text, align=QtCore.Qt.AlignLeft):
-                it = QtWidgets.QTableWidgetItem(str(text))
-                it.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-                it.setTextAlignment(align)
-                return it
-
-            # 0: Merge checkbox - clickable for non-equipped items
-            if is_eq:
-                merge_check = create_item("đź”’", QtCore.Qt.AlignCenter)
-                merge_check.setToolTip("Equipped items cannot be merged")
-                merge_check.setForeground(QtGui.QColor("#666666"))
-            else:
-                merge_check = create_item("â", QtCore.Qt.AlignCenter)
-                merge_check.setToolTip("Click to select for merge")
-                merge_check.setForeground(QtGui.QColor("#888888"))
-            merge_check.setData(QtCore.Qt.UserRole, orig_idx)
-            merge_check.setData(QtCore.Qt.UserRole + 1, False)  # Store checked state
-            merge_check.setData(QtCore.Qt.UserRole + 2, is_eq)  # Store equipped state
-            self.inv_table.setItem(row, 0, merge_check)
-
-            # 1: Equipped
-            eq_item = create_item("âś“" if is_eq else "", QtCore.Qt.AlignCenter)
-            if is_eq:
-                eq_item.setForeground(QtGui.QColor("#4caf50"))
-            eq_item.setToolTip("Equipped" if is_eq else "Not Equipped")
-            self.inv_table.setItem(row, 1, eq_item)
-            
-            # 2: Name
-            name_prefix = "âś¨ " if lucky_options else ""
-            name_item = create_item(f"{name_prefix}{item_name}")
-            name_item.setForeground(QtGui.QColor(rarity_color))
-            name_item.setData(QtCore.Qt.UserRole, orig_idx)
-            name_item.setToolTip(f"{item_name}\nRarity: {item_rarity}\n{'Equipped' if is_eq else 'In Inventory'}")
-            self.inv_table.setItem(row, 2, name_item)
-            
-            # 3: Slot
-            slot_item = create_item(slot_display[:4], QtCore.Qt.AlignCenter)
-            slot_item.setToolTip(f"Slot: {slot_display}")
-            self.inv_table.setItem(row, 3, slot_item)
-            
-            # 4: Tier
-            tier_item = create_item(item_rarity[:1], QtCore.Qt.AlignCenter)
-            tier_item.setForeground(QtGui.QColor(rarity_color))
-            tier_item.setToolTip(f"Rarity: {item_rarity}")
-            self.inv_table.setItem(row, 4, tier_item)
-            
-            # 5: Power
-            pwr_item = create_item(str(power), QtCore.Qt.AlignCenter)
-            pwr_item.setToolTip(f"Power Level: {power}")
-            self.inv_table.setItem(row, 5, pwr_item)
-            
-            # 6: Set
-            set_item = create_item(item_set if item_set else "-", QtCore.Qt.AlignCenter)
-            set_item.setToolTip(f"Set: {item_set}" if item_set else "No Set")
-            self.inv_table.setItem(row, 6, set_item)
-            
-            # 7: Coin
-            coin_text = f"{coin_discount}%" if coin_discount else ""
-            coin_item = create_item(coin_text, QtCore.Qt.AlignCenter)
-            if coin_discount: coin_item.setForeground(QtGui.QColor("#fbbf24"))
-            coin_item.setToolTip(f"Coin Discount: {coin_discount}% off merge costs")
-            self.inv_table.setItem(row, 7, coin_item)
-            
-            # 8: XP
-            xp_text = f"{xp_bonus}%" if xp_bonus else ""
-            xp_item = create_item(xp_text, QtCore.Qt.AlignCenter)
-            if xp_bonus: xp_item.setForeground(QtGui.QColor("#8b5cf6"))
-            xp_item.setToolTip(f"XP Bonus: +{xp_bonus}%")
-            self.inv_table.setItem(row, 8, xp_item)
-            
-            # 9: Merge Luck
-            merge_text = f"{merge_luck}%" if merge_luck else ""
-            merge_item = create_item(merge_text, QtCore.Qt.AlignCenter)
-            if merge_luck: merge_item.setForeground(QtGui.QColor("#06b6d4"))
-            merge_item.setToolTip(f"Merge Luck: +{merge_luck}%")
-            self.inv_table.setItem(row, 9, merge_item)
-            
-            self.inv_table.setRowHeight(row, 24)
-            
-        self.inv_table.setSortingEnabled(True)
+        self._inv_model.set_inventory(
+            inventory=inventory,
+            equipped=equipped,
+            active_story=active_story,
+            sort_key=str(sort_key),
+            is_item_equipped_fn=self._is_item_equipped,
+        )
         
         # Update merge button text to reflect cleared selection
         self._update_merge_selection()
         
         # Update entity perk display for bonus inventory slots
         self._update_inventory_entity_perks()
+
+        self._record_perf(
+            "hero.refresh_inventory_ms",
+            start_s,
+            inventory_size=len(inventory),
+            table_rows=self._inv_model.rowCount(),
+            template_cache_size=self._inv_model.cache_stats().get("template_cache_size", 0),
+            sort_key=sort_key,
+        )
 
     def _update_inventory_entity_perks(self) -> None:
         """Update the entity perk display showing bonus inventory slots from entities."""
@@ -28260,53 +28783,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
     def _on_inventory_cell_clicked(self, row: int, col: int) -> None:
         """Handle clicks on inventory table cells - toggle merge checkbox."""
-        # Get the checkbox item in column 0
-        check_item = self.inv_table.item(row, 0)
-        if not check_item:
+        if not hasattr(self, "_inv_model") or not self._inv_model:
             return
-            
-        # Check if item is equipped (can't merge equipped items)
-        is_eq = check_item.data(QtCore.Qt.UserRole + 2)
-        if is_eq:
-            return  # Can't toggle equipped items
-            
-        # Toggle the checked state
-        is_checked = check_item.data(QtCore.Qt.UserRole + 1)
-        new_checked = not is_checked
-        check_item.setData(QtCore.Qt.UserRole + 1, new_checked)
-        
-        # Update visual appearance
-        if new_checked:
-            check_item.setText("âś…")
-            check_item.setForeground(QtGui.QColor("#00ff00"))
-            check_item.setToolTip("Selected for merge - click to deselect")
-            # Highlight the entire row
-            for c in range(self.inv_table.columnCount()):
-                cell = self.inv_table.item(row, c)
-                if cell:
-                    cell.setBackground(QtGui.QColor("#2a4a2a"))  # Green tint
-        else:
-            check_item.setText("â")
-            check_item.setForeground(QtGui.QColor("#888888"))
-            check_item.setToolTip("Click to select for merge")
-            # Remove row highlight
-            for c in range(self.inv_table.columnCount()):
-                cell = self.inv_table.item(row, c)
-                if cell:
-                    cell.setBackground(QtGui.QColor("transparent"))
-        
-        # Update merge selection
-        self._update_merge_selection()
+        if self._inv_model.toggle_merge_checked(row):
+            self._update_merge_selection()
 
     def _update_merge_selection(self) -> None:
-        # Get selected indices from checkbox states (column 0)
-        self.merge_selected = []
-        for row in range(self.inv_table.rowCount()):
-            check_item = self.inv_table.item(row, 0)
-            if check_item and check_item.data(QtCore.Qt.UserRole + 1):  # Is checked
-                idx = check_item.data(QtCore.Qt.UserRole)  # Original inventory index
-                if idx is not None and isinstance(idx, int):
-                    self.merge_selected.append(idx)
+        if hasattr(self, "_inv_model") and self._inv_model:
+            self.merge_selected = self._inv_model.selected_original_indices()
+        else:
+            self.merge_selected = []
         
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -28692,6 +29178,37 @@ class ADHDBusterTab(QtWidgets.QWidget):
             print(f"Error loading hero splitter state: {e}")
             # Fallback to default sizes
             self.char_equip_splitter.setSizes([180, 270])
+
+    def _save_hero_vertical_splitter_state(self) -> None:
+        """Save vertical hero/details splitter position."""
+        try:
+            if hasattr(self, "hero_section_splitter"):
+                settings = QtCore.QSettings("PersonalFreedom", "FocusBlocker")
+                settings.setValue(
+                    "hero_vertical_splitter_state",
+                    self.hero_section_splitter.saveState(),
+                )
+                settings.setValue(
+                    "hero_vertical_splitter_sizes",
+                    self.hero_section_splitter.sizes(),
+                )
+        except Exception as e:
+            print(f"Error saving hero vertical splitter state: {e}")
+
+    def _load_hero_vertical_splitter_state(self) -> None:
+        """Load vertical hero/details splitter position."""
+        try:
+            settings = QtCore.QSettings("PersonalFreedom", "FocusBlocker")
+            splitter_state = settings.value("hero_vertical_splitter_state")
+            if splitter_state and hasattr(self, "hero_section_splitter"):
+                self.hero_section_splitter.restoreState(splitter_state)
+            elif hasattr(self, "hero_section_splitter"):
+                # Default: larger hero viewport while keeping details visible.
+                self.hero_section_splitter.setSizes([360, 520])
+        except Exception as e:
+            print(f"Error loading hero vertical splitter state: {e}")
+            if hasattr(self, "hero_section_splitter"):
+                self.hero_section_splitter.setSizes([360, 520])
 
     def _open_diary(self) -> None:
         dialog = DiaryDialog(self.blocker, self)
@@ -31344,13 +31861,89 @@ class MiniHeroWidget(QtWidgets.QWidget):
         self._power = 0
         self._story_theme = "warrior"
         self._cached_pixmap = None
+        self._scaled_pixmap = None
         self._last_data_hash = None  # For detecting actual changes
+        self._render_canvas: Optional[CharacterCanvas] = None
+        self._offscreen_image = QtGui.QImage(
+            CharacterCanvas.BASE_W,
+            CharacterCanvas.BASE_H,
+            QtGui.QImage.Format.Format_ARGB32_Premultiplied,
+        )
+    
+    def _ensure_render_canvas(self) -> CharacterCanvas:
+        if self._render_canvas is None:
+            self._render_canvas = CharacterCanvas(
+                {},
+                0,
+                width=CharacterCanvas.BASE_W,
+                height=CharacterCanvas.BASE_H,
+                story_theme="warrior",
+                manage_svg_animations=False,
+            )
+        return self._render_canvas
+    
+    def _refresh_scaled_pixmap(self) -> None:
+        pm = self._cached_pixmap
+        if not pm or pm.isNull():
+            self._scaled_pixmap = None
+            return
+        self._scaled_pixmap = pm.scaled(
+            self.size(),
+            QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+            QtCore.Qt.TransformationMode.SmoothTransformation,
+        )
+    
+    def _render_thumbnail_pixmap(self) -> Optional[QtGui.QPixmap]:
+        canvas = self._ensure_render_canvas()
+        canvas.set_character_state(
+            self._equipped,
+            self._power,
+            self._story_theme,
+            queue_update=False,
+        )
+
+        image = self._offscreen_image
+        image.fill(QtCore.Qt.GlobalColor.transparent)
+        painter = QtGui.QPainter(image)
+        if not painter.isActive():
+            logger.debug("[MiniHeroWidget] QPainter failed to activate on offscreen image.")
+            return None
+
+        try:
+            painter.setOpacity(1.0)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
+            painter.setClipping(False)
+            painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+            painter.setRenderHint(QtGui.QPainter.RenderHint.TextAntialiasing)
+            painter.setRenderHint(QtGui.QPainter.RenderHint.SmoothPixmapTransform)
+            canvas.render_content(painter)
+        finally:
+            painter.end()
+
+        return QtGui.QPixmap.fromImage(image)
     
     def _compute_data_hash(self) -> str:
         """Compute a hash of current data to detect changes."""
-        # Create a simple hash from equipped items + power + theme
-        equipped_str = str(sorted((k, v.get("id", k) if v else None) 
-                                   for k, v in self._equipped.items()))
+        # Include key visual item attributes to catch in-place item mutations.
+        equipped_signature = []
+        for slot in sorted(self._equipped.keys()):
+            item = self._equipped.get(slot)
+            if isinstance(item, dict):
+                equipped_signature.append(
+                    (
+                        slot,
+                        item.get("id"),
+                        item.get("item_id"),
+                        item.get("name"),
+                        item.get("item_type"),
+                        item.get("rarity"),
+                        item.get("power"),
+                        item.get("color"),
+                    )
+                )
+            else:
+                equipped_signature.append((slot, str(item)))
+        equipped_str = str(tuple(equipped_signature))
         return f"{equipped_str}|{self._power}|{self._story_theme}"
     
     def set_hero_data(self, equipped: dict, power: int, story_theme: str = "warrior"):
@@ -31365,40 +31958,12 @@ class MiniHeroWidget(QtWidgets.QWidget):
             return  # No change, skip expensive re-render
         
         self._last_data_hash = new_hash
-        
-        # Create CharacterCanvas for its drawing logic (not for display)
-        full_canvas = CharacterCanvas(self._equipped, self._power, 
-                                       width=CharacterCanvas.BASE_W, 
-                                       height=CharacterCanvas.BASE_H, 
-                                       story_theme=self._story_theme,
-                                       manage_svg_animations=False)
-        
-        # Use QImage for robust offscreen rendering
-        image = QtGui.QImage(CharacterCanvas.BASE_W, CharacterCanvas.BASE_H, 
-                             QtGui.QImage.Format.Format_ARGB32_Premultiplied)
-        image.fill(QtCore.Qt.GlobalColor.transparent)
-        
-        painter = QtGui.QPainter(image)
-        if not painter.isActive():
-            print("[DEBUG] QPainter failed to activate on QImage!")
+        rendered = self._render_thumbnail_pixmap()
+        if rendered is None:
             return
-        
-        try:
-            # Critical state resets before any drawing
-            painter.setOpacity(1.0)
-            painter.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
-            painter.setClipping(False)
-            painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
-            painter.setRenderHint(QtGui.QPainter.RenderHint.TextAntialiasing)
-            painter.setRenderHint(QtGui.QPainter.RenderHint.SmoothPixmapTransform)
-            
-            # render_content draws using canonical BASE_W x BASE_H coordinates
-            full_canvas.render_content(painter)
-        finally:
-            painter.end()
-        
-        # Convert QImage to QPixmap for display
-        self._cached_pixmap = QtGui.QPixmap.fromImage(image)
+
+        self._cached_pixmap = rendered
+        self._refresh_scaled_pixmap()
         
         # Update tooltip
         tier = "pathetic"
@@ -31420,17 +31985,17 @@ class MiniHeroWidget(QtWidgets.QWidget):
             # Fill background to match timeline
             painter.fillRect(self.rect(), QtGui.QColor("#1a1a2e"))
             
-            pm = self._cached_pixmap
+            pm = self._scaled_pixmap
             if pm and not pm.isNull():
-                # Scale to fit widget while keeping aspect ratio
-                scaled = pm.scaled(self.size(),
-                                   QtCore.Qt.AspectRatioMode.KeepAspectRatio,
-                                   QtCore.Qt.TransformationMode.SmoothTransformation)
-                x = (self.width() - scaled.width()) // 2
-                y = (self.height() - scaled.height()) // 2
-                painter.drawPixmap(x, y, scaled)
+                x = (self.width() - pm.width()) // 2
+                y = (self.height() - pm.height()) // 2
+                painter.drawPixmap(x, y, pm)
         finally:
             painter.end()
+    
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._refresh_scaled_pixmap()
     
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton:

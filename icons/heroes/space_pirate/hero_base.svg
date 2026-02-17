@@ -642,7 +642,7 @@
 
       <!-- Mouth (smirk) -->
       <path d="M282,242 C290,248 310,248 322,243" fill="none" stroke="#8b5e4a" stroke-width="1.2" stroke-linecap="round"/>
-      <path d="M322,243 C325,241 327,243" fill="none" stroke="#8b5e4a" stroke-width="1" stroke-linecap="round"/>
+      <path d="M322,243 C325,241 327,241 330,243" fill="none" stroke="#8b5e4a" stroke-width="1" stroke-linecap="round"/>
 
       <!-- Cheek scar -->
       <path d="M260,218 C265,228 268,240 264,248" fill="none" stroke="#d4a088" stroke-width="1.5" opacity="0.35" stroke-linecap="round"/>

@@ -9,15 +9,13 @@
     
     <filter id="leatherRoughness">
       <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="4" result="noise"/>
-      <feDiffuseLighting in="noise" lighting-color="#D7CCC8" surfaceScale="1">
-           <feDistantLight azimuth="45" elevation="30"/>
-      </feDiffuseLighting>
-      <feComposite operator="arithmetic" k1="0" k2="1" k3="1" k4="0" in2="SourceGraphic"/>
-      <feComponentTransfer>
-           <feFuncA type="linear" slope="0.8"/>
-      </feComponentTransfer>
-      <feComposite operator="in" in2="SourceGraphic"/>
-      <feBlend mode="multiply" in2="SourceGraphic"/> 
+      <feColorMatrix
+        in="noise"
+        type="matrix"
+        values="0 0 0 0 0.84 0 0 0 0 0.80 0 0 0 0 0.76 0 0 0 0.22 0"
+        result="roughTint"/>
+      <feComposite in="roughTint" in2="SourceGraphic" operator="in" result="roughMasked"/>
+      <feBlend in="SourceGraphic" in2="roughMasked" mode="multiply"/>
     </filter>
 
     <!-- 2. Aged Paper -->
@@ -50,12 +48,11 @@
 
     <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
-      <feOffset dx="0" dy="8"/>
-      <feComponentTransfer>
-        <feFuncA type="linear" slope="0.5"/>
-      </feComponentTransfer>
+      <feOffset dx="0" dy="8" result="offsetblur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.5" result="shadowColor"/>
+      <feComposite in="shadowColor" in2="offsetblur" operator="in" result="shadow"/>
       <feMerge>
-        <feMergeNode/>
+        <feMergeNode in="shadow"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
@@ -110,7 +107,7 @@
                     <circle cx="0" cy="0" r="21" fill="#AED581"/> 
                     
                     <!-- Texture on base -->
-                    <circle cx="0" cy="0" r="21" fill="url(#leatherRoughness)" opacity="0.3"/>
+                    <circle cx="0" cy="0" r="21" fill="#6D4C41" opacity="0.3"/>
 
                     <!-- 2. Lower Turret Layer (Moves slightly) -->
                     <g>

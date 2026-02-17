@@ -16,24 +16,24 @@
     
     <!-- Floating Talons (Levitating Fingers) -->
     <path d="M42 145 L40 155 L44 152 Z" fill="#4A148C" stroke="#E040FB">
-       <animate attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2s" repeatCount="indefinite"/>
     </path>
     <path d="M48 145 L50 160 L52 145 Z" fill="#4A148C" stroke="#E040FB">
-       <animate attributeName="transform" type="translate" values="0 0; 0 3; 0 0" dur="1.5s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 3; 0 0" dur="1.5s" repeatCount="indefinite"/>
     </path>
     <path d="M56 145 L58 155 L54 152 Z" fill="#4A148C" stroke="#E040FB">
-       <animate attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2.2s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2.2s" repeatCount="indefinite"/>
     </path>
 
     <!-- Right Hand copy -->
     <path d="M122 145 L120 155 L124 152 Z" fill="#4A148C" stroke="#E040FB">
-       <animate attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2s" repeatCount="indefinite" begin="0.1s"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2s" repeatCount="indefinite" begin="0.1s"/>
     </path>
     <path d="M128 145 L130 160 L132 145 Z" fill="#4A148C" stroke="#E040FB">
-       <animate attributeName="transform" type="translate" values="0 0; 0 3; 0 0" dur="1.5s" repeatCount="indefinite" begin="0.1s"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 3; 0 0" dur="1.5s" repeatCount="indefinite" begin="0.1s"/>
     </path>
     <path d="M136 145 L138 155 L134 152 Z" fill="#4A148C" stroke="#E040FB">
-       <animate attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2.2s" repeatCount="indefinite" begin="0.1s"/>
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2.2s" repeatCount="indefinite" begin="0.1s"/>
     </path>
   </g>
   </g>

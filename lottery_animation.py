@@ -777,7 +777,7 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
     
     TIER_COLORS = {
         "Common": "#9e9e9e",
-        "Uncommon": "#4caf50", 
+        "Uncommon": "#4caf50",
         "Rare": "#2196f3",
         "Epic": "#9c27b0",
         "Legendary": "#ff9800"
@@ -822,7 +822,7 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
         """Set the result tier for visual feedback."""
         self.result_tier = tier
         self.update()
-    
+
     def get_tier_at_position(self, pos: float) -> str:
         """Get tier name at a given position (0-100)."""
         total = sum(self.zone_widths)
@@ -1235,19 +1235,19 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
     
     def _on_stage2_complete(self, won: bool):
         """Handle item drop completion."""
-        tier_colors = {"Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3", 
+        tier_colors = {"Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
                        "Epic": "#9c27b0", "Legendary": "#ff9800"}
-        tier_emojis = {"Common": "⚪", "Uncommon": "💚", "Rare": "💙", 
+        tier_emojis = {"Common": "⚪", "Uncommon": "💚", "Rare": "💙",
                        "Epic": "💎", "Legendary": "🏆"}
-        
+
         color = tier_colors.get(self.tier, "#fff")
         emoji = tier_emojis.get(self.tier, "🎁")
-        
+
         if won:
             self.stage2_result.setText("✨ SUCCESS! ✨")
             self.stage2_result.setStyleSheet("color: #4caf50; font-size: 14px; font-weight: bold;")
             self.stage2_slider.set_result(True)
-            
+
             if self.tier == "Legendary":
                 self.final_result.setText("🏆 You won a LEGENDARY item! 🏆")
                 self.final_result.setStyleSheet("color: #ff9800; font-size: 18px; font-weight: bold;")
@@ -1261,7 +1261,7 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
             self.stage2_result.setText("💔 FAILED 💔")
             self.stage2_result.setStyleSheet("color: #f44336; font-size: 14px; font-weight: bold;")
             self.stage2_slider.set_result(False)
-            
+
             if self.tier == "Legendary":
                 self.final_result.setText("😱 The LEGENDARY slipped away! Next time! 💪")
             elif self.tier == "Epic":
@@ -1269,13 +1269,13 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
             else:
                 self.final_result.setText(f"The {self.tier} item slipped away... Keep exercising! 💪")
             self.final_result.setStyleSheet("color: #aaa; font-size: 14px;")
-        
+
         # Play sound effect
         _play_lottery_result_sound(won)
-        
+
         # Show continue button for user to close when ready
         _reveal_continue_btn(self.continue_btn)
-    
+
     def _animate_tier_stage(self, slider: EyeProtectionTierSliderWidget, 
                             result_label: QtWidgets.QLabel,
                             target_roll: float, on_complete: Callable):
@@ -2236,7 +2236,8 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         "Uncommon": "#4caf50",
         "Rare": "#2196f3",
         "Epic": "#9c27b0",
-        "Legendary": "#ff9800"
+        "Legendary": "#ff9800",
+        "Celestial": "#00e5ff",
     }
     
     # Moving window: [5, 15, 60, 15, 5] centered on result
@@ -2265,6 +2266,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         self,
         result_rarity: str = "Rare",
         upgraded: bool = False,
+        celestial_chance: float = 0.0,
         locked_tiers: Optional[list] = None,
         parent=None,
     ):
@@ -2277,6 +2279,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         self._init_paint_cache()  # Ensure cache is ready
         self.result_rarity = result_rarity
         self.upgraded = upgraded
+        self.celestial_chance = max(0.0, min(1.0, float(celestial_chance or 0.0)))
         self.locked_tiers = _normalize_locked_tiers(locked_tiers)
         self.position = 0.0
         self.result_tier = None
@@ -2309,31 +2312,48 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
     
     def get_tier_at_position(self, pos: float) -> str:
         """Get which tier a position falls into."""
-        if self.total <= 0:
+        zones = self.get_display_zone_weights()
+        if not zones:
             return _coerce_unlocked_tier(self.result_rarity, self.TIERS, self.locked_tiers)
         cumulative = 0.0
-        for tier, weight in zip(self.TIERS, self.tier_weights):
-            if weight <= 0:
-                continue
-            zone_pct = (weight / self.total) * 100
+        for tier, zone_pct in zones:
             if pos < cumulative + zone_pct:
+                if tier == "Celestial":
+                    # Celestial is a separate bonus roll; stage-1 roll maps to Legendary.
+                    tier = "Legendary"
                 return _coerce_unlocked_tier(tier, self.TIERS, self.locked_tiers)
             cumulative += zone_pct
         return _coerce_unlocked_tier("Legendary", self.TIERS, self.locked_tiers)
     
     def get_position_for_tier(self, tier: str) -> float:
         """Get a random position within a tier's zone."""
-        if self.total <= 0:
+        zones = self.get_display_zone_weights()
+        if not zones:
             return 50.0
         cumulative = 0.0
-        for t, weight in zip(self.TIERS, self.tier_weights):
-            if weight <= 0:
-                continue
-            zone_pct = (weight / self.total) * 100
+        for t, zone_pct in zones:
             if t == tier:
                 return cumulative + random.random() * zone_pct
             cumulative += zone_pct
         return 50.0
+
+    def get_base_display_scale(self) -> float:
+        """Fraction of bar reserved for base rarity roll lanes."""
+        return max(0.0, 1.0 - self.celestial_chance)
+
+    def map_roll_to_display(self, roll: float) -> float:
+        """Convert backend 0-100 roll into bar position accounting for Celestial lane."""
+        base_scale = self.get_base_display_scale()
+        if base_scale <= 0.0:
+            return 0.0
+        return max(0.0, min(base_scale * 100.0, float(roll) * base_scale))
+
+    def map_display_to_roll(self, pos: float) -> float:
+        """Convert bar position back to backend 0-100 roll space."""
+        base_scale = self.get_base_display_scale()
+        if base_scale <= 0.0:
+            return 0.0
+        return max(0.0, min(100.0, float(pos) / base_scale))
     
     def set_position(self, pos: float):
         """Set marker position (0-100)."""
@@ -2344,6 +2364,31 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         """Set the result tier for visual feedback."""
         self.result_tier = tier
         self.update()
+
+    def get_display_zone_weights(self) -> list[tuple[str, float]]:
+        """Return stage-1 display zones as percentages summing to 100."""
+        if self.total <= 0:
+            return []
+
+        base_scale = self.get_base_display_scale()
+        zones: list[tuple[str, float]] = []
+        for tier, weight in zip(self.TIERS, self.tier_weights):
+            if weight <= 0:
+                continue
+            pct = (weight / self.total) * 100.0 * base_scale
+            if pct > 0.0:
+                zones.append((tier, pct))
+
+        celestial_pct = max(0.0, min(100.0, self.celestial_chance * 100.0))
+        if celestial_pct > 0.0:
+            zones.append(("Celestial", celestial_pct))
+
+        total_pct = sum(p for _, p in zones)
+        if zones and abs(100.0 - total_pct) > 0.001:
+            largest_idx = max(range(len(zones)), key=lambda idx: zones[idx][1])
+            tier_name, pct = zones[largest_idx]
+            zones[largest_idx] = (tier_name, max(0.0, pct + (100.0 - total_pct)))
+        return zones
     
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -2357,13 +2402,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         
         # Draw tier zones
         cumulative_pct = 0.0
-        zones_to_draw = []
-        
-        for tier, weight in zip(self.TIERS, self.tier_weights):
-            if weight <= 0 or self.total <= 0:
-                continue
-            zone_pct = (weight / self.total) * 100
-            zones_to_draw.append((tier, zone_pct))
+        zones_to_draw = self.get_display_zone_weights()
         
         for i, (tier, zone_pct) in enumerate(zones_to_draw):
             color = self._CACHED_COLORS.get(tier, self._COLOR_WHITE)
@@ -2398,6 +2437,8 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
                 painter.setFont(self._FONT_LABEL)
                 if tier_locked:
                     label = "🔒"
+                elif tier == "Celestial":
+                    label = "Celestial" if zone_width > 60 else "Cel"
                 else:
                     label = tier[:4] if zone_width > 45 else tier[:3]
                 label_rect = QtCore.QRectF(start_x, bar_y, zone_width, bar_height)
@@ -2701,7 +2742,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
     TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     TIER_COLORS = {
         "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
-        "Epic": "#9c27b0", "Legendary": "#ff9800"
+        "Epic": "#9c27b0", "Legendary": "#ff9800", "Celestial": "#00e5ff"
     }
     
     # Moving window: [5, 15, 60, 15, 5] centered on result rarity
@@ -2718,7 +2759,11 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                  tier_roll: Optional[float] = None,
                  rolled_tier: Optional[str] = None,
                  tier_weights: Optional[list] = None,
-                 power_gating: Optional[dict] = None):
+                 power_gating: Optional[dict] = None,
+                 celestial_chance: float = 0.0,
+                 legendary_count: int = 0,
+                 final_rarity: Optional[str] = None,
+                 celestial_triggered: bool = False):
         """
         Args:
             success_roll: The actual success roll (0.0-1.0). If negative, generates random roll.
@@ -2731,6 +2776,10 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             tier_roll: Optional pre-rolled tier roll (0.0-100.0)
             rolled_tier: Optional pre-rolled tier outcome
             tier_weights: Optional pre-calculated tier weights for display
+            celestial_chance: Optional Celestial bonus override chance (0.0-1.0)
+            legendary_count: Legendary item count used for Celestial unlock context
+            final_rarity: Backend-authoritative final rarity (may be Celestial)
+            celestial_triggered: Whether backend Celestial bonus already triggered
         """
         super().__init__(parent)
         # Generate random roll if not provided (negative means "generate one")
@@ -2744,6 +2793,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.custom_title = title  # Store custom title
         self._entity_perk_contributors = entity_perk_contributors or []
         self.locked_tiers, self.tier_roll_ceiling, self.tier_lock_message = _extract_power_gate_ui_state(power_gating)
+        self.celestial_chance = max(0.0, min(1.0, float(celestial_chance or 0.0)))
+        self.legendary_count = max(0, int(legendary_count or 0))
         
         # Calculate tier weights using moving window
         self.tier_weights = (
@@ -2760,6 +2811,13 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.tier_roll = max(0.0, min(self.tier_roll_ceiling, self.tier_roll))
         self.rolled_tier = rolled_tier if rolled_tier in self.TIERS else self._determine_tier(self.tier_roll)
         self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
+        self.celestial_triggered = bool(celestial_triggered)
+        resolved_final_rarity = str(final_rarity or "").strip()
+        if resolved_final_rarity not in self.TIER_COLORS:
+            resolved_final_rarity = "Celestial" if self.celestial_triggered else self.rolled_tier
+        self.final_rarity = resolved_final_rarity
+        if self.final_rarity == "Celestial":
+            self.celestial_triggered = True
         
         # Calculate tier jump for backwards compatibility
         try:
@@ -2896,6 +2954,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage1_slider = MergeTierSliderWidget(
             result_rarity=self.result_rarity,
             upgraded=self.tier_upgrade_enabled,
+            celestial_chance=self.celestial_chance,
             locked_tiers=list(self.locked_tiers),
         )
         self.stage1_slider.setFixedHeight(60)
@@ -2910,6 +2969,16 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         # Distribution legend
         dist_widget = self._create_distribution_legend()
         stage1_layout.addWidget(dist_widget)
+
+        if self.celestial_chance > 0.0:
+            celestial_pct = int(round(self.celestial_chance * 100))
+            celestial_text = (
+                f"Celestial bonus unlocked: {celestial_pct}% "
+                f"({self.legendary_count} Legendary merged)"
+            )
+            self.stage1_celestial_label = QtWidgets.QLabel(celestial_text)
+            self.stage1_celestial_label.setStyleSheet("color: #00e5ff; font-size: 10px;")
+            stage1_layout.addWidget(self.stage1_celestial_label)
         
         self.stage1_result = QtWidgets.QLabel("Waiting...")
         self.stage1_result.setAlignment(QtCore.Qt.AlignCenter)
@@ -2992,11 +3061,12 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         total = sum(self.tier_weights)
         if total <= 0:
             return widget
+        base_scale = max(0.0, 1.0 - self.celestial_chance)
         
         for tier, weight in zip(self.TIERS, self.tier_weights):
             if weight <= 0:
                 continue
-            pct = (weight / total) * 100
+            pct = (weight / total) * 100.0 * base_scale
             color = self.TIER_COLORS.get(tier, "#888")
             if tier in self.locked_tiers:
                 label = QtWidgets.QLabel(f"<b style='color:#888;'>🔒</b>:{pct:.0f}%")
@@ -3004,6 +3074,12 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                 label = QtWidgets.QLabel(f"<b style='color:{color};'>{tier[:3]}</b>:{pct:.0f}%")
             label.setStyleSheet("font-size: 10px; color: #aaa;")
             layout.addWidget(label)
+
+        if self.celestial_chance > 0.0:
+            celestial_pct = self.celestial_chance * 100.0
+            celestial_label = QtWidgets.QLabel(f"<b style='color:#00e5ff;'>Cel</b>:{celestial_pct:.0f}%")
+            celestial_label.setStyleSheet("font-size: 10px; color: #aaa;")
+            layout.addWidget(celestial_label)
         
         layout.addStretch()
         
@@ -3105,13 +3181,15 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         """)
         self.stage1_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage1_result.setText("Rolling...")
-        
+        display_target_roll = self.stage1_slider.map_roll_to_display(self.tier_roll)
+        display_roll_ceiling = self.stage1_slider.map_roll_to_display(self.tier_roll_ceiling)
+
         self._animate_tier_stage(
             slider=self.stage1_slider,
             result_label=self.stage1_result,
-            target_roll=self.tier_roll,
+            target_roll=display_target_roll,
             on_complete=self._on_stage1_complete,
-            max_position=self.tier_roll_ceiling,
+            max_position=display_roll_ceiling,
         )
     
     def _on_stage1_complete(self):
@@ -3132,8 +3210,14 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         # Skip stage 2 if guaranteed success (100%)
         if self.success_threshold >= 1.0:
             self.stage2_frame.hide()
-            self.final_result.setText(f"You got {self.rolled_tier}!")
-            self.final_result.setStyleSheet(f"color: {color}; font-size: 14px;")
+            awarded_rarity = self.final_rarity if self.celestial_triggered else self.rolled_tier
+            final_color = self.TIER_COLORS.get(awarded_rarity, color)
+            if awarded_rarity == "Celestial":
+                self.stage1_slider.set_result("Celestial")
+                self.final_result.setText("Celestial bonus triggered! You got Celestial!")
+            else:
+                self.final_result.setText(f"You got {awarded_rarity}!")
+            self.final_result.setStyleSheet(f"color: {final_color}; font-size: 14px;")
             _play_lottery_result_sound(True)  # Play win sound
             _reveal_continue_btn(self.continue_btn)  # Show continue button for user to close when ready
             return
@@ -3164,42 +3248,48 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
     def _on_stage2_complete(self):
         """Handle success/fail result."""
         color = self.TIER_COLORS.get(self.rolled_tier, "#aaa")
-        
+
         if self.is_success:
-            self.stage2_result.setText("✨ SUCCESS! ✨")
+            self.stage2_result.setText("SUCCESS!")
             self.stage2_result.setStyleSheet("color: #4caf50; font-size: 14px; font-weight: bold;")
             self.stage2_slider.set_result(True)
-            
-            # Celebratory message
-            try:
-                result_idx = self.TIERS.index(self.result_rarity)
-                rolled_idx = self.TIERS.index(self.rolled_tier)
-                tier_diff = rolled_idx - result_idx
-                
-                if tier_diff >= 2:
-                    self.final_result.setText(f"🎉 INCREDIBLE LUCK! You got {self.rolled_tier}! 🎉")
-                elif tier_diff == 1:
-                    self.final_result.setText(f"Great roll! You got {self.rolled_tier}!")
-                elif tier_diff == 0:
-                    self.final_result.setText(f"You got {self.rolled_tier}!")
-                else:
-                    self.final_result.setText(f"You got {self.rolled_tier}")
-            except ValueError:
-                self.final_result.setText(f"You got {self.rolled_tier}!")
-            
-            self.final_result.setStyleSheet(f"color: {color}; font-size: 14px;")
+
+            awarded_rarity = self.final_rarity if self.celestial_triggered else self.rolled_tier
+            final_color = self.TIER_COLORS.get(awarded_rarity, color)
+            if awarded_rarity == "Celestial":
+                self.stage1_slider.set_result("Celestial")
+                self.final_result.setText("Celestial bonus triggered! You got Celestial!")
+            else:
+                # Celebratory message
+                try:
+                    result_idx = self.TIERS.index(self.result_rarity)
+                    rolled_idx = self.TIERS.index(self.rolled_tier)
+                    tier_diff = rolled_idx - result_idx
+
+                    if tier_diff >= 2:
+                        self.final_result.setText(f"INCREDIBLE LUCK! You got {awarded_rarity}!")
+                    elif tier_diff == 1:
+                        self.final_result.setText(f"Great roll! You got {awarded_rarity}!")
+                    elif tier_diff == 0:
+                        self.final_result.setText(f"You got {awarded_rarity}!")
+                    else:
+                        self.final_result.setText(f"You got {awarded_rarity}")
+                except ValueError:
+                    self.final_result.setText(f"You got {awarded_rarity}!")
+
+            self.final_result.setStyleSheet(f"color: {final_color}; font-size: 14px;")
             _play_lottery_result_sound(True)  # Play win sound
             _reveal_continue_btn(self.continue_btn)  # Show continue button for user to close when ready
         else:
-            self.stage2_result.setText("💔 FAILED 💔")
+            self.stage2_result.setText("FAILED")
             self.stage2_result.setStyleSheet("color: #f44336; font-size: 14px; font-weight: bold;")
             self.stage2_slider.set_result(False)
-            
+
             self.final_result.setText(f"You almost had {self.rolled_tier}... All items were destroyed.")
             self.final_result.setStyleSheet("color: #f44336; font-size: 14px;")
             _play_lottery_result_sound(False)  # Play lose sound
             _reveal_continue_btn(self.continue_btn)  # Show continue button for user to close when ready
-    
+
     def _animate_tier_stage(self, slider, result_label, target_roll, on_complete, max_position: float = 100.0):
         """Animate tier roll with bounce effect."""
         self._anim_slider = slider
@@ -3263,7 +3353,10 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             self._tier_last_style = tier
             color = self.TIER_COLORS.get(tier, "#aaa")
             self._anim_result.setStyleSheet(f"color: {color}; font-size: 14px;")
-        self._anim_result.setText(f"🎲 {pos:.1f}% → {tier}")
+        display_roll = pos
+        if hasattr(self._anim_slider, "map_display_to_roll"):
+            display_roll = self._anim_slider.map_display_to_roll(pos)
+        self._anim_result.setText(f"🎲 {display_roll:.1f}% → {tier}")
         
         if t >= 1.0:
             self._tier_anim_timer.stop()
@@ -3353,17 +3446,18 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
     
     def _finish(self):
         """Emit result and close."""
-        self.finished_signal.emit(self.is_success, self.rolled_tier if self.is_success else "")
+        outcome_tier = self.final_rarity if self.is_success else ""
+        self.finished_signal.emit(self.is_success, outcome_tier)
         self.accept()
     
     def get_results(self) -> tuple:
         """Get the results.
         
         Returns:
-            (success: bool, rolled_tier: str) - rolled_tier is "" if failed
-            Returns the actual tier name that was rolled, not a jump number
+            (success: bool, awarded_rarity: str) - empty rarity when failed
+            Returns the final awarded rarity (including Celestial bonus upgrades).
         """
-        return (self.is_success, self.rolled_tier if self.is_success else "")
+        return (self.is_success, self.final_rarity if self.is_success else "")
     
     def closeEvent(self, event):
         """Clean up timers and save geometry."""

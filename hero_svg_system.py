@@ -12,10 +12,12 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional
+from xml.etree import ElementTree as ET
 
 from PySide6 import QtCore, QtGui
 from PySide6.QtSvg import QSvgRenderer
@@ -108,9 +110,80 @@ _ANCHOR_FACTORS: Dict[str, tuple[float, float]] = {
     "bottom": (0.5, 1.0),
 }
 
+
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.environ.get(name, "1" if default else "0")
+    return str(raw).strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name)
+    if raw is None:
+        return int(default)
+    try:
+        return max(0, int(str(raw).strip()))
+    except (TypeError, ValueError):
+        return int(default)
+
+
 _renderer_cache: Dict[str, tuple[float, QSvgRenderer]] = {}
 _composition_profile_cache: Dict[str, tuple[float, dict]] = {}
 _renderer_active_ref_counts: Dict[str, int] = {}
+_svg_text_cache: Dict[str, tuple[float, str]] = {}
+
+_INLINE_SVG_COMPOSITION_ENABLED = _env_flag("PF_HERO_INLINE_SVG_COMPOSITION", True)
+_RUNTIME_SVG_BUDGETS_ENABLED = _env_flag("PF_HERO_RUNTIME_BUDGETS", True)
+# Keep authored motion intact by default: set a high animation cap so
+# stripping only occurs when explicitly tuned lower via environment.
+_RUNTIME_MAX_ANIMATIONS = _env_int("PF_HERO_MAX_ANIMATIONS", 1000)
+# Defaults preserve celestial wobble/noise stacks while still bounding runaway
+# layer complexity on heavy loadouts.
+_RUNTIME_MAX_HEAVY_FILTERS = _env_int("PF_HERO_MAX_HEAVY_FILTERS", 16)
+_RUNTIME_MAX_BLUR_FILTERS = _env_int("PF_HERO_MAX_BLUR_FILTERS", 20)
+
+_CORE_GEAR_SLOTS = {"helmet", "chestplate", "gauntlets", "boots"}
+
+_XML_DECL_RE = re.compile(r"^\s*<\?xml[^>]*>\s*", flags=re.IGNORECASE)
+_DOCTYPE_RE = re.compile(r"^\s*<!DOCTYPE[^>]*>\s*", flags=re.IGNORECASE)
+_SVG_OPEN_TAG_RE = re.compile(r"<svg\b[^>]*>", flags=re.IGNORECASE | re.DOTALL)
+_ID_ATTR_RE = re.compile(
+    r'(?P<prefix>\bid\s*=\s*)(?P<quote>"|\')(?P<id>[^"\']+)(?P=quote)',
+    flags=re.IGNORECASE,
+)
+_URL_REF_RE = re.compile(r"url\(\s*#(?P<id>[A-Za-z_][A-Za-z0-9_.:-]*)\s*\)", flags=re.IGNORECASE)
+_HREF_REF_RE = re.compile(
+    r'(?P<prefix>\b(?:xlink:)?href\s*=\s*)(?P<quote>"|\')#(?P<id>[A-Za-z_][A-Za-z0-9_.:-]*)(?P=quote)',
+    flags=re.IGNORECASE,
+)
+_SMIL_BEGIN_END_RE = re.compile(
+    r'(?P<prefix>\b(?:begin|end)\s*=\s*)(?P<quote>"|\')(?P<value>[^"\']*)(?P=quote)',
+    flags=re.IGNORECASE,
+)
+_SMIL_EVENT_REF_RE = re.compile(
+    r"(?<![A-Za-z0-9_.:-])"
+    r"(?P<id>[A-Za-z_][A-Za-z0-9_.:-]*)"
+    r"(?=\.(?:begin|end|repeatEvent|click|mousedown|mouseup|mouseover|mouseout|focusin|focusout|activate)\b)"
+)
+_URL_REF_ID_ONLY_RE = re.compile(
+    r"^\s*url\(\s*#(?P<id>[A-Za-z_][A-Za-z0-9_.:-]*)\s*\)\s*$",
+    flags=re.IGNORECASE,
+)
+_ANIMATION_NODE_RE = re.compile(
+    r"<\s*(?:animateTransform|animateMotion|animate|set)\b",
+    flags=re.IGNORECASE,
+)
+_HEAVY_FILTER_NODE_RE = re.compile(
+    r"<\s*(?:feTurbulence|feDisplacementMap)\b",
+    flags=re.IGNORECASE,
+)
+_BLUR_FILTER_NODE_RE = re.compile(r"<\s*feGaussianBlur\b", flags=re.IGNORECASE)
+
+try:
+    ET.register_namespace("", "http://www.w3.org/2000/svg")
+    ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
+except Exception:
+    # Namespace registration only affects serializer readability.
+    pass
 
 
 @dataclass(frozen=True)
@@ -689,6 +762,350 @@ def clear_hero_svg_cache() -> None:
     _renderer_cache.clear()
     _composition_profile_cache.clear()
     _renderer_active_ref_counts.clear()
+    _svg_text_cache.clear()
+
+
+def _get_cached_svg_text(path: Path) -> Optional[str]:
+    abs_path = str(path.resolve())
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        return None
+
+    cached = _svg_text_cache.get(abs_path)
+    if cached and cached[0] == mtime:
+        return cached[1]
+
+    text: Optional[str] = None
+    for encoding in ("utf-8", "utf-8-sig"):
+        try:
+            text = path.read_text(encoding=encoding)
+            break
+        except UnicodeDecodeError:
+            continue
+        except OSError:
+            return None
+    if text is None:
+        return None
+
+    _svg_text_cache[abs_path] = (mtime, text)
+    return text
+
+
+def _replace_root_svg_attribute(open_tag: str, attr_name: str, attr_value: str) -> str:
+    attr_pattern = re.compile(
+        rf"(\b{re.escape(attr_name)}\s*=\s*)(\"|').*?\2",
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    replacement = rf'\1"{attr_value}"'
+    if attr_pattern.search(open_tag):
+        return attr_pattern.sub(replacement, open_tag, count=1)
+
+    trimmed = open_tag.rstrip()
+    if trimmed.endswith("/>"):
+        return f'{trimmed[:-2]} {attr_name}="{attr_value}"/>'
+    if trimmed.endswith(">"):
+        return f'{trimmed[:-1]} {attr_name}="{attr_value}">'
+    return f'{open_tag} {attr_name}="{attr_value}"'
+
+
+def _rewrite_svg_id_references(svg_text: str, layer_prefix: str) -> str:
+    id_map: Dict[str, str] = {}
+
+    def _replace_id_attr(match: re.Match) -> str:
+        old_id = match.group("id")
+        new_id = id_map.get(old_id)
+        if not new_id:
+            new_id = f"{layer_prefix}{old_id}"
+            id_map[old_id] = new_id
+        return f'{match.group("prefix")}{match.group("quote")}{new_id}{match.group("quote")}'
+
+    rewritten = _ID_ATTR_RE.sub(_replace_id_attr, svg_text)
+    if not id_map:
+        return rewritten
+
+    def _replace_url_ref(match: re.Match) -> str:
+        old_id = match.group("id")
+        return f'url(#{id_map.get(old_id, old_id)})'
+
+    rewritten = _URL_REF_RE.sub(_replace_url_ref, rewritten)
+
+    def _replace_href_ref(match: re.Match) -> str:
+        old_id = match.group("id")
+        new_id = id_map.get(old_id, old_id)
+        return f'{match.group("prefix")}{match.group("quote")}#{new_id}{match.group("quote")}'
+
+    rewritten = _HREF_REF_RE.sub(_replace_href_ref, rewritten)
+
+    def _replace_smil_timing_refs(match: re.Match) -> str:
+        value = match.group("value")
+
+        def _replace_event_target(event_match: re.Match) -> str:
+            old_id = event_match.group("id")
+            return id_map.get(old_id, old_id)
+
+        updated = _SMIL_EVENT_REF_RE.sub(_replace_event_target, value)
+        return f'{match.group("prefix")}{match.group("quote")}{updated}{match.group("quote")}'
+
+    rewritten = _SMIL_BEGIN_END_RE.sub(_replace_smil_timing_refs, rewritten)
+    return rewritten
+
+
+def _prepare_inline_svg_markup(path: Path, layer_prefix: str) -> Optional[str]:
+    svg_text = _get_cached_svg_text(path)
+    if not svg_text:
+        return None
+
+    # XML declarations/doctype are not valid inside embedded HTML fragments.
+    svg_text = _XML_DECL_RE.sub("", svg_text, count=1)
+    svg_text = _DOCTYPE_RE.sub("", svg_text, count=1)
+
+    svg_text = _rewrite_svg_id_references(svg_text, layer_prefix)
+
+    svg_match = _SVG_OPEN_TAG_RE.search(svg_text)
+    if not svg_match:
+        return None
+
+    root_tag = svg_match.group(0)
+    root_tag = _replace_root_svg_attribute(root_tag, "width", "100%")
+    root_tag = _replace_root_svg_attribute(root_tag, "height", "100%")
+    root_tag = _replace_root_svg_attribute(root_tag, "preserveAspectRatio", "none")
+    root_tag = _replace_root_svg_attribute(root_tag, "focusable", "false")
+    root_tag = _replace_root_svg_attribute(root_tag, "aria-hidden", "true")
+
+    svg_text = f"{svg_text[:svg_match.start()]}{root_tag}{svg_text[svg_match.end():]}"
+    return svg_text.strip()
+
+
+def _xml_local_name(tag: str) -> str:
+    if "}" in tag:
+        return tag.rsplit("}", 1)[1]
+    return tag
+
+
+def _parse_svg_root(svg_text: str) -> Optional[ET.Element]:
+    try:
+        return ET.fromstring(svg_text)
+    except ET.ParseError:
+        return None
+
+
+def _serialize_svg_root(root: ET.Element) -> str:
+    return ET.tostring(root, encoding="unicode", method="xml")
+
+
+def _svg_feature_metrics(svg_text: str) -> dict[str, int]:
+    return {
+        "animations": len(_ANIMATION_NODE_RE.findall(svg_text)),
+        "heavy_filters": len(_HEAVY_FILTER_NODE_RE.findall(svg_text)),
+        "blur_filters": len(_BLUR_FILTER_NODE_RE.findall(svg_text)),
+    }
+
+
+def _layer_preservation_rank(layer: HeroLayer) -> int:
+    if layer.kind == "fx":
+        return 5
+    if layer.kind == "gear":
+        slot = _normalize_slot(layer.slot or "")
+        rarity = _normalize_rarity(layer.rarity or "")
+        is_core = slot in _CORE_GEAR_SLOTS
+        if rarity == "celestial":
+            return 1 if is_core else 2
+        return 3 if is_core else 4
+    if layer.kind == "base":
+        return 0
+    return 3
+
+
+def _strip_svg_animation_nodes(svg_text: str) -> str:
+    root = _parse_svg_root(svg_text)
+    if root is None:
+        return svg_text
+
+    removed_any = False
+    animation_tags = {"animate", "animateTransform", "animateMotion", "set"}
+
+    for parent in root.iter():
+        for child in list(parent):
+            if _xml_local_name(child.tag) in animation_tags:
+                parent.remove(child)
+                removed_any = True
+
+    if not removed_any:
+        return svg_text
+    return _serialize_svg_root(root)
+
+
+def _strip_svg_filter_defs(
+    svg_text: str,
+    *,
+    drop_heavy_filters: bool = False,
+    drop_blur_filters: bool = False,
+) -> str:
+    root = _parse_svg_root(svg_text)
+    if root is None:
+        return svg_text
+
+    remove_filter_ids: set[str] = set()
+    removed_any = False
+
+    for parent in root.iter():
+        for child in list(parent):
+            if _xml_local_name(child.tag) != "filter":
+                continue
+            primitive_names = {_xml_local_name(grand.tag) for grand in child}
+            should_remove = False
+            if drop_heavy_filters and (
+                "feTurbulence" in primitive_names or "feDisplacementMap" in primitive_names
+            ):
+                should_remove = True
+            if drop_blur_filters and "feGaussianBlur" in primitive_names:
+                should_remove = True
+            if not should_remove:
+                continue
+            filter_id = child.attrib.get("id")
+            if filter_id:
+                remove_filter_ids.add(filter_id)
+            parent.remove(child)
+            removed_any = True
+
+    if not removed_any:
+        return svg_text
+
+    for elem in root.iter():
+        filter_attr = elem.attrib.get("filter")
+        if filter_attr:
+            match = _URL_REF_ID_ONLY_RE.match(filter_attr)
+            if match and match.group("id") in remove_filter_ids:
+                elem.attrib.pop("filter", None)
+
+        style_attr = elem.attrib.get("style")
+        if style_attr and remove_filter_ids:
+            updated_style = style_attr
+            for filter_id in remove_filter_ids:
+                updated_style = re.sub(
+                    rf"(^|;)\s*filter\s*:\s*url\(\s*#{re.escape(filter_id)}\s*\)\s*;?",
+                    r"\1",
+                    updated_style,
+                    flags=re.IGNORECASE,
+                )
+            updated_style = re.sub(r";{2,}", ";", updated_style).strip().strip(";")
+            if updated_style:
+                elem.attrib["style"] = updated_style
+            else:
+                elem.attrib.pop("style", None)
+
+    return _serialize_svg_root(root)
+
+
+def _apply_runtime_svg_budgets(layer_entries: list[dict[str, Any]]) -> None:
+    if not _RUNTIME_SVG_BUDGETS_ENABLED:
+        return
+
+    candidates = [entry for entry in layer_entries if isinstance(entry.get("inline_svg"), str)]
+    if not candidates:
+        return
+
+    for entry in candidates:
+        entry["metrics"] = _svg_feature_metrics(str(entry["inline_svg"]))
+        entry["budget_actions"] = []
+
+    ordered_for_downgrade = sorted(
+        candidates,
+        key=lambda entry: (
+            _layer_preservation_rank(entry["layer"]),
+            int(entry.get("index", 0)),
+        ),
+        reverse=True,
+    )
+
+    def _can_apply_action(layer: HeroLayer, action_name: str) -> bool:
+        if layer.kind == "base":
+            return False
+        if layer.kind != "gear":
+            return True
+
+        rarity = _normalize_rarity(layer.rarity or "")
+        # Preserve celestial gear visual identity (wobble/noise/glow) and
+        # preferentially degrade FX or lower-tier layers first.
+        if rarity == "celestial" and action_name in {
+            "drop_heavy_filters",
+            "drop_blur_filters",
+            "drop_animations",
+        }:
+            return False
+        return True
+
+    def _apply_budget_pass(
+        metric_name: str,
+        max_allowed: int,
+        downgrade_fn,
+        action_name: str,
+    ) -> None:
+        total = sum(int(entry["metrics"].get(metric_name, 0)) for entry in candidates)
+        if total <= max_allowed:
+            return
+        overflow = total - max_allowed
+        for entry in ordered_for_downgrade:
+            if overflow <= 0:
+                break
+            layer: HeroLayer = entry["layer"]
+            if not _can_apply_action(layer, action_name):
+                continue
+            current_metric = int(entry["metrics"].get(metric_name, 0))
+            if current_metric <= 0:
+                continue
+            current_svg = str(entry.get("inline_svg") or "")
+            downgraded_svg = downgrade_fn(current_svg)
+            if not downgraded_svg or downgraded_svg == current_svg:
+                continue
+            entry["inline_svg"] = downgraded_svg
+            entry["metrics"] = _svg_feature_metrics(downgraded_svg)
+            reduced_by = max(0, current_metric - int(entry["metrics"].get(metric_name, 0)))
+            if reduced_by <= 0:
+                continue
+            overflow -= reduced_by
+            entry["budget_actions"].append(action_name)
+
+        if overflow > 0:
+            logger.debug(
+                "Hero runtime SVG budget still over target after '%s': metric=%s overflow=%d",
+                action_name,
+                metric_name,
+                overflow,
+            )
+
+    _apply_budget_pass(
+        metric_name="heavy_filters",
+        max_allowed=_RUNTIME_MAX_HEAVY_FILTERS,
+        downgrade_fn=lambda text: _strip_svg_filter_defs(text, drop_heavy_filters=True),
+        action_name="drop_heavy_filters",
+    )
+    _apply_budget_pass(
+        metric_name="blur_filters",
+        max_allowed=_RUNTIME_MAX_BLUR_FILTERS,
+        downgrade_fn=lambda text: _strip_svg_filter_defs(text, drop_blur_filters=True),
+        action_name="drop_blur_filters",
+    )
+    _apply_budget_pass(
+        metric_name="animations",
+        max_allowed=_RUNTIME_MAX_ANIMATIONS,
+        downgrade_fn=_strip_svg_animation_nodes,
+        action_name="drop_animations",
+    )
+
+    applied = [
+        (
+            entry["index"],
+            entry["layer"].kind,
+            entry["layer"].slot,
+            entry.get("budget_actions", []),
+        )
+        for entry in candidates
+        if entry.get("budget_actions")
+    ]
+    if applied:
+        logger.debug("Applied hero runtime SVG budget actions: %s", applied)
 
 
 def _set_renderer_animation_enabled(renderer: QSvgRenderer, enabled: bool) -> None:
@@ -889,8 +1306,9 @@ def generate_hero_composed_html(
 ) -> str:
     """
     Generate HTML content that layers hero SVGs for WebEngine display.
-    
-    This enables full SVG animation support (SMIL/CSS) not available in QSvgRenderer.
+
+    By default, this inlines each SVG document into the DOM so SMIL timelines
+    remain script-addressable and id references are namespaced per layer.
     """
     manifest = load_hero_manifest(story_theme, base_dir=base_dir)
     layers = build_hero_layer_plan(
@@ -915,10 +1333,17 @@ def generate_hero_composed_html(
     .layer {{
         position: absolute;
         transform-origin: center center;
+        pointer-events: none;
+    }}
+    .svg-layer > svg {{
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
     }}
     """
 
-    body_content = []
+    layer_entries: list[dict[str, Any]] = []
     
     # We need a target rect to resolve relative positions
     # CharacterCanvas uses loose scaling but the SVG system assumes fixed canvas
@@ -952,16 +1377,7 @@ def generate_hero_composed_html(
         except (TypeError, ValueError):
             pass
 
-        # Convert local path to file URL and append mtime cache-buster so
-        # WebEngine always reloads updated SVG assets after local edits.
-        file_qurl = QtCore.QUrl.fromLocalFile(str(layer.path))
-        try:
-            file_qurl.setQuery(f"v={int(layer.path.stat().st_mtime_ns)}")
-        except OSError:
-            pass
-        file_url = file_qurl.toString()
-
-        # Build inline style for this layer
+        # Build inline style for this layer.
         layer_style = (
             f"left: {rect.x()}px; "
             f"top: {rect.y()}px; "
@@ -972,10 +1388,59 @@ def generate_hero_composed_html(
         if abs(rotation_deg) > 0.001:
             layer_style += f" transform: rotate({rotation_deg}deg);"
 
-        img_tag = f'<img src="{file_url}" class="layer" style="{layer_style}" />'
-        body_content.append(img_tag)
+        entry: dict[str, Any] = {
+            "index": i,
+            "layer": layer,
+            "style": layer_style,
+            "inline_svg": None,
+            "fallback_url": None,
+        }
+
+        if _INLINE_SVG_COMPOSITION_ENABLED:
+            layer_prefix = f"layer{i}_{_slugify(layer.kind)}"
+            if layer.slot:
+                layer_prefix = f"{layer_prefix}_{_normalize_slot(layer.slot)}"
+            layer_prefix = f"{layer_prefix}_"
+            inline_svg = _prepare_inline_svg_markup(layer.path, layer_prefix)
+            if inline_svg:
+                entry["inline_svg"] = inline_svg
+
+        # Fallback URL is always prepared for inline-disabled mode and any
+        # malformed/unsupported inline conversion edge case.
+        if not entry["inline_svg"]:
+            file_qurl = QtCore.QUrl.fromLocalFile(str(layer.path))
+            try:
+                file_qurl.setQuery(f"v={int(layer.path.stat().st_mtime_ns)}")
+            except OSError:
+                pass
+            entry["fallback_url"] = file_qurl.toString()
+
+        layer_entries.append(entry)
         if layer.kind == "base":
             base_rendered = True
+
+    if _INLINE_SVG_COMPOSITION_ENABLED:
+        _apply_runtime_svg_budgets(layer_entries)
+
+    body_content: list[str] = []
+    for entry in layer_entries:
+        inline_svg = entry.get("inline_svg")
+        if inline_svg:
+            body_content.append(
+                f'<div class="layer svg-layer" style="{entry["style"]}">{inline_svg}</div>'
+            )
+            continue
+
+        file_url = str(entry.get("fallback_url") or "")
+        if not file_url:
+            layer: HeroLayer = entry["layer"]
+            file_qurl = QtCore.QUrl.fromLocalFile(str(layer.path))
+            try:
+                file_qurl.setQuery(f"v={int(layer.path.stat().st_mtime_ns)}")
+            except OSError:
+                pass
+            file_url = file_qurl.toString()
+        body_content.append(f'<img src="{file_url}" class="layer" style="{entry["style"]}" />')
 
     # Keep fallback path functional: if composition cannot render a base layer,
     # return empty so callers can use the Qt painter path.

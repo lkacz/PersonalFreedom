@@ -50,11 +50,11 @@
     <g fill="#fff" opacity="0.8">
         <path d="M50 50 L52 55 L50 60 L48 55 Z" opacity="0">
              <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
-             <animate attributeName="transform" type="translate" from="0 0" to="0 20" dur="2s" repeatCount="indefinite" />
+             <animateTransform attributeName="transform" type="translate" from="0 0" to="0 20" dur="2s" repeatCount="indefinite" />
         </path>
          <path d="M120 80 L122 85 L120 90 L118 85 Z" opacity="0">
              <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="1s" />
-             <animate attributeName="transform" type="translate" from="0 0" to="0 20" dur="2.5s" repeatCount="indefinite" begin="1s" />
+             <animateTransform attributeName="transform" type="translate" from="0 0" to="0 20" dur="2.5s" repeatCount="indefinite" begin="1s" />
         </path>
     </g>
     

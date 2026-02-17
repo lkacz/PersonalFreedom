@@ -62,8 +62,7 @@
         <path d="M-60,100 Q-80,140 0,160 Q80,140 60,100" fill="url(#otterWet)"/>
 
         <!-- Body (Floating on back) -->
-        <image width="0" height="0" href=""/> <!-- Hack to prevent SVG empty errors if renderer is strict, pure shape below -->
-        
+
         <!-- Main Torso -->
         <ellipse cx="0" cy="20" rx="70" ry="100" fill="url(#otterWet)"/>
         <!-- Belly Patch -->
