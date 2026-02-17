@@ -31,14 +31,7 @@
 
     <!-- Deep Shadow Filter -->
     <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
-      <feOffset dx="0" dy="6" result="offsetblur"/>
-      <feFlood flood-color="#000000" flood-opacity="0.4" result="shadowColor"/>
-      <feComposite in="shadowColor" in2="offsetblur" operator="in" result="shadow"/>
-      <feMerge>
-        <feMergeNode in="shadow"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
     </filter>
   </defs>
 

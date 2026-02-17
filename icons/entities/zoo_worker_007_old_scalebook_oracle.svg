@@ -14,8 +14,7 @@
         type="matrix"
         values="0 0 0 0 0.84 0 0 0 0 0.80 0 0 0 0 0.76 0 0 0 0.22 0"
         result="roughTint"/>
-      <feComposite in="roughTint" in2="SourceGraphic" operator="in" result="roughMasked"/>
-      <feBlend in="SourceGraphic" in2="roughMasked" mode="multiply"/>
+      <feBlend in="SourceGraphic" in2="roughTint" mode="multiply"/>
     </filter>
 
     <!-- 2. Aged Paper -->
@@ -47,14 +46,7 @@
     </linearGradient>
 
     <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
-      <feOffset dx="0" dy="8" result="offsetblur"/>
-      <feFlood flood-color="#000000" flood-opacity="0.5" result="shadowColor"/>
-      <feComposite in="shadowColor" in2="offsetblur" operator="in" result="shadow"/>
-      <feMerge>
-        <feMergeNode in="shadow"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+      <feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#000000" flood-opacity="0.5"/>
     </filter>
   </defs>
 
