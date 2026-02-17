@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
     <linearGradient id="c_boot_shell" x1="0" y1="0" x2="0" y2="1">
@@ -24,36 +23,85 @@
     <filter id="c_soft_glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="0.85"/>
     </filter>
+    
+    <!-- Fuzzy Dissolve Filter from Helmet -->
+    <filter id="shadowDissolve">
+        <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="1" result="noise">
+            <animate attributeName="seed" values="1;120;1" dur="2.2s" repeatCount="indefinite"/>
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" result="distorted"/> <!-- Reduced scale slightly for boots so they aren't totally lost -->
+        <feGaussianBlur in="distorted" stdDeviation="1.5" result="softened"/>
+        <feMerge>
+            <feMergeNode in="softened"/>
+            <feMergeNode in="distorted"/>
+        </feMerge>
+    </filter>
   </defs>
 
-  <!-- Celestial: fitted template + cyan laces + restrained cosmic accents -->
+  <!-- Celestial Boots: Fuzzy Effect applied, Wings Removed -->
   <g id="boots_celestial">
-    <!-- Left -->
-    <path d="M59 193 L82 193 L80 209 L58 209 Z" fill="url(#c_boot_shell)" stroke="#0f171d" stroke-width="0.9"/>
-    <path d="M60 194 L75 194 L74 206 L60 206 Z" fill="url(#c_boot_highlight)" opacity="0.5"/>
-    <path d="M58.8 202.3 L80.8 202.3" stroke="#1a2731" stroke-width="0.7" opacity="0.65"/>
-    <path d="M60.2 194.0 L81.7 194.0" stroke="#7f96a8" stroke-width="0.55" opacity="0.68"/>
-    <rect x="60.0" y="205.0" width="18.8" height="2.3" rx="0.8" fill="url(#c_toe_cap)" opacity="0.97"/>
-    <path d="M58 207 L80 207 L79 210 L57 210 Z" fill="url(#c_boot_sole)"/>
-    <path d="M58 208.6 L79.2 208.6" stroke="#d0dbe2" stroke-width="0.5" opacity="0.62"/>
-    <path d="M62.0 196.8 L76.7 196.8 M61.8 199.4 L76.5 199.4 M61.6 202.0 L76.3 202.0" stroke="#00e5ff" stroke-width="1.05" stroke-linecap="round"/>
-    <path d="M61.2 204.6 L77.7 204.6" stroke="#80f2ff" stroke-width="0.85" opacity="0.88"/>
-    <circle cx="67.5" cy="198.8" r="1.1" fill="#bff8ff"/>
-    <circle cx="74.0" cy="200.6" r="0.9" fill="url(#c_glow)" filter="url(#c_soft_glow)"/>
-    <path d="M60.8 193.5 Q69.0 191.8 77.4 193.5" fill="none" stroke="#00cfe6" stroke-width="0.6" opacity="0.75"/>
+    
+    <!-- LEFT BOOT -->
+    <!-- Fuzzy Wrapper for Boot Body -->
+    <g filter="url(#shadowDissolve)">
+        <!-- Main Boot Body -->
+        <path d="M59 193 L82 193 L80 209 L58 209 Z" fill="url(#c_boot_shell)" stroke="#00E5FF" stroke-width="0.5"/>
+    </g>
 
-    <!-- Right -->
-    <path d="M88 193 L112 193 L114 209 L88 209 Z" fill="url(#c_boot_shell)" stroke="#0f171d" stroke-width="0.9"/>
-    <path d="M89.0 194 L104.5 194 L105.2 206 L89.0 206 Z" fill="url(#c_boot_highlight)" opacity="0.47"/>
-    <path d="M89.0 202.3 L113.2 202.3" stroke="#1a2731" stroke-width="0.7" opacity="0.65"/>
-    <path d="M89.2 194.0 L112.1 194.0" stroke="#7f96a8" stroke-width="0.55" opacity="0.68"/>
-    <rect x="89.0" y="205.0" width="22.0" height="2.3" rx="0.8" fill="url(#c_toe_cap)" opacity="0.97"/>
-    <path d="M88 207 L114 207 L114 210 L88 210 Z" fill="url(#c_boot_sole)"/>
-    <path d="M88.2 208.6 L113.8 208.6" stroke="#d0dbe2" stroke-width="0.5" opacity="0.62"/>
-    <path d="M92.2 196.8 L108.8 196.8 M92.0 199.4 L108.6 199.4 M91.8 202.0 L108.4 202.0" stroke="#00e5ff" stroke-width="1.05" stroke-linecap="round"/>
-    <path d="M92.2 204.6 L110.4 204.6" stroke="#80f2ff" stroke-width="0.85" opacity="0.88"/>
-    <circle cx="97.4" cy="198.8" r="1.1" fill="#bff8ff"/>
-    <circle cx="104.2" cy="200.6" r="0.9" fill="url(#c_glow)" filter="url(#c_soft_glow)"/>
-    <path d="M91.6 193.5 Q100.8 191.8 110.8 193.5" fill="none" stroke="#00cfe6" stroke-width="0.6" opacity="0.75"/>
+    <!-- Details on top (crisp) or fuzzy? User said "fuzzy effect fot the shoes". 
+         Usually that means the outline/body. 
+         I will keep the details (laces, lights) slightly cleaner or matching.
+         Let's put the main body in the fuzz. -->
+
+    <!-- Glowing Trim (Edge) -->
+    <path d="M59 193 L62 209" stroke="#00FFFF" stroke-width="1.5" opacity="0.8" filter="url(#c_soft_glow)">
+        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M60 194 L75 194 L74 206 L60 206 Z" fill="url(#c_boot_highlight)" opacity="0.5"/>
+    <rect x="60.0" y="205.0" width="18.8" height="2.3" rx="0.8" fill="url(#c_toe_cap)" opacity="0.97">
+        <animate attributeName="fill" values="#18bcd2;#E0FFFF;#18bcd2" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <path d="M58 207 L80 207 L79 210 L57 210 Z" fill="url(#c_boot_sole)"/>
+    
+    <!-- Laces/Energy Lines -->
+    <path d="M62.0 196.8 L76.7 196.8 M61.8 199.4 L76.5 199.4 M61.6 202.0 L76.3 202.0" 
+          stroke="#00e5ff" stroke-width="1.05" stroke-linecap="round" filter="url(#c_soft_glow)"/>
+
+    <!-- Floating Particles -->
+    <circle cx="55" cy="205" r="1" fill="#FFFFFF" opacity="0">
+        <animate attributeName="cy" values="205;185" dur="1.5s" begin="0s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="1.5s" begin="0s" repeatCount="indefinite"/>
+    </circle>
+
+
+    <!-- RIGHT BOOT -->
+    <!-- Fuzzy Wrapper -->
+    <g filter="url(#shadowDissolve)">
+        <!-- Main Boot Body -->
+        <path d="M88 193 L112 193 L114 209 L88 209 Z" fill="url(#c_boot_shell)" stroke="#00E5FF" stroke-width="0.5"/>
+    </g>
+
+    <!-- Glowing Trim -->
+    <path d="M112 193 L114 209" stroke="#00FFFF" stroke-width="1.5" opacity="0.8" filter="url(#c_soft_glow)">
+        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M89 194 L105 194 L106 206 L92 206 Z" fill="url(#c_boot_highlight)" opacity="0.5"/>
+    <rect x="92.2" y="205.0" width="18.8" height="2.3" rx="0.8" fill="url(#c_toe_cap)" opacity="0.97">
+        <animate attributeName="fill" values="#18bcd2;#E0FFFF;#18bcd2" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <path d="M91 207 L114 207 L113 210 L94 210 Z" fill="url(#c_boot_sole)"/>
+    
+    <!-- Laces -->
+    <path d="M94.3 196.8 L109.0 196.8 M94.5 199.4 L109.2 199.4 M94.7 202.0 L109.4 202.0" 
+          stroke="#00e5ff" stroke-width="1.05" stroke-linecap="round" filter="url(#c_soft_glow)"/>
+
+    <!-- Floating Particles -->
+    <circle cx="119" cy="205" r="1" fill="#FFFFFF" opacity="0">
+        <animate attributeName="cy" values="205;185" dur="1.8s" begin="0.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+
   </g>
 </svg>

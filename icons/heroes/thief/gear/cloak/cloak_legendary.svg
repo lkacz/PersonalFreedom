@@ -26,17 +26,23 @@
     </path>
     
     <!-- Fringes on Tail 1 -->
-    <g transform="translate(70, 130) rotate(20)">
-         <line y2="4" stroke="#EF6C00" stroke-width="1"/>
-         <line x1="3" y2="4" stroke="#EF6C00" stroke-width="1"/>
-         <line x1="6" y2="4" stroke="#EF6C00" stroke-width="1"/>
+    <g transform="translate(70, 130)">
+         <animateTransform attributeName="transform" type="translate" values="70 130; 65 132; 70 130" dur="2s" repeatCount="indefinite"/>
+         <g transform="rotate(20)">
+              <line y2="4" stroke="#EF6C00" stroke-width="1"/>
+              <line x1="3" y2="4" stroke="#EF6C00" stroke-width="1"/>
+              <line x1="6" y2="4" stroke="#EF6C00" stroke-width="1"/>
+         </g>
     </g>
 
     <!-- Fringes on Tail 2 -->
-    <g transform="translate(110, 125) rotate(-20)">
-         <line y2="4" stroke="#EF6C00" stroke-width="1"/>
-         <line x1="-3" y2="4" stroke="#EF6C00" stroke-width="1"/>
-         <line x1="-6" y2="4" stroke="#EF6C00" stroke-width="1"/>
+    <g transform="translate(110, 125)">
+         <animateTransform attributeName="transform" type="translate" values="110 125; 115 123; 110 125" dur="2.3s" repeatCount="indefinite"/>
+         <g transform="rotate(-20)">
+              <line y2="4" stroke="#EF6C00" stroke-width="1"/>
+              <line x1="-3" y2="4" stroke="#EF6C00" stroke-width="1"/>
+              <line x1="-6" y2="4" stroke="#EF6C00" stroke-width="1"/>
+         </g>
     </g>
 
     <!-- Neck Loop -->

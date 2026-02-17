@@ -1,91 +1,154 @@
-<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220"><defs><linearGradient id="holoHood" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#006064"/><stop offset="100%" stop-color="#00BCD4" stop-opacity="0.8"/></linearGradient><filter id="glitchScan"><feFlood flood-color="#00E5FF" flood-opacity="0.2" result="flood"/><feComposite operator="in" in="flood" in2="SourceGraphic" result="mask"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="mask"/></feMerge></filter><radialGradient id="humanIrisBlue" cx="50%" cy="50%" r="50%">
-<stop offset="60%" stop-color="#42A5F5"/>
-<stop offset="100%" stop-color="#0D47A1"/>
-</radialGradient>
-<radialGradient id="humanIrisGreen" cx="50%" cy="50%" r="50%">
-<stop offset="60%" stop-color="#66BB6A"/>
-<stop offset="100%" stop-color="#1B5E20"/>
-</radialGradient>
-<radialGradient id="humanIrisBrown" cx="50%" cy="50%" r="50%">
-<stop offset="60%" stop-color="#8D6E63"/>
-<stop offset="100%" stop-color="#3E2723"/>
-</radialGradient>
-<radialGradient id="humanIrisPurple" cx="50%" cy="50%" r="50%">
-<stop offset="60%" stop-color="#AB47BC"/>
-<stop offset="100%" stop-color="#4A148C"/>
-</radialGradient>
-<radialGradient id="humanIrisRed" cx="50%" cy="50%" r="50%">
-<stop offset="60%" stop-color="#EF5350"/>
-<stop offset="100%" stop-color="#B71C1C"/>
-</radialGradient>
-<radialGradient id="humanIrisGold" cx="50%" cy="50%" r="50%">
-<stop offset="60%" stop-color="#FFEE58"/>
-<stop offset="100%" stop-color="#F57F17"/>
-</radialGradient>
-</defs><g transform="translate(90, 61) scale(0.22)"><path d="M0 -150 C-100 -150 -130 -50 -130 0 C-130 80 -80 100 -50 110 C-20 120 20 120 50 110 C80 100 130 80 130 0 C130 -50 100 -150 0 -150 Z" fill="url(#holoHood)" stroke="#00E5FF" stroke-width="2" stroke-dasharray="4,2"/><ellipse cx="0" cy="10" rx="60" ry="70" fill="#000"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="hoodieCelestial" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#B2FFFF"/>
+        <stop offset="40%" stop-color="#00E5FF"/>
+        <stop offset="100%" stop-color="#008EA0"/>
+    </linearGradient>
 
-    <!-- Human Eyes Group -->
+    <linearGradient id="stringGradCelestial" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#E8FFFF"/>
+        <stop offset="45%" stop-color="#00E5FF"/>
+        <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+
+    <radialGradient id="humanIrisCelestial" cx="50%" cy="50%" r="50%">
+        <stop offset="20%" stop-color="#E8FFFF"/>
+        <stop offset="65%" stop-color="#00E5FF"/>
+        <stop offset="100%" stop-color="#00BCD4"/>
+    </radialGradient>
+
+    <filter id="celestialGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="blur"/>
+        <feFlood flood-color="#00E5FF" flood-opacity="1" result="color"/>
+        <feComposite in="color" in2="blur" operator="in" result="coloredBlur"/>
+        <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+    </filter>
+
+    <filter id="auraGlow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="14"/>
+    </filter>
+
+    <filter id="shadowDissolve">
+        <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="1" result="noise">
+            <animate attributeName="seed" values="1;120;1" dur="2.2s" repeatCount="indefinite"/>
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" result="distorted"/>
+        <feGaussianBlur in="distorted" stdDeviation="1.8" result="softened"/>
+        <feMerge>
+            <feMergeNode in="softened"/>
+            <feMergeNode in="distorted"/>
+        </feMerge>
+    </filter>
+
+    <filter id="voidBlur">
+        <feGaussianBlur stdDeviation="3.5" result="blur"/>
+    </filter>
+</defs>
+
+<g transform="translate(90, 61) scale(0.22)">
+    <circle cx="0" cy="-18" r="138" fill="#00E5FF" opacity="0.28" filter="url(#auraGlow)">
+        <animate attributeName="opacity" values="0.18;0.45;0.18" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="-18" r="114" fill="#E8FFFF" opacity="0.24" filter="url(#auraGlow)">
+        <animate attributeName="opacity" values="0.12;0.32;0.12" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Keep the same hood geometry as other helmet tiers (legendary template). -->
+    <g filter="url(#shadowDissolve)">
+        <path d="M0 -150 C-100 -150 -130 -50 -130 0 C-130 80 -80 100 -50 110 C-20 120 20 120 50 110 C80 100 130 80 130 0 C130 -50 100 -150 0 -150 Z" fill="url(#hoodieCelestial)"/>
+        <path d="M0 -150 C-100 -150 -130 -50 -130 0 C-130 80 -80 100 -50 110 C-20 120 20 120 50 110 C80 100 130 80 130 0 C130 -50 100 -150 0 -150 Z"
+              fill="none" stroke="#00E5FF" stroke-width="2.2" opacity="0.95" filter="url(#celestialGlow)"/>
+    </g>
+
+    <ellipse cx="0" cy="10" rx="60" ry="70" fill="#020304" filter="url(#shadowDissolve)"/>
+
     <g transform="translate(0, -5)">
-        <!-- Animation for looking around (group shift) -->
-        <!-- NOT moving the whole head, moving pupils inside the eyes -->
+        <!-- Sweet Large Glossy Eyes (Sharp, on top of fuzzy face) -->
         
-        <!-- Mask/Clip Definition for eyelids (shared) -->
-        <!-- NOTE: Inline clipPath often cleaner to avoid ID collisions if defined inside defs but referenced locally. 
-             However, standard SVG practice puts clipPath in defs. I will use a simple rect/path overlay for eyelids to simulate blinking 
-             instead of clipPath to avoid complex browser rendering issues with transforms. -->
-             
-        <!-- Left Eye Container -->
-        <g transform="translate(-22, 0)"> 
-            <!-- Sclera -->
-            <path d="M-14 0 Q0 -10 14 0 Q0 10 -14 0 Z" fill="#F5F5F5"/>
-            <!-- Iris & Pupil -->
-            <g>
-                <animateTransform attributeName="transform" type="translate" 
-                    values="0,0; 5,0; 0,0; -5,0; 0,0; 0,3; 0,0" 
-                    dur="8s" repeatCount="indefinite" 
-                    keyTimes="0; 0.1; 0.2; 0.3; 0.4; 0.5; 1"
-                    calcMode="discrete"/>
-                <circle cx="0" cy="0" r="6" fill="url(#humanIrisGold)" /> <!-- Iris -->
-                <circle cx="0" cy="0" r="2.5" fill="#1A1A1A" /> <!-- Pupil -->
-                <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.8" /> <!-- Glint -->
-            </g>
-            <!-- Eyelids (Blinking) -->
-            <!-- Top Lid -->
-            <path d="M-14 0 Q0 -12 14 0 Q0 0 -14 0 Z" fill="#006064"> <!-- Skin tone matching face shadow or slightly lighter? Face is shadow #000. Let's use dark grey -->
-                 <animate attributeName="d" 
-                    values="M-14 0 Q0 -12 14 0 Q0 0 -14 0 Z; M-14 0 Q0 0 14 0 Q0 0 -14 0 Z; M-14 0 Q0 -12 14 0 Q0 0 -14 0 Z"
-                    keyTimes="0; 0.05; 0.1"
-                    dur="4s"
-                    repeatCount="indefinite"
-                    begin="0s"/>
-            </path>
-        </g>
+        <!-- Blinking Group (Entire eyes disappear briefly) -->
+        <g>
+            <animate attributeName="opacity" values="1;1;0;1;1;1;0;1;1" dur="7s" repeatCount="indefinite" keyTimes="0; 0.45; 0.46; 0.47; 0.90; 0.91; 0.92; 0.93; 1"/>
 
-        <!-- Right Eye Container -->
-        <g transform="translate(22, 0)"> 
-            <!-- Sclera -->
-            <path d="M-14 0 Q0 -10 14 0 Q0 10 -14 0 Z" fill="#F5F5F5"/>
-            <!-- Iris & Pupil -->
-            <g>
-                <animateTransform attributeName="transform" type="translate" 
-                    values="0,0; 5,0; 0,0; -5,0; 0,0; 0,3; 0,0" 
-                    dur="8s" repeatCount="indefinite" 
-                    keyTimes="0; 0.1; 0.2; 0.3; 0.4; 0.5; 1"
-                    calcMode="discrete"/>
-                <circle cx="0" cy="0" r="6" fill="url(#humanIrisGold)" />
-                <circle cx="0" cy="0" r="2.5" fill="#1A1A1A" />
-                <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.8" />
+            <!-- Left Eye -->
+            <g transform="translate(-25, 0)">
+                <circle r="16" fill="#E0FFFF"/> <!-- Sclera/Iris base -->
+                
+                <!-- Saccadic Pupil Movement -->
+                <circle cx="0" cy="0" r="10" fill="#000000">
+                    <animate attributeName="cx" values="0; 4; 4; -5; -5; 0; 0; 3; 3; 0" 
+                        dur="8s" repeatCount="indefinite" calcMode="discrete" 
+                        keyTimes="0; 0.1; 0.3; 0.35; 0.55; 0.6; 0.8; 0.85; 0.95; 1"/>
+                    <animate attributeName="cy" values="0; 2; 2; -3; -3; 0; 0; -2; -2; 0" 
+                        dur="8s" repeatCount="indefinite" calcMode="discrete"
+                        keyTimes="0; 0.1; 0.3; 0.35; 0.55; 0.6; 0.8; 0.85; 0.95; 1"/>
+                </circle>
+
+                <!-- Static Gloss Highlights -->
+                <circle cx="5" cy="-5" r="4.5" fill="#FFFFFF" opacity="0.95"/>
+                <circle cx="-6" cy="6" r="2" fill="#FFFFFF" opacity="0.8"/>
             </g>
-            <!-- Eyelids (Blinking) -->
-            <path d="M-14 0 Q0 -12 14 0 Q0 0 -14 0 Z" fill="#006064">
-                 <animate attributeName="d" 
-                    values="M-14 0 Q0 -12 14 0 Q0 0 -14 0 Z; M-14 0 Q0 0 14 0 Q0 0 -14 0 Z; M-14 0 Q0 -12 14 0 Q0 0 -14 0 Z"
-                    keyTimes="0; 0.05; 0.1"
-                    dur="4s"
-                    repeatCount="indefinite"
-                    begin="0s"/>
-            </path>
+
+            <!-- Right Eye -->
+            <g transform="translate(25, 0)">
+                <circle r="16" fill="#E0FFFF"/>
+                
+                <!-- Saccadic Pupil Movement (Synced with Left) -->
+                <circle cx="0" cy="0" r="10" fill="#000000">
+                     <animate attributeName="cx" values="0; 4; 4; -5; -5; 0; 0; 3; 3; 0" 
+                        dur="8s" repeatCount="indefinite" calcMode="discrete" 
+                        keyTimes="0; 0.1; 0.3; 0.35; 0.55; 0.6; 0.8; 0.85; 0.95; 1"/>
+                    <animate attributeName="cy" values="0; 2; 2; -3; -3; 0; 0; -2; -2; 0" 
+                        dur="8s" repeatCount="indefinite" calcMode="discrete"
+                        keyTimes="0; 0.1; 0.3; 0.35; 0.55; 0.6; 0.8; 0.85; 0.95; 1"/>
+                </circle>
+                
+                <!-- Static Gloss Highlights -->
+                <circle cx="5" cy="-5" r="4.5" fill="#FFFFFF" opacity="0.95"/>
+                <circle cx="-6" cy="6" r="2" fill="#FFFFFF" opacity="0.8"/>
+            </g>
         </g>
     </g>
-<rect x="-50" y="-30" width="100" height="60" fill="url(#holoHood)" opacity="0.8"><animate attributeName="height" values="60;10;60" dur="0.2s" repeatCount="indefinite"/></rect><path d="M-40 80 L-50 150" stroke="#84FFFF" stroke-width="2" opacity="0.5"/><path d="M40 80 L50 150" stroke="#84FFFF" stroke-width="2" opacity="0.5"/></g></svg>
 
+    <g transform="translate(0, 35)" filter="url(#celestialGlow)">
+        <g>
+            <path d="M-40 60 Q-42 90 -38 130" fill="none" stroke="url(#stringGradCelestial)" stroke-width="4" stroke-linecap="round">
+                <animate attributeName="d"
+                    values="M-40 60 Q-42 90 -38 130; M-40 60 Q-38 90 -40 130; M-40 60 Q-42 90 -38 130"
+                    dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+            <rect x="-41" y="130" width="6" height="15" rx="1" fill="#E0F7FA">
+                <animate attributeName="x" values="-41;-43;-41" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <animateTransform attributeName="transform" type="rotate" values="3 -38 130; -3 -38 130; 3 -38 130" dur="3s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+
+        <g>
+            <path d="M40 60 Q38 95 42 135" fill="none" stroke="url(#stringGradCelestial)" stroke-width="4" stroke-linecap="round">
+                <animate attributeName="d"
+                    values="M40 60 Q38 95 42 135; M40 60 Q42 95 40 135; M40 60 Q38 95 42 135"
+                    dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+            <rect x="39" y="135" width="6" height="15" rx="1" fill="#E0F7FA">
+                <animate attributeName="x" values="39;37;39" dur="4s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="rotate" values="-2 41 135; 2 41 135; -2 41 135" dur="4s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+    </g>
+
+    <g fill="#00E5FF" opacity="0.82" filter="url(#celestialGlow)">
+        <circle cx="-102" cy="90" r="4.5">
+            <animate attributeName="cy" values="90;-120" dur="3.2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.7;0" dur="3.2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="108" cy="82" r="3.5">
+            <animate attributeName="cy" values="82;-132" dur="2.7s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.65;0" dur="2.7s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+</g>
+</svg>
