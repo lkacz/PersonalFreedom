@@ -27,25 +27,11 @@
 
     <!-- Glass/Insect Inclusion Highlight -->
     <filter id="inclusionGlow">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-      <feOffset dx="0" dy="0" result="offsetblur"/>
-      <feFlood flood-color="#FFEB3B"/>
-      <feComposite in2="offsetblur" operator="in"/>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#FFEB3B" flood-opacity="0.65"/>
     </filter>
 
     <filter id="amberShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
-      <feOffset dx="0" dy="8" result="offsetblur"/>
-      <feFlood flood-color="#000000" flood-opacity="0.3" result="shadowColor"/>
-      <feComposite in="shadowColor" in2="offsetblur" operator="in" result="shadow"/>
-      <feMerge>
-        <feMergeNode in="shadow"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.3"/>
     </filter>
   </defs>
 

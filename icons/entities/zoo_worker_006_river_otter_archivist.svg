@@ -35,11 +35,7 @@
       <feSpecularLighting surfaceScale="2" specularConstant="1" specularExponent="20" lighting-color="#FFF">
         <fePointLight x="100" y="-100" z="200"/>
       </feSpecularLighting>
-      <feComposite in="SourceGraphic" operator="in"/>
-      <feMerge>
-        <feMergeNode in="SourceGraphic"/>
-        <feMergeNode/>
-      </feMerge>
+      <feBlend in="SourceGraphic" in2="SourceGraphic" mode="screen"/>
     </filter>
   </defs>
 
