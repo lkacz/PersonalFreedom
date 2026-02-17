@@ -126,6 +126,18 @@
       <feDropShadow dx="3" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
     </filter>
 
+    <!-- Fingernail anatomy -->
+    <linearGradient id="nailPlate" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e8c8b0"/>
+      <stop offset="40%" stop-color="#f0d4be"/>
+      <stop offset="75%" stop-color="#e8c8b0"/>
+      <stop offset="100%" stop-color="#dbb8a0"/>
+    </linearGradient>
+    <radialGradient id="lunulaGrad" cx="50%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#f5e8e0"/>
+      <stop offset="100%" stop-color="#e8c8b0" stop-opacity="0"/>
+    </radialGradient>
+
     <!-- Reusable eye patch shape -->
     <path id="eyePatchShape" d="M308,195 C315,185 335,185 342,200 C345,210 335,220 322,220 C310,220 305,210 308,195 Z"/>
   </defs>
@@ -348,16 +360,208 @@
       <!-- Left arm -->
       <path d="M248,300 C215,325 192,385 182,440 C175,480 175,510 180,540 L206,535 C203,510 203,480 208,445 C218,395 238,345 258,318" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
       <path d="M225,370 C222,390 218,410 216,430" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.18"/>
-      <!-- Left hand -->
-      <path d="M176,535 C168,545 164,558 168,568 C172,576 182,578 188,572 L192,562 C195,570 200,574 206,570 C212,565 210,555 206,545 L206,535" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
-      <path d="M178,558 C180,562 183,565 186,564" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.25"/>
+      <!-- Left hand (anatomically detailed, relaxed, hanging) -->
+      <g id="leftHand" transform="translate(0,-5)">
+        <!-- Palm -->
+        <path d="M180,538 C178,542 175,550 174,558 C173,564 174,568 176,570 L204,570 C206,568 208,564 208,558 C207,550 206,542 206,538 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.6"/>
+
+        <!-- Thumb (stays in place, no x-shift) -->
+        <path d="M204,550 C208,552 212,556 215,562 C217,566 218,572 216,576 C214,580 210,581 207,578 C204,574 203,568 203,564 C203,560 204,555 204,550 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.6"/>
+        <path d="M207,560 C210,561 213,563 214,566" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.3"/>
+        <!-- Thumb nail -->
+        <g class="nail">
+          <path d="M210.6,571.0 C210.1,570.2 214.9,570.2 214.4,571.0 L214.8,574.0 C214.8,575.5 210.2,575.5 210.2,574.0 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+          <path d="M211.0,571.5 L214.3,573.5 C214.3,574.5 210.7,574.5 210.7,573.5 Z" fill="#d4a088" opacity="0.15"/>
+          <path d="M210.9,572.2 C210.9,570.7 214.1,570.7 214.1,572.2 C213.6,571.9 211.4,571.9 210.9,572.2 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+          <path d="M210.4,574.4 L214.6,574.4 L214.8,574.0 C214.8,575.5 210.2,575.5 210.2,574.0 Z" fill="#f0e8e0" opacity="0.5"/>
+          <path d="M210.3,571.3 C211.8,570.0 213.2,570.0 214.7,571.3" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+          <path d="M209.9,571.8 L210.1,573.5" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+          <path d="M215.1,571.8 L214.9,573.5" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+          <path d="M212.0,571.8 L212.7,573.8" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+        </g>
+
+        <!-- Fingers shifted +6px toward center -->
+        <g transform="translate(6,0)">
+          <!-- Index finger -->
+          <path d="M196,568 C197,574 198,582 198,588 C198,592 197,594 196,596 C194,598 192,597 191,594 C190,590 190,582 190,574 C190,570 192,568 196,568 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+          <path d="M190,572 C192,570 196,570 198,572" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.25"/>
+          <path d="M191,582 C193,581 196,581 197,582" fill="none" stroke="#a06a48" stroke-width="0.35" opacity="0.3"/>
+          <path d="M192,590 C193,589 195,589 196,590" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.25"/>
+          <!-- Index nail -->
+          <g class="nail">
+            <path d="M192.2,591.5 C191.7,590.7 196.3,590.7 195.8,591.5 L196.2,595.5 C196.2,597.0 191.8,597.0 191.8,595.5 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+            <path d="M192.6,592.0 L195.8,595.0 C195.8,596.0 192.2,596.0 192.2,595.0 Z" fill="#d4a088" opacity="0.15"/>
+            <path d="M192.5,593.0 C192.5,591.2 195.5,591.2 195.5,593.0 C195.0,592.6 193.0,592.6 192.5,593.0 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+            <path d="M192.0,595.8 L196.0,595.8 L196.2,595.5 C196.2,597.0 191.8,597.0 191.8,595.5 Z" fill="#f0e8e0" opacity="0.5"/>
+            <path d="M191.9,591.8 C193.3,590.5 194.7,590.5 196.1,591.8" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+            <path d="M191.5,592.3 L191.6,595.0" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M196.5,592.3 L196.4,595.0" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M193.5,592.5 L194.2,595.0" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Middle finger (longest) -->
+          <path d="M190,568 C190,575 190,584 190,592 C189,596 189,599 188,601 C186,603 184,602 183,599 C182,596 182,584 183,575 C183,570 185,568 190,568 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+          <path d="M183,572 C185,570 189,570 190,572" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.25"/>
+          <path d="M183,585 C185,584 188,584 189,585" fill="none" stroke="#a06a48" stroke-width="0.35" opacity="0.3"/>
+          <path d="M184,594 C185,593 187,593 188,594" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.25"/>
+          <!-- Middle nail -->
+          <g class="nail">
+            <path d="M184.2,596.5 C183.7,595.7 188.3,595.7 187.8,596.5 L188.2,600.5 C188.2,602.0 183.8,602.0 183.8,600.5 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+            <path d="M184.6,597.0 L187.8,600.0 C187.8,601.0 184.2,601.0 184.2,600.0 Z" fill="#d4a088" opacity="0.15"/>
+            <path d="M184.5,598.0 C184.5,596.2 187.5,596.2 187.5,598.0 C187.0,597.6 185.0,597.6 184.5,598.0 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+            <path d="M184.0,600.8 L188.0,600.8 L188.2,600.5 C188.2,602.0 183.8,602.0 183.8,600.5 Z" fill="#f0e8e0" opacity="0.5"/>
+            <path d="M183.9,596.8 C185.3,595.5 186.7,595.5 188.1,596.8" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+            <path d="M183.5,597.3 L183.6,600.0" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M188.5,597.3 L188.4,600.0" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M185.5,597.5 L186.2,600.0" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Ring finger -->
+          <path d="M183,568 C183,574 182,583 182,590 C181,594 181,596 180,598 C178,600 177,599 176,596 C175,593 176,583 176,574 C176,570 178,568 183,568 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+          <path d="M176,572 C178,570 182,570 183,572" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.25"/>
+          <path d="M177,584 C178,583 181,583 182,584" fill="none" stroke="#a06a48" stroke-width="0.35" opacity="0.3"/>
+          <!-- Ring nail -->
+          <g class="nail">
+            <path d="M177.3,593.6 C176.8,592.8 181.2,592.8 180.7,593.6 L181.0,597.4 C181.0,598.9 177.0,598.9 177.0,597.4 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+            <path d="M177.7,594.1 L180.6,596.9 C180.6,597.9 177.4,597.9 177.4,596.9 Z" fill="#d4a088" opacity="0.15"/>
+            <path d="M177.6,595.0 C177.6,593.3 180.4,593.3 180.4,595.0 C179.9,594.7 178.1,594.7 177.6,595.0 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+            <path d="M177.2,597.7 L180.8,597.7 L181.0,597.4 C181.0,598.9 177.0,598.9 177.0,597.4 Z" fill="#f0e8e0" opacity="0.5"/>
+            <path d="M177.0,593.9 C178.4,592.6 179.6,592.6 181.0,593.9" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+            <path d="M176.7,594.4 L176.8,596.9" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M181.3,594.4 L181.2,596.9" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M178.5,594.6 L179.2,597.0" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Pinky finger (shortest) -->
+          <path d="M176,569 C176,574 175,580 175,586 C174,589 174,591 173,592 C172,594 170,593 170,590 C169,587 170,580 170,574 C170,571 172,569 176,569 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+          <path d="M170,572 C172,570 175,570 176,572" fill="none" stroke="#a06a48" stroke-width="0.35" opacity="0.25"/>
+          <path d="M170,581 C172,580 174,580 175,581" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.3"/>
+          <!-- Pinky nail -->
+          <g class="nail">
+            <path d="M171.5,587.9 C171.0,587.1 175.0,587.1 174.5,587.9 L174.8,591.1 C174.8,592.6 171.2,592.6 171.2,591.1 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+            <path d="M171.9,588.4 L174.4,590.6 C174.4,591.6 171.6,591.6 171.6,590.6 Z" fill="#d4a088" opacity="0.15"/>
+            <path d="M171.7,589.2 C171.7,587.6 174.3,587.6 174.3,589.2 C173.8,588.8 172.2,588.8 171.7,589.2 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+            <path d="M171.4,591.5 L174.6,591.5 L174.8,591.1 C174.8,592.6 171.2,592.6 171.2,591.1 Z" fill="#f0e8e0" opacity="0.5"/>
+            <path d="M171.2,588.2 C172.5,586.9 173.5,586.9 174.8,588.2" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+            <path d="M170.9,588.7 L171.0,590.6" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M175.1,588.7 L175.0,590.6" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M172.6,588.7 L173.2,590.8" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Knuckle ridge -->
+          <path d="M171,570 C176,567 186,567 192,568 C196,568 198,569 200,570" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.2"/>
+        </g>
+
+        <!-- Tendon lines (on palm, no x-shift) -->
+        <path d="M194,544 C194,552 194,560 195,568" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.15"/>
+        <path d="M188,544 C187,552 186,560 186,568" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.12"/>
+        <path d="M182,544 C181,552 179,560 179,568" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.12"/>
+        <!-- Wrist crease -->
+        <path d="M181,540 C188,538 198,537 205,539" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.25"/>
+      </g>
 
       <!-- Right arm -->
       <path d="M352,300 C385,325 408,385 418,440 C425,480 425,510 420,540 L394,535 C397,510 397,480 392,445 C382,395 362,345 342,318" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
       <path d="M375,370 C378,390 382,410 384,430" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.18"/>
-      <!-- Right hand -->
-      <path d="M424,535 C432,545 436,558 432,568 C428,576 418,578 412,572 L408,562 C405,570 400,574 394,570 C388,565 390,555 394,545 L394,535" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.8"/>
-      <path d="M422,558 C420,562 417,565 414,564" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.25"/>
+      <!-- Right hand (anatomically detailed, relaxed, hanging — mirrored) --> 
+      <g id="rightHand" transform="translate(0,-5)">
+        <!-- Palm -->
+        <path d="M394,538 C394,542 393,550 392,558 C392,564 393,568 396,570 L424,570 C426,568 427,564 426,558 C425,550 422,542 420,538 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.6"/>
+
+        <!-- Thumb (stays in place, no x-shift) -->
+        <path d="M396,550 C392,552 388,556 385,562 C383,566 382,572 384,576 C386,580 390,581 393,578 C396,574 397,568 397,564 C397,560 396,555 396,550 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.6"/>
+        <path d="M393,560 C390,561 387,563 386,566" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.3"/>
+        <!-- Thumb nail -->
+        <g class="nail">
+          <path d="M385.6,571.0 C385.1,570.2 389.9,570.2 389.4,571.0 L389.8,574.0 C389.8,575.5 385.2,575.5 385.2,574.0 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+          <path d="M386.0,571.5 L389.4,573.5 C389.4,574.5 385.6,574.5 385.6,573.5 Z" fill="#d4a088" opacity="0.15"/>
+          <path d="M385.9,572.2 C385.9,570.7 389.1,570.7 389.1,572.2 C388.6,571.9 386.4,571.9 385.9,572.2 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+          <path d="M385.4,574.4 L389.6,574.4 L389.8,574.0 C389.8,575.5 385.2,575.5 385.2,574.0 Z" fill="#f0e8e0" opacity="0.5"/>
+          <path d="M385.3,571.3 C386.8,570.0 388.2,570.0 389.7,571.3" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+          <path d="M384.9,571.8 L385.1,573.5" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+          <path d="M390.1,571.8 L389.9,573.5" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+          <path d="M387.0,571.8 L387.7,573.8" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+        </g>
+
+        <!-- Fingers shifted -6px toward center -->
+        <g transform="translate(-6,0)">
+          <!-- Index finger -->
+          <path d="M404,568 C403,574 402,582 402,588 C402,592 403,594 404,596 C406,598 408,597 409,594 C410,590 410,582 410,574 C410,570 408,568 404,568 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+          <path d="M410,572 C408,570 404,570 402,572" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.25"/>
+          <path d="M409,582 C407,581 404,581 403,582" fill="none" stroke="#a06a48" stroke-width="0.35" opacity="0.3"/>
+          <path d="M408,590 C407,589 405,589 404,590" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.25"/>
+          <!-- Index nail -->
+          <g class="nail">
+            <path d="M404.2,591.5 C403.7,590.7 408.3,590.7 407.8,591.5 L408.2,595.5 C408.2,597.0 403.8,597.0 403.8,595.5 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+            <path d="M404.6,592.0 L407.8,595.0 C407.8,596.0 404.2,596.0 404.2,595.0 Z" fill="#d4a088" opacity="0.15"/>
+            <path d="M404.5,593.0 C404.5,591.2 407.5,591.2 407.5,593.0 C407.0,592.6 405.0,592.6 404.5,593.0 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+            <path d="M404.0,595.8 L408.0,595.8 L408.2,595.5 C408.2,597.0 403.8,597.0 403.8,595.5 Z" fill="#f0e8e0" opacity="0.5"/>
+            <path d="M403.9,591.8 C405.3,590.5 406.7,590.5 408.1,591.8" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+            <path d="M403.5,592.3 L403.6,595.0" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M408.5,592.3 L408.4,595.0" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M405.5,592.5 L406.2,595.0" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Middle finger (longest) -->
+          <path d="M410,568 C410,575 410,584 410,592 C411,596 411,599 412,601 C414,603 416,602 417,599 C418,596 418,584 417,575 C417,570 415,568 410,568 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+          <path d="M417,572 C415,570 411,570 410,572" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.25"/>
+          <path d="M417,585 C415,584 412,584 411,585" fill="none" stroke="#a06a48" stroke-width="0.35" opacity="0.3"/>
+          <path d="M416,594 C415,593 413,593 412,594" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.25"/>
+          <!-- Middle nail -->
+          <g class="nail">
+            <path d="M412.2,596.5 C411.7,595.7 416.3,595.7 415.8,596.5 L416.2,600.5 C416.2,602.0 411.8,602.0 411.8,600.5 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+            <path d="M412.6,597.0 L415.8,600.0 C415.8,601.0 412.2,601.0 412.2,600.0 Z" fill="#d4a088" opacity="0.15"/>
+            <path d="M412.5,598.0 C412.5,596.2 415.5,596.2 415.5,598.0 C415.0,597.6 413.0,597.6 412.5,598.0 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+            <path d="M412.0,600.8 L416.0,600.8 L416.2,600.5 C416.2,602.0 411.8,602.0 411.8,600.5 Z" fill="#f0e8e0" opacity="0.5"/>
+            <path d="M411.9,596.8 C413.3,595.5 414.7,595.5 416.1,596.8" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+            <path d="M411.5,597.3 L411.6,600.0" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M416.5,597.3 L416.4,600.0" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M413.5,597.5 L414.2,600.0" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Ring finger -->
+          <path d="M417,568 C417,574 418,583 418,590 C419,594 419,596 420,598 C422,600 423,599 424,596 C425,593 424,583 424,574 C424,570 422,568 417,568 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+          <path d="M424,572 C422,570 418,570 417,572" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.25"/>
+          <path d="M423,584 C422,583 419,583 418,584" fill="none" stroke="#a06a48" stroke-width="0.35" opacity="0.3"/>
+          <!-- Ring nail -->
+          <g class="nail">
+            <path d="M419.3,593.6 C418.8,592.8 423.2,592.8 422.7,593.6 L423.0,597.4 C423.0,598.9 419.0,598.9 419.0,597.4 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+            <path d="M419.7,594.1 L422.6,596.9 C422.6,597.9 419.4,597.9 419.4,596.9 Z" fill="#d4a088" opacity="0.15"/>
+            <path d="M419.6,595.0 C419.6,593.3 422.4,593.3 422.4,595.0 C421.9,594.7 420.1,594.7 419.6,595.0 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+            <path d="M419.2,597.7 L422.8,597.7 L423.0,597.4 C423.0,598.9 419.0,598.9 419.0,597.4 Z" fill="#f0e8e0" opacity="0.5"/>
+            <path d="M419.0,593.9 C420.4,592.6 421.6,592.6 423.0,593.9" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+            <path d="M418.7,594.4 L418.8,596.9" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M423.3,594.4 L423.2,596.9" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M420.5,594.6 L421.2,597.0" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Pinky finger (shortest) -->
+          <path d="M424,569 C424,574 425,580 425,586 C426,589 426,591 427,592 C428,594 430,593 430,590 C431,587 430,580 430,574 C430,571 428,569 424,569 Z" fill="url(#skinGrad)" stroke="#a06a48" stroke-width="0.5"/>
+          <path d="M430,572 C428,570 425,570 424,572" fill="none" stroke="#a06a48" stroke-width="0.35" opacity="0.25"/>
+          <path d="M430,581 C428,580 426,580 425,581" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.3"/>
+          <!-- Pinky nail -->
+          <g class="nail">
+            <path d="M425.5,587.9 C425.0,587.1 429.0,587.1 428.5,587.9 L428.8,591.1 C428.8,592.6 425.2,592.6 425.2,591.1 Z" fill="url(#nailPlate)" stroke="#c0a090" stroke-width="0.3" opacity="0.85"/>
+            <path d="M425.9,588.4 L428.4,590.6 C428.4,591.6 425.6,591.6 425.6,590.6 Z" fill="#d4a088" opacity="0.15"/>
+            <path d="M425.7,589.2 C425.7,587.6 428.3,587.6 428.3,589.2 C427.8,588.8 426.2,588.8 425.7,589.2 Z" fill="url(#lunulaGrad)" opacity="0.7"/>
+            <path d="M425.4,591.5 L428.6,591.5 L428.8,591.1 C428.8,592.6 425.2,592.6 425.2,591.1 Z" fill="#f0e8e0" opacity="0.5"/>
+            <path d="M425.2,588.2 C426.5,586.9 427.5,586.9 428.8,588.2" fill="none" stroke="#b89478" stroke-width="0.4" opacity="0.6"/>
+            <path d="M424.9,588.7 L425.0,590.6" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M429.1,588.7 L429.0,590.6" fill="none" stroke="#b89478" stroke-width="0.3" opacity="0.35"/>
+            <path d="M426.6,588.7 L427.2,590.8" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Knuckle ridge -->
+          <path d="M429,570 C424,567 414,567 408,568 C404,568 402,569 400,570" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.2"/>
+        </g>
+
+        <!-- Tendon lines (on palm, no x-shift) -->
+        <path d="M406,544 C406,552 406,560 405,568" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.15"/>
+        <path d="M412,544 C413,552 414,560 414,568" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.12"/>
+        <path d="M418,544 C419,552 421,560 421,568" fill="none" stroke="#a06a48" stroke-width="0.3" opacity="0.12"/>
+        <!-- Wrist crease -->
+        <path d="M419,540 C412,538 402,537 395,539" fill="none" stroke="#a06a48" stroke-width="0.4" opacity="0.25"/>
+      </g>
     </g>
 
     <!-- ===== NECK ===== -->
@@ -400,13 +604,8 @@
         <path d="M270,168 C274,150 282,136 298,125" fill="none" stroke="#44446a" stroke-width="0.8" opacity="0.2"/>
         <path d="M310,168 C314,152 322,138 338,132" fill="none" stroke="#44446a" stroke-width="0.8" opacity="0.2"/>
 
-        <!-- Spikes (varied sizes, organic shapes) -->
-        <path d="M258,142 L248,116 L272,134 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
-        <path d="M270,132 L262,108 L282,126 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
-        <path d="M286,124 L280,96 L298,118 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
-        <path d="M302,120 L308,92 L316,116 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
-        <path d="M318,122 L328,100 L332,122 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
-        <path d="M334,132 L346,108 L344,136 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
+        <!-- Spikes removed -->
+        
         <!-- Side wisps -->
         <path d="M242,178 L232,166 L240,185 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.5" stroke-linejoin="round"/>
         <path d="M244,168 L236,154 L248,166 Z" fill="url(#hairGrad)" stroke="#0e0e1c" stroke-width="0.4" stroke-linejoin="round"/>
