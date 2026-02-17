@@ -1,47 +1,103 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <defs>
-    <linearGradient id="tactical_shell" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#6f7d89"/>
-      <stop offset="100%" stop-color="#394754"/>
-    </linearGradient>
-    <linearGradient id="tactical_palm" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#9daab6"/>
-      <stop offset="100%" stop-color="#617486"/>
-    </linearGradient>
-    <radialGradient id="tactical_cyan_glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#dbffff" stop-opacity="0.95"/>
-      <stop offset="100%" stop-color="#53edff" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <defs>
+        <!-- Celestial Gradient for the fuzzy body -->
+        <linearGradient id="celestialGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#E0FFFF"/> <!-- Light Cyan -->
+          <stop offset="100%" stop-color="#00CED1"/> <!-- Dark Turquoise -->
+        </linearGradient>
 
-  <g id="qt_anim_driver">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+        <!-- Eye Iris Gradient (kept for restored details if needed, or simplifed) -->
+        <radialGradient id="eyeGlow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stop-color="#00FFFF" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#00008B" stop-opacity="0.8"/>
+        </radialGradient>
 
-  <!-- Celestial: Tactical Hands -->
-  <g id="gauntlets_celestial">
-    <path d="M56.2 112.0 Q52.8 123.6 57.4 135.8 L67.3 132.7 Q70.0 123.8 66.9 112.0 Z" fill="url(#tactical_shell)" stroke="#162028" stroke-width="0.9"/>
-    <rect x="56.6" y="130.7" width="11.4" height="3.8" rx="1.2" fill="#4be9ff" opacity="0.96"/>
-    <circle cx="64" cy="138" r="4.9" fill="url(#tactical_palm)" stroke="#162028" stroke-width="0.9"/>
-    <path d="M59.8 130.0 L64.0 127.9 L68.2 130.0" fill="none" stroke="#b5f8ff" stroke-width="0.75" opacity="0.92"/>
-    <circle cx="64" cy="133.0" r="1.55" fill="#71f4ff"/>
-    <circle cx="64" cy="133.0" r="3.3" fill="url(#tactical_cyan_glow)" opacity="0.72">
-      <animate attributeName="r" values="2.9;4.2;2.9" dur="1.9s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.30;0.88;0.30" dur="1.9s" repeatCount="indefinite"/>
-    </circle>
-    <path d="M60.6 140.0 L67.4 140.0" stroke="#8defff" stroke-width="0.68" opacity="0.9"/>
+        <!-- Fuzzy Dissolve Filter -->
+        <filter id="shadowDissolve">
+            <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="1" result="noise">
+                <animate attributeName="seed" values="1;120;1" dur="2.2s" repeatCount="indefinite"/>
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" result="distorted"/>
+            <feGaussianBlur in="distorted" stdDeviation="1.2" result="softened"/>
+            <feMerge>
+                <feMergeNode in="softened"/>
+                <feMergeNode in="distorted"/>
+            </feMerge>
+        </filter>
+        
+        <!-- Glow Loop for core details -->
+        <filter id="celestialGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+            <feFlood flood-color="#00FFFF" result="color"/>
+            <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+            <feMerge>
+                <feMergeNode in="shadow"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <g id="hero_body_proxy" transform="translate(90, 205)">
+        <animateTransform attributeName="transform" type="scale"
+            values="1 1; 1.005 0.995; 1 1"
+            dur="4s" repeatCount="indefinite" additive="sum"/>
+        <g transform="translate(-90, -205)">
+        
+            <!-- DIVINE PARTICLES FX LAYER -->
+            <g opacity="0.6">
+                 <!-- Left Hand Particles -->
+                 <circle r="1.5" fill="#E0FFFF" opacity="0">
+                    <animateTransform attributeName="transform" type="translate" values="65 140; 60 120" dur="2.5s" repeatCount="indefinite" begin="0s"/>
+                    <animate attributeName="opacity" values="0;0.6;0" dur="2.5s" repeatCount="indefinite" begin="0s"/>
+                 </circle>
+                 
+                 <!-- Right Hand Particles -->
+                 <circle r="1.5" fill="#E0FFFF" opacity="0">
+                    <animateTransform attributeName="transform" type="translate" values="115 140; 120 120" dur="2.8s" repeatCount="indefinite" begin="0.2s"/>
+                    <animate attributeName="opacity" values="0;0.6;0" dur="2.8s" repeatCount="indefinite" begin="0.2s"/>
+                 </circle>
+            </g>
 
-    <path d="M123.8 112.0 Q127.2 123.6 122.6 135.8 L112.7 132.7 Q110.0 123.8 113.1 112.0 Z" fill="url(#tactical_shell)" stroke="#162028" stroke-width="0.9"/>
-    <rect x="112.0" y="130.7" width="11.4" height="3.8" rx="1.2" fill="#4be9ff" opacity="0.96"/>
-    <circle cx="116" cy="138" r="4.9" fill="url(#tactical_palm)" stroke="#162028" stroke-width="0.9"/>
-    <path d="M111.8 130.0 L116.0 127.9 L120.2 130.0" fill="none" stroke="#b5f8ff" stroke-width="0.75" opacity="0.92"/>
-    <circle cx="116" cy="133.0" r="1.55" fill="#71f4ff"/>
-    <circle cx="116" cy="133.0" r="3.3" fill="url(#tactical_cyan_glow)" opacity="0.72">
-      <animate attributeName="r" values="2.9;4.2;2.9" dur="2.2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.30;0.88;0.30" dur="2.2s" repeatCount="indefinite"/>
-    </circle>
-    <path d="M112.6 140.0 L119.4 140.0" stroke="#8defff" stroke-width="0.68" opacity="0.9"/>
-  </g>
-  </g>
+            <!-- LEFT HAND (Celestial Gauntlet) - RESTORED GEOMETRY with FUZZY FILTER -->
+            <g> 
+                <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="3s" repeatCount="indefinite"/>
+                
+                <!-- Fuzzy Wrapper for the Original Geometry -->
+                <g filter="url(#shadowDissolve)">
+                     <!-- Base Hand -->
+                    <path d="M60 136 Q58 140 60 145 Q62 148 66 148 Q70 148 71 144 Q72 140 70 136 Z" fill="url(#celestialGradient)"/>
+                    
+                    <!-- Fingers -->
+                    <g>
+                       <path d="M60 145 Q59 150 61 152 Q63 150 62 147" fill="url(#celestialGradient)"/>
+                       <path d="M63 147 Q62 152 64 154 Q66 152 65 148" fill="url(#celestialGradient)"/>
+                       <path d="M66 147 Q65 151 67 153 Q69 151 68 147" fill="url(#celestialGradient)"/>
+                    </g>
+                </g>
+                
+
+            </g>
+
+            <!-- RIGHT HAND (Celestial Gauntlet) - RESTORED GEOMETRY with FUZZY FILTER -->
+            <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="3.2s" repeatCount="indefinite" begin="0.5s"/>
+                
+                <!-- Fuzzy Wrapper -->
+                <g filter="url(#shadowDissolve)">
+                    <!-- Base Hand -->
+                    <path d="M120 136 Q122 140 120 145 Q118 148 114 148 Q110 148 109 144 Q108 140 110 136 Z" fill="url(#celestialGradient)"/>
+                    
+                    <!-- Fingers -->
+                    <g>
+                       <path d="M120 145 Q121 150 119 152 Q117 150 118 147" fill="url(#celestialGradient)"/>
+                       <path d="M117 147 Q118 152 116 154 Q114 152 115 148" fill="url(#celestialGradient)"/>
+                       <path d="M114 147 Q115 151 113 153 Q111 151 112 147" fill="url(#celestialGradient)"/>
+                    </g>
+                </g>
+                
+
+            </g>
+
+        </g>
+    </g>
 </svg>
-
