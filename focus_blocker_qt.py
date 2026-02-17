@@ -19011,7 +19011,8 @@ class CharacterCanvas(QtWidgets.QWidget):
             self._web_content_dirty = False
             self._web_page_active_state = None
             self._last_web_scale_signature = None
-            self.web_view.setHtml(raw_html, base_url)
+            html_with_initial_scale = self._inject_initial_web_scale_style(raw_html)
+            self.web_view.setHtml(html_with_initial_scale, base_url)
         finally:
             if callable(record_perf):
                 record_perf(
@@ -19020,6 +19021,47 @@ class CharacterCanvas(QtWidgets.QWidget):
                     skipped=bool(skip_reason),
                     reason=skip_reason,
                 )
+
+    def _compute_web_scale_values(self) -> tuple[float, float, float]:
+        """Compute aspect-preserving scale and centering offsets for web layer."""
+        width = max(1.0, float(self.width()))
+        height = max(1.0, float(self.height()))
+        sx = width / float(self.BASE_W or 1)
+        sy = height / float(self.BASE_H or 1)
+        scale = max(0.01, min(sx, sy))
+        offset_x = (width - float(self.BASE_W) * scale) / 2.0
+        offset_y = (height - float(self.BASE_H) * scale) / 2.0
+        return scale, offset_x, offset_y
+
+    def _inject_initial_web_scale_style(self, raw_html: str) -> str:
+        """
+        Inject an initial body transform into HTML before loading.
+
+        This avoids a one-frame top-left jump while the post-load JS scale
+        transform is being applied.
+        """
+        if not raw_html:
+            return raw_html
+
+        scale, offset_x, offset_y = self._compute_web_scale_values()
+        initial_style = (
+            '<style id="pf-initial-web-scale">'
+            f"body{{transform:translate({offset_x:.6f}px,{offset_y:.6f}px) scale({scale:.6f});"
+            "transform-origin:top left;"
+            f"width:{self.BASE_W}px;height:{self.BASE_H}px;}}"
+            "</style>"
+        )
+
+        lowered = raw_html.lower()
+        head_close_idx = lowered.find("</head>")
+        if head_close_idx != -1:
+            return raw_html[:head_close_idx] + initial_style + raw_html[head_close_idx:]
+
+        body_open_idx = lowered.find("<body")
+        if body_open_idx != -1:
+            return raw_html[:body_open_idx] + initial_style + raw_html[body_open_idx:]
+
+        return initial_style + raw_html
 
     def _update_web_view_scale(self) -> None:
         if not self.web_view:
@@ -19031,11 +19073,7 @@ class CharacterCanvas(QtWidgets.QWidget):
             return
         
         # Calculate scale
-        sx = width / self.BASE_W
-        sy = height / self.BASE_H
-        scale = min(sx, sy)
-        offset_x = (width - self.BASE_W * scale) / 2.0
-        offset_y = (height - self.BASE_H * scale) / 2.0
+        scale, offset_x, offset_y = self._compute_web_scale_values()
 
         scale_signature = (
             width,
@@ -19074,12 +19112,14 @@ class CharacterCanvas(QtWidgets.QWidget):
             self._mark_render_dirty()
             self.update()
             return
-        if self.web_view:
-            self.web_view.show()
         self._web_paused_for_resize = False
         self._suspend_svg_renderer_bindings()
         self._set_web_page_active(self._animations_requested and self.isVisible())
         self._schedule_web_view_scale_update(immediate=True)
+        if self.web_view:
+            # Apply latest scale while still hidden to avoid visible jump.
+            self._update_web_view_scale()
+            self.web_view.show()
 
     def _is_web_renderer_active(self) -> bool:
         return bool(self.web_view and self.web_view.isVisible())
