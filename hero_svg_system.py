@@ -952,8 +952,14 @@ def generate_hero_composed_html(
         except (TypeError, ValueError):
             pass
 
-        # Convert local path to file URL
-        file_url = QtCore.QUrl.fromLocalFile(str(layer.path)).toString()
+        # Convert local path to file URL and append mtime cache-buster so
+        # WebEngine always reloads updated SVG assets after local edits.
+        file_qurl = QtCore.QUrl.fromLocalFile(str(layer.path))
+        try:
+            file_qurl.setQuery(f"v={int(layer.path.stat().st_mtime_ns)}")
+        except OSError:
+            pass
+        file_url = file_qurl.toString()
 
         # Build inline style for this layer
         layer_style = (
