@@ -1387,7 +1387,19 @@ def get_story_gear_theme(story_id: str) -> dict:
     Get the gear theme configuration for a story.
     Falls back to warrior theme if story not found.
     """
-    return STORY_GEAR_THEMES.get(story_id, STORY_GEAR_THEMES["warrior"])
+    theme = STORY_GEAR_THEMES.get(story_id, STORY_GEAR_THEMES["warrior"])
+    if not isinstance(theme, dict):
+        return STORY_GEAR_THEMES["warrior"]
+
+    # Normalize rarity pools so late-added tiers (Celestial) always resolve.
+    ensure_pool = globals().get("_ensure_celestial_pool")
+    if callable(ensure_pool):
+        global_adjectives = {rarity: cfg.get("adjectives", []) for rarity, cfg in ITEM_RARITIES.items()}
+        normalized = dict(theme)
+        normalized["adjectives"] = ensure_pool(theme.get("adjectives", {}), global_adjectives)
+        normalized["suffixes"] = ensure_pool(theme.get("suffixes", {}), globals().get("ITEM_SUFFIXES", {}))
+        return normalized
+    return theme
 
 
 def get_slot_display_name(slot: str, story_id: str = None) -> str:
@@ -1420,6 +1432,28 @@ def get_story_item_types(story_id: str = None) -> dict:
     return theme["item_types"]
 
 
+def _ensure_celestial_pool(theme_pool: dict, global_pool: dict) -> dict:
+    """
+    Ensure Celestial entries exist in theme rarity pools.
+
+    Celestial was added after the initial story rollout, so older theme maps
+    may define only Common..Legendary.
+    """
+    normalized = dict(theme_pool or {})
+    celestial_values = normalized.get("Celestial")
+    if celestial_values:
+        return normalized
+
+    merged_values = []
+    if isinstance(normalized.get("Legendary"), list):
+        merged_values.extend(list(normalized.get("Legendary") or []))
+    if isinstance(global_pool.get("Celestial"), list):
+        merged_values.extend(list(global_pool.get("Celestial") or []))
+
+    normalized["Celestial"] = list(dict.fromkeys(merged_values))
+    return normalized
+
+
 def get_story_adjectives(story_id: str = None) -> dict:
     """
     Get the adjectives configuration for a story.
@@ -1430,7 +1464,8 @@ def get_story_adjectives(story_id: str = None) -> dict:
     if story_id is None:
         story_id = "warrior"
     theme = get_story_gear_theme(story_id)
-    return theme["adjectives"]
+    global_adjectives = {rarity: cfg.get("adjectives", []) for rarity, cfg in ITEM_RARITIES.items()}
+    return _ensure_celestial_pool(theme["adjectives"], global_adjectives)
 
 
 def get_story_suffixes(story_id: str = None) -> dict:
@@ -1443,7 +1478,7 @@ def get_story_suffixes(story_id: str = None) -> dict:
     if story_id is None:
         story_id = "warrior"
     theme = get_story_gear_theme(story_id)
-    return theme["suffixes"]
+    return _ensure_celestial_pool(theme["suffixes"], ITEM_SUFFIXES)
 
 
 def get_story_set_themes(story_id: str = None) -> dict:
@@ -3274,6 +3309,10 @@ SET_BONUS_BY_RARITY = {
     "Quantum": 35, "Omniscient": 35, "Transcendent": 35, "Reality-bending": 35,
     "Godslayer": 35, "Universe-forged": 35, "Eternal": 35, "Infinity": 35,
     "Apotheosis": 35, "Mythic": 35, "Supreme": 35,
+    # Celestial adjectives - apex bonus
+    "Singularity-born": 45, "Chronoweave": 45, "Paradox": 45, "Starforged": 45,
+    "Omniversal": 45, "Empyrean": 45, "Aetherbound": 45, "Constellation": 45,
+    "Transfinite": 45, "Harmonic": 45, "Seraphic": 45,
 }
 
 # Emojis for set display based on rarity tier
@@ -3549,6 +3588,17 @@ RARITY_UPGRADE = {
 RARITY_ORDER = get_rarity_order()
 
 
+def _canonical_rarity(rarity: Optional[str], *, default: str = "Common") -> str:
+    """Normalize rarity name to canonical casing/order labels."""
+    if not isinstance(rarity, str):
+        return default
+    normalized = rarity.strip().lower()
+    for known in RARITY_ORDER:
+        if known.lower() == normalized:
+            return known
+    return default
+
+
 def calculate_merge_success_rate(items: list, items_merge_luck: int = 0, city_bonus: int = 0) -> float:
     """
     Calculate the success rate for a lucky merge.
@@ -3585,7 +3635,11 @@ def calculate_merge_success_rate(items: list, items_merge_luck: int = 0, city_bo
 def count_merge_legendary_items(items: list) -> int:
     """Count Legendary items in a merge selection (None-safe)."""
     valid_items = [item for item in (items or []) if item is not None]
-    return sum(1 for item in valid_items if item.get("rarity") == "Legendary")
+    return sum(
+        1
+        for item in valid_items
+        if _canonical_rarity(item.get("rarity"), default="Common") == "Legendary"
+    )
 
 
 def calculate_merge_celestial_chance(items: list) -> float:
@@ -3620,14 +3674,18 @@ def get_merge_result_rarity(items: list) -> str:
     
     # Safely get rarity index, defaulting to 0 (Common) for invalid values
     def safe_rarity_idx(item):
-        rarity = item.get("rarity", "Common")
+        rarity = _canonical_rarity(item.get("rarity", "Common"), default="Common")
         try:
             return RARITY_ORDER.index(rarity)
         except ValueError:
             return 0  # Default to Common if invalid rarity
     
     # Filter out Common items - they don't affect the tier
-    non_common_items = [item for item in valid_items if item.get("rarity", "Common") != "Common"]
+    non_common_items = [
+        item
+        for item in valid_items
+        if _canonical_rarity(item.get("rarity", "Common"), default="Common") != "Common"
+    ]
     
     if not non_common_items:
         # All items are Common - result is Uncommon (upgrade from Common)
@@ -3653,7 +3711,10 @@ def is_merge_worthwhile(items: list) -> tuple:
         return False, "Need at least 2 items"
     
     max_obtainable_rarity = get_standard_reward_rarity_order()[-1]
-    all_max_rarity = all(item.get("rarity") == max_obtainable_rarity for item in valid_items)
+    all_max_rarity = all(
+        _canonical_rarity(item.get("rarity"), default="Common") == max_obtainable_rarity
+        for item in valid_items
+    )
     if all_max_rarity:
         # Allow top-tier-only merges as a reroll to a new top-tier item/slot.
         return True, ""
@@ -3901,7 +3962,7 @@ def perform_lucky_merge(
         items_merge_luck=items_merge_luck,
         city_bonus=city_bonus,
     )
-    resolved_base_rarity = base_rarity or get_merge_result_rarity(valid_items)
+    resolved_base_rarity = _canonical_rarity(base_rarity or get_merge_result_rarity(valid_items), default="Common")
     lottery = roll_merge_lottery(
         success_threshold=success_rate,
         base_rarity=resolved_base_rarity,
@@ -3960,7 +4021,13 @@ def perform_lucky_merge(
         # Backward-compatible "jump" metric for UI text paths.
         result["tier_jump"] = max(1, final_idx - base_idx + 1)
         result["final_rarity"] = final_rarity
-        result["result_item"] = generate_item(rarity=final_rarity, story_id=story_id)
+        if final_rarity == "Celestial":
+            result["result_item"] = generate_celestial_item(
+                story_id=story_id,
+                source="merge_bonus",
+            )
+        else:
+            result["result_item"] = generate_item(rarity=final_rarity, story_id=story_id)
 
     return result
 
@@ -6762,7 +6829,7 @@ def get_current_tier(adhd_buster: dict) -> str:
     
     for item in equipped.values():
         if item:
-            item_rarity = item.get("rarity", "Common")
+            item_rarity = _canonical_rarity(item.get("rarity", "Common"), default="Common")
             # Safely handle invalid rarity values
             try:
                 item_idx = RARITY_ORDER.index(item_rarity)
@@ -6850,7 +6917,9 @@ def roll_priority_completion_reward(
     
     # User won! Roll for rarity (weighted toward high tiers).
     rarity_roll = random.random() * 100.0
-    rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    rarity_order = list(get_standard_reward_rarity_order()) or [
+        "Common", "Uncommon", "Rare", "Epic", "Legendary"
+    ]
     rarity_weights = [PRIORITY_REWARD_WEIGHTS.get(r, 0) for r in rarity_order]
     gated_outcome = evaluate_power_gated_rarity_roll(
         rarity_order,
@@ -6917,7 +6986,7 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     
     # Get story-themed item generation data
     if story_id and story_id in STORY_GEAR_THEMES:
-        theme = STORY_GEAR_THEMES[story_id]
+        theme = get_story_gear_theme(story_id)
         item_types = theme["item_types"]
         adjectives = theme["adjectives"]
         suffixes = theme["suffixes"]
@@ -7182,7 +7251,9 @@ def find_potential_set_bonuses(inventory: list, equipped: dict) -> list:
         if len(items) < SET_BONUS_MIN_MATCHES:
             continue
         
-        theme_data = ITEM_THEMES.get(theme_name, {"bonus_per_match": 10, "emoji": "đźŽŻ"})
+        theme_data = ITEM_THEMES.get(theme_name)
+        if not isinstance(theme_data, dict):
+            theme_data = get_set_theme_data(theme_name)
         
         # Group by slot to see which items are equipable together
         slot_items: Dict[str, list] = {}
@@ -15947,23 +16018,26 @@ def _better_rarity(rarity_a: str, rarity_b: str) -> str:
         The better rarity of the two
     """
     if not rarity_a:
-        return rarity_b or "Common"
+        return _canonical_rarity(rarity_b, default="Common")
     if not rarity_b:
-        return rarity_a
-    
+        return _canonical_rarity(rarity_a, default="Common")
+
+    rarity_a_norm = _canonical_rarity(rarity_a, default="Common")
+    rarity_b_norm = _canonical_rarity(rarity_b, default="Common")
     try:
-        idx_a = RARITY_ORDER.index(rarity_a)
-        idx_b = RARITY_ORDER.index(rarity_b)
-        return rarity_a if idx_a >= idx_b else rarity_b
+        idx_a = RARITY_ORDER.index(rarity_a_norm)
+        idx_b = RARITY_ORDER.index(rarity_b_norm)
+        return rarity_a_norm if idx_a >= idx_b else rarity_b_norm
     except ValueError:
-        return rarity_a or rarity_b or "Common"
+        return rarity_a_norm or rarity_b_norm or "Common"
 
 
 def _weights_for_rarity(rarity: str) -> list:
     """Return 100% weight for a single rarity."""
     weights = [0] * len(RARITY_ORDER)
+    target = _canonical_rarity(rarity, default="Common")
     try:
-        idx = RARITY_ORDER.index(rarity)
+        idx = RARITY_ORDER.index(target)
     except ValueError:
         idx = 0
     weights[idx] = 100
@@ -15979,8 +16053,9 @@ def _apply_minimum_rarity(weights: list, min_rarity: str) -> list:
     """
     if not weights:
         return weights
+    min_rarity_norm = _canonical_rarity(min_rarity, default="Common")
     try:
-        min_idx = RARITY_ORDER.index(min_rarity)
+        min_idx = RARITY_ORDER.index(min_rarity_norm)
     except ValueError:
         min_idx = 0
     if min_idx <= 0:

@@ -473,6 +473,34 @@ class TestLuckyMergeSystem(unittest.TestCase):
         self.assertEqual(result["final_rarity"], "Legendary")
         self.assertEqual((result.get("result_item") or {}).get("rarity"), "Legendary")
 
+    def test_merge_rarity_resolution_is_case_insensitive(self) -> None:
+        """Lowercase rarity labels from legacy saves should resolve to canonical tiers."""
+        from gamification import get_merge_result_rarity
+
+        items = [
+            {"rarity": "common"},
+            {"rarity": "rare"},
+        ]
+        # Highest non-Common = Rare -> Epic
+        self.assertEqual(get_merge_result_rarity(items), "Epic")
+
+    def test_perform_lucky_merge_celestial_unlock_is_case_insensitive(self) -> None:
+        """Lowercase Legendary inputs should still unlock Celestial bonus rolls."""
+        from gamification import perform_lucky_merge
+
+        items = [{"rarity": "legendary", "name": f"Legacy {i}"} for i in range(5)]
+        result = perform_lucky_merge(
+            items,
+            success_roll=0.0,
+            tier_roll=99.0,
+            celestial_roll=0.0,
+        )
+
+        self.assertTrue(result["success"])
+        self.assertTrue(result["celestial_unlocked"])
+        self.assertTrue(result["celestial_triggered"])
+        self.assertEqual(result["final_rarity"], "Celestial")
+
     def test_roll_push_your_luck_outcome_is_deterministic_with_injected_rolls(self) -> None:
         """Push-luck outcome should honor provided rolls for backend/UI sync."""
         from gamification import roll_push_your_luck_outcome
@@ -616,6 +644,19 @@ class TestDailyRewardSystem(unittest.TestCase):
             }
         }
         self.assertEqual(get_current_tier(adhd_buster), "Rare")
+
+    def test_get_current_tier_is_case_insensitive_for_rarity_labels(self) -> None:
+        """Legacy lowercase rarity labels should still resolve to canonical highest tier."""
+        from gamification import get_current_tier
+
+        adhd_buster = {
+            "equipped": {
+                "Helmet": {"name": "Legacy Helm", "rarity": "uncommon"},
+                "Weapon": {"name": "Legacy Blade", "rarity": "legendary"},
+                "Boots": {"name": "Legacy Boots", "rarity": "rare"},
+            }
+        }
+        self.assertEqual(get_current_tier(adhd_buster), "Legendary")
     
     def test_get_boosted_rarity(self) -> None:
         """Test boosted rarity is one tier higher."""
@@ -664,6 +705,17 @@ class TestDailyRewardSystem(unittest.TestCase):
         self.assertEqual(item["story_theme"], "robot")
         self.assertTrue(item.get("is_special_rarity_drop"))
         self.assertEqual(item.get("special_rarity_source"), "rift_event")
+
+    def test_story_gear_theme_injects_celestial_pools(self) -> None:
+        """Story theme access should normalize missing Celestial adjective/suffix pools."""
+        from gamification import STORY_GEAR_THEMES, get_story_gear_theme
+
+        for story_id in STORY_GEAR_THEMES:
+            theme = get_story_gear_theme(story_id)
+            self.assertIn("Celestial", theme.get("adjectives", {}))
+            self.assertIn("Celestial", theme.get("suffixes", {}))
+            self.assertTrue(theme["adjectives"]["Celestial"])
+            self.assertTrue(theme["suffixes"]["Celestial"])
     
     def test_generate_daily_reward_item(self) -> None:
         """Test daily reward generates correct rarity tier."""

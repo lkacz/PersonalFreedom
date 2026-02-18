@@ -71,7 +71,11 @@ except ImportError:
         return weights
     def calculate_merge_celestial_chance(items):
         valid_items = [item for item in (items or []) if item is not None]
-        legendary_count = sum(1 for item in valid_items if item.get("rarity") == "Legendary")
+        legendary_count = sum(
+            1
+            for item in valid_items
+            if str(item.get("rarity", "")).strip().lower() == "legendary"
+        )
         if legendary_count < 5:
             return 0.0
         return min(1.0, 0.01 + (legendary_count - 5) * 0.01)
@@ -121,6 +125,17 @@ except ImportError:
 # Backwards compatibility aliases for this module
 MergeRollAnimationDialog = LotteryRollDialog
 MergeSliderWidget = LotterySliderWidget
+
+
+def _canonical_rarity_name(rarity: Optional[str], default: str = "Common") -> str:
+    """Normalize rarity label casing using the active rarity order."""
+    if not isinstance(rarity, str):
+        return default
+    normalized = rarity.strip().lower()
+    for known in RARITY_ORDER:
+        if known.lower() == normalized:
+            return known
+    return default
 
 
 def calculate_merge_scrap(item_count: int, do_roll: bool = False, scrap_chance_bonus: float = 0.0) -> tuple:
@@ -503,7 +518,7 @@ class ItemPreviewWidget(QtWidgets.QWidget):
         layout.setSpacing(6)
         
         # Rarity color
-        rarity = self.item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(self.item.get("rarity", "Common"))
         rarity_info = ITEM_RARITIES.get(rarity, ITEM_RARITIES["Common"])
         color = rarity_info.get("color", "#9e9e9e")
         
@@ -535,7 +550,7 @@ class ItemPreviewWidget(QtWidgets.QWidget):
         
         # Rarity stars
         max_stars = max(1, len(ITEM_RARITIES))
-        stars = min(max_stars, max(1, list(ITEM_RARITIES.keys()).index(rarity) + 1))
+        stars = min(max_stars, max(1, (list(ITEM_RARITIES.keys()).index(rarity) + 1) if rarity in ITEM_RARITIES else 1))
         stars_label = QtWidgets.QLabel("★" * stars)
         stars_label.setAlignment(QtCore.Qt.AlignCenter)
         stars_label.setStyleSheet(f"color: {color}; font-size: 14px;")
@@ -725,7 +740,7 @@ class ResultPreviewWidget(QtWidgets.QWidget):
     
     def __init__(self, result_rarity: str, items: list = None, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
-        self.result_rarity = result_rarity
+        self.result_rarity = _canonical_rarity_name(result_rarity)
         self.items = items if items is not None else []
         self._build_ui()
     
@@ -757,21 +772,23 @@ class ResultPreviewWidget(QtWidgets.QWidget):
         title.setStyleSheet("font-weight: bold; font-size: 12px; color: #aaa;")
         layout.addWidget(title)
         
-        # Rarity - show range since tier jump is random
-        # Calculate minimum (lowest item tier) and maximum (with max tier jump + upgrade)
-        valid_items = [item for item in self.items if item and item.get("rarity")]
-        if not valid_items:
-            min_rarity_idx = 0  # Default to Common if no valid items
+        # Rarity range should mirror backend merge-tier window behavior.
+        weights = calculate_merge_tier_weights(
+            self.result_rarity,
+            tier_upgrade_enabled=bool(getattr(self, "tier_upgrade_enabled", False)),
+        )
+        active_tiers = [
+            tier
+            for tier, weight in zip(MERGE_TIER_ORDER, weights)
+            if float(weight or 0) > 0
+        ]
+        if active_tiers:
+            min_rarity, max_rarity = active_tiers[0], active_tiers[-1]
         else:
-            min_rarity_idx = min([RARITY_ORDER.index(item.get("rarity", "Common")) for item in valid_items])
-        max_tier_jump = 4  # Maximum possible tier jump
-        max_rarity_idx = min(min_rarity_idx + max_tier_jump, len(RARITY_ORDER) - 1)
-        
-        if hasattr(self, 'tier_upgrade_enabled') and self.tier_upgrade_enabled:
-            max_rarity_idx = min(max_rarity_idx + 1, len(RARITY_ORDER) - 1)
-        
-        min_rarity = RARITY_ORDER[min_rarity_idx]
-        max_rarity = RARITY_ORDER[max_rarity_idx]
+            min_rarity = self.result_rarity if self.result_rarity in RARITY_ORDER else "Common"
+            max_rarity = min_rarity
+        if float(getattr(self, "celestial_chance", 0.0) or 0.0) > 0.0:
+            max_rarity = "Celestial"
         
         if min_rarity == max_rarity:
             rarity_text = f"<b>{max_rarity}</b> Item"
@@ -799,7 +816,10 @@ class ResultPreviewWidget(QtWidgets.QWidget):
         
         # Stars
         max_stars = max(1, len(ITEM_RARITIES))
-        stars = min(max_stars, max(1, list(ITEM_RARITIES.keys()).index(self.result_rarity) + 1))
+        stars = min(
+            max_stars,
+            max(1, (list(ITEM_RARITIES.keys()).index(self.result_rarity) + 1) if self.result_rarity in ITEM_RARITIES else 1),
+        )
         stars_label = QtWidgets.QLabel("★" * stars)
         stars_label.setAlignment(QtCore.Qt.AlignCenter)
         stars_label.setStyleSheet(f"color: {color}; font-size: 16px;")
@@ -861,7 +881,11 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.coin_discount = coin_discount  # Discount percentage from merged items (0-90)
         self.adhd_buster = adhd_buster or {}  # For entity perk checks (Tesla Coil, Blank Parchment)
         self.entity_perks = entity_perks or {}  # Entity perk bonuses
-        self.all_top_tier = all(i.get("rarity") == MAX_OBTAINABLE_RARITY for i in items if i)
+        self.all_top_tier = all(
+            str(i.get("rarity", "")).strip().lower() == str(MAX_OBTAINABLE_RARITY).lower()
+            for i in items
+            if i
+        )
         
         # Extract entity perk bonuses (supports both old and new format)
         # New format from get_entity_merge_perk_contributors:
@@ -969,9 +993,17 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             self.upgraded_rarity = self.result_rarity
         
         # Determine which items affect tier (non-Common only)
-        self.tier_affecting_items = [i for i in items if i and i.get("rarity", "Common") != "Common"]
-        self.fuel_items = [i for i in items if i and i.get("rarity", "Common") == "Common"]
-        self.legendary_count = sum(1 for i in items if i and i.get("rarity") == "Legendary")
+        self.tier_affecting_items = [
+            i for i in items
+            if i and _canonical_rarity_name(i.get("rarity", "Common")) != "Common"
+        ]
+        self.fuel_items = [
+            i for i in items
+            if i and _canonical_rarity_name(i.get("rarity", "Common")) == "Common"
+        ]
+        self.legendary_count = sum(
+            1 for i in items if i and _canonical_rarity_name(i.get("rarity", "Common")) == "Legendary"
+        )
         self.celestial_chance = calculate_merge_celestial_chance(items)
         
         # Calculate breakdown (matches gamification.py constants)
@@ -1385,7 +1417,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         # Items list (text-based for readability)
         for item in self.items:
-            rarity = item.get("rarity", "Common")
+            rarity = _canonical_rarity_name(item.get("rarity", "Common"))
             rarity_info = ITEM_RARITIES.get(rarity, ITEM_RARITIES.get("Common", {}))
             color = rarity_info.get("color", "#9e9e9e")
             name = item.get("name", "Unknown Item")
@@ -1694,7 +1726,55 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             self.total_cost_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #ff9800;")
         else:
             self.total_cost_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #4caf50;")
-    
+
+    def _compute_result_rarity_window(self, upgraded: Optional[bool] = None) -> tuple[str, str]:
+        """Return the min/max rarity shown by the backend merge-tier window."""
+        tier_upgrade_enabled = self.tier_upgrade_enabled if upgraded is None else bool(upgraded)
+        weights = calculate_merge_tier_weights(
+            self.result_rarity,
+            tier_upgrade_enabled=tier_upgrade_enabled,
+        )
+        active_tiers = [
+            tier for tier, weight in zip(MERGE_TIER_ORDER, weights) if float(weight or 0) > 0
+        ]
+        if active_tiers:
+            min_rarity = active_tiers[0]
+            max_rarity = active_tiers[-1]
+        else:
+            min_rarity = self.result_rarity if self.result_rarity in RARITY_ORDER else "Common"
+            max_rarity = min_rarity
+        if self.celestial_chance > 0.0:
+            max_rarity = "Celestial"
+        return min_rarity, max_rarity
+
+    @staticmethod
+    def _format_result_rarity_range_html(min_rarity: str, max_rarity: str) -> str:
+        """Render merge rarity range using rarity colors."""
+        min_color = ITEM_RARITIES.get(min_rarity, {}).get("color", "#9e9e9e")
+        max_color = ITEM_RARITIES.get(max_rarity, {}).get("color", "#9e9e9e")
+        if min_rarity == max_rarity:
+            return f"<b style='color:{max_color};'>✨ {max_rarity}</b>"
+        return (
+            f"<b style='color:{min_color};'>✨ {min_rarity}</b> to "
+            f"<b style='color:{max_color};'>{max_rarity}</b>"
+        )
+
+    def _update_result_range_note(self, min_rarity: str, max_rarity: str) -> None:
+        """Keep helper note under preview in sync with the displayed rarity window."""
+        if not hasattr(self, "result_range_note_label") or not self.result_range_note_label:
+            return
+        if min_rarity != max_rarity:
+            self.result_range_note_label.setText("✨ Lucky tier jumps possible!")
+            self.result_range_note_label.setVisible(True)
+            return
+        if getattr(self, "all_top_tier", False):
+            self.result_range_note_label.setText(
+                f"{MAX_OBTAINABLE_RARITY} reroll: result stays {MAX_OBTAINABLE_RARITY}, slot/type may change."
+            )
+            self.result_range_note_label.setVisible(True)
+            return
+        self.result_range_note_label.setVisible(False)
+
     def _create_result_preview_with_info(self) -> QtWidgets.QWidget:
         """Create result preview with tier determination explanation."""
         container = QtWidgets.QWidget()
@@ -1712,40 +1792,19 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         title.setStyleSheet("font-weight: bold; font-size: 12px; color: #aaa;")
         layout.addWidget(title)
         
-        # Calculate rarity range (minimum from lowest item, maximum with tier jumps)
-        valid_items = [item for item in self.items if item and item.get("rarity")]
-        if not valid_items:
-            min_rarity_idx = 0  # Default to Common if no valid items
-        else:
-            min_rarity_idx = min([RARITY_ORDER.index(item.get("rarity", "Common")) for item in valid_items])
-        max_tier_jump = 4  # Maximum possible tier jump
-        max_rarity_idx = min(min_rarity_idx + max_tier_jump, len(RARITY_ORDER) - 1)
-        
-        if self.tier_upgrade_enabled:
-            max_rarity_idx = min(max_rarity_idx + 1, len(RARITY_ORDER) - 1)
-        
-        min_rarity = RARITY_ORDER[min_rarity_idx]
-        max_rarity = RARITY_ORDER[max_rarity_idx]
-        
-        # Rarity with emoji - show range
-        if min_rarity == max_rarity:
-            rarity_text = f"<b style='color:{color};'>✨ {max_rarity}</b>"
-        else:
-            min_color = ITEM_RARITIES.get(min_rarity, {}).get("color", "#9e9e9e")
-            max_color = ITEM_RARITIES.get(max_rarity, {}).get("color", "#9e9e9e")
-            rarity_text = f"<b style='color:{min_color};'>✨ {min_rarity}</b> to <b style='color:{max_color};'>{max_rarity}</b>"
+        min_rarity, max_rarity = self._compute_result_rarity_window()
+        rarity_text = self._format_result_rarity_range_html(min_rarity, max_rarity)
         
         self.result_rarity_label = QtWidgets.QLabel(rarity_text)
         self.result_rarity_label.setAlignment(QtCore.Qt.AlignCenter)
         self.result_rarity_label.setStyleSheet("font-size: 18px;")
         layout.addWidget(self.result_rarity_label)
         
-        # Add tier jump note if range exists
-        if min_rarity != max_rarity:
-            tier_note = QtWidgets.QLabel("✨ Lucky tier jumps possible!")
-            tier_note.setAlignment(QtCore.Qt.AlignCenter)
-            tier_note.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
-            layout.addWidget(tier_note)
+        self.result_range_note_label = QtWidgets.QLabel("")
+        self.result_range_note_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.result_range_note_label.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
+        layout.addWidget(self.result_range_note_label)
+        self._update_result_range_note(min_rarity, max_rarity)
         
         # Power range
         power_label = QtWidgets.QLabel(f"⚔ ~{power} Power")
@@ -1765,18 +1824,21 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         info_label.setAlignment(QtCore.Qt.AlignCenter)
         
         if self.tier_affecting_items:
-            lowest_rarity = min(
-                (i.get("rarity", "Common") for i in self.tier_affecting_items),
-                key=lambda r: RARITY_ORDER.index(r) if r in RARITY_ORDER else 0
+            highest_rarity = max(
+                (_canonical_rarity_name(i.get("rarity", "Common")) for i in self.tier_affecting_items),
+                key=lambda r: RARITY_ORDER.index(r) if r in RARITY_ORDER else 0,
             )
             info_text = f"<span style='color:#888; font-size:10px;'>"
-            info_text += f"Tier based on lowest non-Common: <b style='color:{ITEM_RARITIES.get(lowest_rarity, {}).get('color', '#fff')};'>{lowest_rarity}</b><br>"
-            info_text += f"→ Upgrades to {self.result_rarity}"
+            info_text += (
+                "Base tier uses highest non-Common input: "
+                f"<b style='color:{ITEM_RARITIES.get(highest_rarity, {}).get('color', '#fff')};'>{highest_rarity}</b><br>"
+            )
+            info_text += f"→ Merge window centered on {self.result_rarity}"
             if len(self.fuel_items) > 0:
                 info_text += f"<br><span style='color:#4caf50;'>+{len(self.fuel_items)} Common items as fuel (no tier loss)</span>"
             info_text += "</span>"
         else:
-            info_text = "<span style='color:#4caf50; font-size:10px;'>All Common items → Upgrades to Uncommon</span>"
+            info_text = "<span style='color:#4caf50; font-size:10px;'>All Common inputs: merge window centered on Uncommon</span>"
         
         info_label.setText(info_text)
         layout.addWidget(info_label)
@@ -1859,12 +1921,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         # Update the result preview label
         if hasattr(self, 'result_rarity_label'):
-            if checked:
-                color = ITEM_RARITIES.get(self.upgraded_rarity, {}).get("color", "#fff")
-                self.result_rarity_label.setText(f"<b style='color:{color};'>✨ {self.upgraded_rarity} ⬆️</b>")
-            else:
-                color = ITEM_RARITIES.get(self.result_rarity, {}).get("color", "#fff")
-                self.result_rarity_label.setText(f"<b style='color:{color};'>✨ {self.result_rarity}</b>")
+            min_rarity, max_rarity = self._compute_result_rarity_window(upgraded=checked)
+            self.result_rarity_label.setText(self._format_result_rarity_range_html(min_rarity, max_rarity))
+            self._update_result_range_note(min_rarity, max_rarity)
         
         # Update the rarity distribution widget to show shifted probabilities
         if hasattr(self, 'rarity_dist_widget'):
@@ -2082,6 +2141,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
 
     def _can_push_your_luck(self, rarity: str) -> bool:
         """Push Your Luck is only valid while below the max obtainable tier."""
+        rarity = _canonical_rarity_name(rarity)
         try:
             rarity_idx = RARITY_ORDER.index(rarity)
             cap_idx = RARITY_ORDER.index(MAX_OBTAINABLE_RARITY)
@@ -2092,7 +2152,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     def _show_success_dialog(self):
         """Show success result dialog with optional 'Push Your Luck' re-roll."""
         result_item = self.merge_result.get("result_item", {}) if self.merge_result else {}
-        rarity = result_item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(result_item.get("rarity", "Common"))
         
         # Check if Push Your Luck is available (not at top obtainable tier)
         if self._can_push_your_luck(rarity):
@@ -2107,7 +2167,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     
     def _show_push_your_luck_dialog(self, current_item: dict) -> str:
         """Show dialog offering to keep item or risk for next tier. Returns 'keep' or 'reroll'."""
-        rarity = current_item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(current_item.get("rarity", "Common"))
         name = current_item.get("name", "Unknown Item")
         power = current_item.get("power", 0)
         slot = current_item.get("slot", "Unknown Slot")
@@ -2599,7 +2659,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         animation_dialog.exec_()
         
         current_item = self.merge_result.get("result_item", {})
-        rarity = current_item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(current_item.get("rarity", "Common"))
         next_rarity = get_next_rarity(rarity, max_rarity=MAX_OBTAINABLE_RARITY)
         
         if push_outcome.get("success", False):
@@ -2649,7 +2709,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         """Show dialog when Blank Parchment saves the item from gamble failure."""
         from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout
         
-        rarity = saved_item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(saved_item.get("rarity", "Common"))
         name = saved_item.get("name", "Unknown Item")
         power = saved_item.get("power", 0)
         rarity_color = ITEM_RARITIES.get(rarity, {}).get("color", "#9e9e9e")
@@ -2768,7 +2828,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         """Show final success message with item comparison to equipped gear."""
         from styled_dialog import ItemRewardDialog
         
-        rarity = result_item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(result_item.get("rarity", "Common"))
         slot = result_item.get("slot", "Unknown Slot")
         roll_raw = self.merge_result.get("roll", 0) if self.merge_result else 0
         needed_raw = self.merge_result.get("needed", 0) if self.merge_result else 0
@@ -2975,7 +3035,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             btn_layout.addWidget(retry_btn)
             
             # Claim button (+100 coins to get item directly) - show resulting rarity
-            claim_rarity = self.result_rarity
+            claim_rarity = _canonical_rarity_name(self.result_rarity)
             if self.tier_upgrade_enabled:
                 try:
                     current_idx = RARITY_ORDER.index(claim_rarity)
@@ -3143,7 +3203,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             self.merge_result["salvage_cost"] = salvage_cost
             # Show styled confirmation dialog
             item_name = saved_item.get("name", "Unknown")
-            item_rarity = saved_item.get("rarity", "Common")
+            item_rarity = _canonical_rarity_name(saved_item.get("rarity", "Common"))
             rarity_color = ITEM_RARITIES.get(item_rarity, {}).get("color", "#9e9e9e")
             item_power = saved_item.get("power", 0)
             item_slot = saved_item.get("slot", "Unknown")
@@ -3249,14 +3309,14 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             # Deduct coins and generate the item
             self.player_coins -= self.claim_cost
             # Generate at final claim rarity directly so name/rarity/power stay coherent.
-            claim_rarity = self.result_rarity
+            claim_rarity = _canonical_rarity_name(self.result_rarity)
             if self.tier_upgrade_enabled:
                 try:
                     current_idx = RARITY_ORDER.index(claim_rarity)
                     if current_idx < len(RARITY_ORDER) - 1:
                         claim_rarity = RARITY_ORDER[current_idx + 1]
                 except (ValueError, IndexError):
-                    claim_rarity = self.result_rarity
+                    claim_rarity = _canonical_rarity_name(self.result_rarity)
 
             from gamification import generate_item
             claimed_item = generate_item(
