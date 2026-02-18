@@ -36953,6 +36953,26 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self._health_reminder_timer.timeout.connect(self._check_health_reminders)
         self._health_reminder_timer.start(60000)  # Check every 60 seconds
 
+        # Startup checks can be deferred when launching hidden to tray.
+        self._startup_checks_scheduled = False
+        self._startup_checks_pending_until_visible = bool(
+            self._defer_tabs_until_visible and not self.isVisible()
+        )
+        if self._startup_checks_pending_until_visible:
+            # Keep silent tray startup stable; run first-run prompts on first explicit restore.
+            if GAMIFICATION_AVAILABLE:
+                QtCore.QTimer.singleShot(2000, self._preload_entitidex_tab)
+        else:
+            self._schedule_startup_checks()
+
+    def _schedule_startup_checks(self) -> None:
+        """Schedule one-time startup checks/prompts."""
+        if self._startup_checks_scheduled:
+            return
+
+        self._startup_checks_scheduled = True
+        self._startup_checks_pending_until_visible = False
+
         # Check for crash recovery on startup
         QtCore.QTimer.singleShot(500, self._check_crash_recovery)
 
@@ -38571,9 +38591,28 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
     def _restore_from_tray(self) -> None:
         """Restore window from system tray."""
-        self.showNormal()  # Ensures window is not minimized
+        is_visible = bool(self.isVisible()) if hasattr(self, "isVisible") else False
+        # Test doubles may not expose QWidget state helpers; default to minimized restore path.
+        is_minimized = bool(self.isMinimized()) if hasattr(self, "isMinimized") else True
+
+        if is_visible and not is_minimized:
+            # Already visible; avoid replaying normal-state transition animation.
+            self.raise_()
+            self.activateWindow()
+            return
+
+        if is_minimized:
+            self.showNormal()  # Restore minimized taskbar state
+        else:
+            if hasattr(self, "show"):
+                self.show()  # Restore hidden-to-tray state without forcing normal transition
+            else:
+                self.showNormal()
         self.raise_()
         self.activateWindow()
+
+        if getattr(self, "_startup_checks_pending_until_visible", False):
+            self._schedule_startup_checks()
 
         if self._defer_tabs_until_visible and not self._deferred_tabs_started:
             self._start_deferred_tab_loading()
