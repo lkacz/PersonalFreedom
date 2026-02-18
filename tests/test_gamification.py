@@ -861,6 +861,21 @@ class TestPowerGatedRarityRoll(unittest.TestCase):
         self.assertIn("power_gating", eye_outcome)
         self.assertEqual(merge_outcome["rolled_tier"], "Legendary")
 
+    def test_eye_routine_outcome_respects_supplied_canonical_rolls(self) -> None:
+        """Eye-routine backend should honor explicit success/tier roll overrides."""
+        from gamification import roll_eye_routine_reward_outcome
+
+        outcome = roll_eye_routine_reward_outcome(
+            success_threshold=0.60,
+            base_rarity="Rare",
+            success_roll=0.55,
+            tier_roll=12.34,
+        )
+
+        self.assertTrue(outcome["success"])
+        self.assertAlmostEqual(outcome["success_roll"], 0.55, places=9)
+        self.assertAlmostEqual(outcome["tier_roll"], 12.34, places=9)
+
     def test_deterministic_reward_target_is_downtoned_when_locked(self) -> None:
         """Fixed rarity grants should downgrade to unlocked tiers at low power."""
         from gamification import resolve_power_gated_reward_rarity
@@ -1011,6 +1026,28 @@ class TestPriorityCompletionReward(unittest.TestCase):
         # Even more hours still caps at 99%
         result = roll_priority_completion_reward(logged_hours=50)
         self.assertEqual(result["chance"], 99)
+
+    def test_roll_priority_completion_reward_respects_roll_overrides(self) -> None:
+        """Priority roll should honor explicit canonical overrides from UI."""
+        from gamification import roll_priority_completion_reward
+
+        win_result = roll_priority_completion_reward(
+            logged_hours=0,
+            win_roll_override=0.0,
+            rarity_roll_override=99.0,
+        )
+        self.assertTrue(win_result["won"])
+        self.assertEqual(win_result["win_roll"], 0.0)
+        self.assertAlmostEqual(win_result["rarity_roll"], 99.0)
+
+        lose_result = roll_priority_completion_reward(
+            logged_hours=20,
+            win_roll_override=1.0,
+            rarity_roll_override=5.0,
+        )
+        self.assertFalse(lose_result["won"])
+        self.assertEqual(lose_result["win_roll"], 1.0)
+        self.assertIsNone(lose_result["rarity_roll"])
 
 
 class TestStorySystem(unittest.TestCase):

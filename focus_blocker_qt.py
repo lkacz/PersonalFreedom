@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 import json
 import random
@@ -4148,50 +4148,28 @@ class TimerTab(QtWidgets.QWidget):
             adhd_buster=self.blocker.adhd_buster
         )
 
-        # Roll rarity outcome in backend; indicator endpoint maps to this roll.
-        item = None
-        tier_weights = None
-        tier_roll = None
-        focus_power_gating = None
-        try:
-            from gamification import roll_focus_reward_outcome
-            focus_outcome = roll_focus_reward_outcome(
-                session_minutes=session_minutes,
-                streak_days=streak,
-                adhd_buster=self.blocker.adhd_buster,
-            )
-            rolled_rarity = focus_outcome.get("rarity")
-            tier_roll = focus_outcome.get("roll")
-            tier_weights = focus_outcome.get("weights")
-            focus_power_gating = focus_outcome.get("power_gating")
-            if rolled_rarity:
-                item = generate_item(
-                    rarity=rolled_rarity,
-                    story_id=active_story,
-                    adhd_buster=self.blocker.adhd_buster,
-                )
-        except Exception:
-            pass
+        # Show lottery animation first. Dialog owns canonical roll generation and
+        # resolves reward tier/item against backend using that exact roll.
+        from lottery_animation import FocusTimerLotteryDialog
+        lottery_dialog = FocusTimerLotteryDialog(
+            session_minutes=session_minutes,
+            streak_days=streak,
+            story_id=active_story,
+            adhd_buster=self.blocker.adhd_buster,
+            parent=self.window()
+        )
+        lottery_dialog.exec()
+        rolled_tier, item = lottery_dialog.get_results()
+        lottery_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
+        lottery_dialog.deleteLater()  # Ensure dialog is cleaned up
 
-        # Fallback path if focus-outcome helper unavailable.
-        if not item:
+        if not isinstance(item, dict):
+            fallback_rarity = rolled_tier if rolled_tier else "Common"
             item = generate_item(
-                session_minutes=session_minutes,
-                streak_days=streak,
+                rarity=fallback_rarity,
                 story_id=active_story,
                 adhd_buster=self.blocker.adhd_buster,
             )
-            if not tier_weights:
-                try:
-                    from gamification import get_focus_rarity_distribution
-                    focus_distribution = get_focus_rarity_distribution(
-                        session_minutes=session_minutes,
-                        streak_days=streak,
-                        adhd_buster=self.blocker.adhd_buster,
-                    )
-                    tier_weights = focus_distribution.get("weights")
-                except Exception:
-                    pass
 
         # Get currently equipped item BEFORE awarding the new one (for comparison dialog)
         equipped_item_before = None
@@ -4201,21 +4179,6 @@ class TimerTab(QtWidgets.QWidget):
                 equipped_item_before = get_equipped_item(self.blocker.adhd_buster, item.get("slot", "Unknown"))
             except ImportError:
                 pass
-
-        # Show lottery animation for tier reveal (item is always awarded)
-        from lottery_animation import FocusTimerLotteryDialog
-        lottery_dialog = FocusTimerLotteryDialog(
-            session_minutes=session_minutes,
-            streak_days=streak,
-            item=item,
-            tier_weights=tier_weights,
-            tier_roll=tier_roll,
-            power_gating=focus_power_gating,
-            parent=self.window()
-        )
-        lottery_dialog.exec()
-        lottery_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
-        lottery_dialog.deleteLater()  # Ensure dialog is cleaned up
 
         # Ensure item has all required fields
         if "obtained_at" not in item:
@@ -4608,43 +4571,22 @@ class TimerTab(QtWidgets.QWidget):
             entity = encounter["entity"]
             # Capture is_exceptional from encounter result for bond attempt
             encounter_is_exceptional = encounter.get("is_exceptional", False)
+            bond_result = None
             
             try:
                 from entity_drop_dialog import show_entity_encounter
                 from gamification import save_encounter_for_later
             
                 # wrapper callback for the bonding logic
-                def bond_callback_wrapper(entity_id: str):
+                def bond_callback_wrapper(entity_id: str, roll_override: Optional[float] = None):
+                    nonlocal bond_result
                     # Attempt the bond - pass is_exceptional from encounter
                     result = attempt_entitidex_bond(
                         self.blocker.adhd_buster, entity_id, 
-                        is_exceptional=encounter_is_exceptional
+                        is_exceptional=encounter_is_exceptional,
+                        roll_override=roll_override,
                     )
-                    
-                    # Save the updated data immediately
-                    from gamification import sync_hero_data
-                    sync_hero_data(self.blocker.adhd_buster)
-                    
-                    # Get game state and emit XP signal if XP was awarded
-                    from game_state import get_game_state
-                    game_state = get_game_state()
-                    if game_state:
-                        # Emit XP signal so UI updates (XP was already added to adhd_buster)
-                        xp_awarded = result.get('xp_awarded', 0)
-                        if xp_awarded > 0:
-                            # Get current XP and level for signal emission
-                            total_xp = self.blocker.adhd_buster.get('total_xp', 0)
-                            level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
-                            game_state.xp_changed.emit(total_xp, level)
-                        game_state.force_save()
-                    else:
-                        self.blocker.save_config()
-                    
-                    # Refresh entitidex tab after bond attempt
-                    main_win = self.window()
-                    if hasattr(main_win, 'entitidex_tab'):
-                        main_win.entitidex_tab.refresh()
-                        
+                    bond_result = result
                     return result
 
                 # wrapper callback for saving encounter for later
@@ -4762,6 +4704,27 @@ class TimerTab(QtWidgets.QWidget):
                     coin_data=self._get_coin_data(),
                     bookmark_data=bookmark_data,
                 )
+
+                # Persist and refresh only after the encounter flow finishes (post-lottery).
+                if bond_result is not None:
+                    from gamification import sync_hero_data
+                    sync_hero_data(self.blocker.adhd_buster)
+
+                    from game_state import get_game_state
+                    game_state = get_game_state()
+                    if game_state:
+                        xp_awarded = bond_result.get('xp_awarded', 0)
+                        if xp_awarded > 0:
+                            total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                            level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                            game_state.xp_changed.emit(total_xp, level)
+                        game_state.force_save()
+                    else:
+                        self.blocker.save_config()
+
+                    main_win = self.window()
+                    if hasattr(main_win, 'entitidex_tab'):
+                        main_win.entitidex_tab.refresh()
             except ImportError:
                  logger.error("Could not import entity_drop_dialog logic")
             
@@ -4829,42 +4792,25 @@ class TimerTab(QtWidgets.QWidget):
             # Show encounter dialog using the same flow as normal sessions
             entity = encounter["entity"]
             encounter_is_exceptional = encounter.get("is_exceptional", False)
+            bond_result = None
             
             try:
                 from entity_drop_dialog import show_entity_encounter
                 from gamification import save_encounter_for_later
             
                 # wrapper callback for the bonding logic
-                def bond_callback_wrapper(entity_id: str = None) -> dict:
+                def bond_callback_wrapper(entity_id: str = None, roll_override: Optional[float] = None) -> dict:
+                    nonlocal bond_result
                     # Use provided entity_id if available, otherwise fall back to closure entity.id
                     target_id = entity_id if entity_id else entity.id
                     
                     result = attempt_entitidex_bond(
                         self.blocker.adhd_buster,
                         target_id,
-                        is_exceptional=encounter_is_exceptional
+                        is_exceptional=encounter_is_exceptional,
+                        roll_override=roll_override,
                     )
-                    # Persist immediately so bond outcomes survive restart/switch.
-                    from gamification import sync_hero_data
-                    sync_hero_data(self.blocker.adhd_buster)
-
-                    from game_state import get_game_state
-                    game_state = get_game_state()
-                    if game_state:
-                        # Emit XP signal so UI updates (XP already written to adhd_buster)
-                        xp_awarded = result.get('xp_awarded', 0)
-                        if xp_awarded > 0:
-                            total_xp = self.blocker.adhd_buster.get('total_xp', 0)
-                            level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
-                            game_state.xp_changed.emit(total_xp, level)
-                        game_state.force_save()
-                    else:
-                        self.blocker.save_config()
-
-                    # Refresh entitidex tab after bond attempt
-                    main_win = self.window()
-                    if hasattr(main_win, 'entitidex_tab'):
-                        main_win.entitidex_tab.refresh()
+                    bond_result = result
                     return result
                 
                 # wrapper callback for saving encounter
@@ -4939,6 +4885,27 @@ class TimerTab(QtWidgets.QWidget):
                     coin_data=self._get_coin_data(),
                     bookmark_data=bookmark_data,
                 )
+
+                # Persist and refresh only after the encounter flow finishes (post-lottery).
+                if bond_result is not None:
+                    from gamification import sync_hero_data
+                    sync_hero_data(self.blocker.adhd_buster)
+
+                    from game_state import get_game_state
+                    game_state = get_game_state()
+                    if game_state:
+                        xp_awarded = bond_result.get('xp_awarded', 0)
+                        if xp_awarded > 0:
+                            total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                            level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                            game_state.xp_changed.emit(total_xp, level)
+                        game_state.force_save()
+                    else:
+                        self.blocker.save_config()
+
+                    main_win = self.window()
+                    if hasattr(main_win, 'entitidex_tab'):
+                        main_win.entitidex_tab.refresh()
             except ImportError:
                  logger.error("Could not import entity_drop_dialog logic")
             
@@ -11486,15 +11453,6 @@ class WeightTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
-        # Emit signal for timeline updates via GameState
-        try:
-            main_window = self.window()
-            game_state = getattr(main_window, 'game_state', None)
-            if game_state:
-                game_state.notify_weight_entry_changed()
-        except Exception:
-            pass
-        
         # Award city MATERIALS resource for weight logging:
         # - +1 Materials just for logging weight (daily)
         # - +1 Bonus if body weight is within healthy BMI (18.5-25)
@@ -11565,6 +11523,16 @@ class WeightTab(QtWidgets.QWidget):
                 self.blocker.save_config()
         except Exception:
             self.blocker.save_config()
+
+        # Emit timeline signal after reward lottery/awards complete so UI and
+        # visible outcome stay in lockstep.
+        try:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state:
+                game_state.notify_weight_entry_changed()
+        except Exception:
+            pass
         
         self._refresh_display()
     
@@ -11652,9 +11620,6 @@ class WeightTab(QtWidgets.QWidget):
                     self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
         
         if items_earned:
-            # Extract just the items for the batch award
-            just_items = [item for _, item in items_earned]
-            
             # Show lottery animation for the primary item (most exciting)
             # Pick the highest rarity item as the primary (retain its source label)
             rarity_order = _get_item_rarity_order()
@@ -11673,7 +11638,8 @@ class WeightTab(QtWidgets.QWidget):
             
             primary_weights = None
             primary_power_gating = None
-            if rewards.get("daily_reward") is primary_item:
+            primary_is_daily = rewards.get("daily_reward") is primary_item
+            if primary_is_daily:
                 primary_weights = rewards.get("daily_reward_weights")
                 primary_power_gating = rewards.get("daily_power_gating")
             if not primary_weights:
@@ -11689,7 +11655,7 @@ class WeightTab(QtWidgets.QWidget):
             tooltip_lines = []
             if primary_source:
                 tooltip_lines.append(primary_source)
-            if rewards.get("daily_reward") is primary_item:
+            if primary_is_daily:
                 raw_change = rewards.get("daily_loss_grams")
                 if isinstance(raw_change, (int, float)):
                     if raw_change > 0:
@@ -11708,22 +11674,72 @@ class WeightTab(QtWidgets.QWidget):
             if weights_line:
                 tooltip_lines.append(weights_line)
             primary_tooltip = "\n".join(tooltip_lines) if tooltip_lines else None
+
+            # Canonical daily-progress path: only for loss/gain modes when
+            # progress is positive in the target direction.
+            daily_progress_grams = None
+            if primary_is_daily:
+                raw_change = rewards.get("daily_loss_grams")
+                mode = str(rewards.get("weight_mode", "")).strip().lower()
+                if isinstance(raw_change, (int, float)):
+                    if mode == "loss" and raw_change > 0:
+                        daily_progress_grams = float(raw_change)
+                    elif mode == "gain" and raw_change < 0:
+                        daily_progress_grams = float(abs(raw_change))
             
             # Show lottery animation
             from lottery_animation import WeightLotteryDialog
-            lottery_dialog = WeightLotteryDialog(
-                item=primary_item,
-                reward_source=primary_source or "Weight Tracking",
-                extra_items=extra_items,
-                tier_weights=primary_weights,
-                power_gating=primary_power_gating,
-                odds_tooltip=primary_tooltip,
-                parent=self.window()
-            )
+            active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+            if daily_progress_grams is not None:
+                lottery_dialog = WeightLotteryDialog(
+                    item=None,
+                    reward_source=primary_source or "Weight Tracking",
+                    extra_items=extra_items,
+                    tier_weights=primary_weights,
+                    power_gating=primary_power_gating,
+                    odds_tooltip=primary_tooltip,
+                    story_id=active_story,
+                    adhd_buster=self.blocker.adhd_buster,
+                    daily_progress_grams=daily_progress_grams,
+                    daily_legendary_bonus=int(rewards.get("entity_bonus", 0) or 0),
+                    parent=self.window()
+                )
+            else:
+                lottery_dialog = WeightLotteryDialog(
+                    item=primary_item,
+                    reward_source=primary_source or "Weight Tracking",
+                    extra_items=extra_items,
+                    tier_weights=primary_weights,
+                    power_gating=primary_power_gating,
+                    odds_tooltip=primary_tooltip,
+                    parent=self.window()
+                )
             lottery_dialog.exec()
+            rolled_tier, rolled_item = lottery_dialog.get_results()
             lottery_dialog.hide()  # Explicitly hide before deletion
             lottery_dialog.deleteLater()
+
+            if daily_progress_grams is not None and isinstance(rolled_item, dict):
+                previous_primary = primary_item
+                primary_item = rolled_item
+                rewards["daily_reward"] = rolled_item
+                rewards["daily_power_gating"] = getattr(lottery_dialog, "power_gating", primary_power_gating)
+                rolled_weights = getattr(lottery_dialog, "tier_weights", None)
+                if isinstance(rolled_weights, list) and len(rolled_weights) == len(rarity_order):
+                    rewards["daily_reward_weights"] = list(rolled_weights)
+                # Keep rarity metadata aligned with the actual awarded daily item.
+                rewards["daily_rarity"] = rolled_tier
+                items_earned = [
+                    (source, rolled_item if item is previous_primary else item)
+                    for source, item in items_earned
+                ]
+                primary_weights = rewards.get("daily_reward_weights") or primary_weights
+                primary_power_gating = rewards.get("daily_power_gating") or primary_power_gating
+                extra_items = [item for source, item in items_earned if item is not primary_item]
             
+            # Extract just the items for the batch award after any canonical replacement.
+            just_items = [item for _, item in items_earned]
+
             # Capture equipped state before award
             equipped_before = dict(self.blocker.adhd_buster.get("equipped", {}))
             
@@ -14136,24 +14152,29 @@ class ActivityTab(QtWidgets.QWidget):
         if rarity and effective_mins >= 8:
             from lottery_animation import ActivityLotteryDialog
 
-            # Reveal the exact pre-generated item to keep animation and awarded result aligned.
-            pre_awarded_item = rewards.get("reward") if isinstance(rewards, dict) else None
-            rarity_roll = rewards.get("rarity_roll") if isinstance(rewards, dict) else None
-            rarity_weights = rewards.get("rarity_weights") if isinstance(rewards, dict) else None
-            rarity_power_gating = rewards.get("power_gating") if isinstance(rewards, dict) else None
             lottery = ActivityLotteryDialog(
                 effective_minutes=effective_mins,
                 pre_rolled_rarity=rarity,
                 story_id=self.blocker.adhd_buster.get("active_story", "warrior"),
                 parent=self,
-                item=pre_awarded_item,
-                tier_roll=rarity_roll,
-                tier_weights=rarity_weights,
-                power_gating=rarity_power_gating,
+                adhd_buster=self.blocker.adhd_buster,
             )
             lottery.exec()
+            rolled_rarity, rolled_item = lottery.get_results()
+            rolled_roll = getattr(lottery, "tier_roll", None)
+            rolled_weights = getattr(lottery, "tier_weights", None)
+            rolled_power_gating = getattr(lottery, "power_gating", None)
             lottery.hide()  # Explicitly hide before deletion
             lottery.deleteLater()  # Ensure dialog is cleaned up
+
+            # Use the canonical dialog result as the actual awarded base reward.
+            if isinstance(rewards, dict) and isinstance(rolled_item, dict):
+                rewards["reward"] = rolled_item
+                rewards["rarity"] = rolled_rarity
+                rewards["rarity_roll"] = rolled_roll
+                if isinstance(rolled_weights, list) and len(rolled_weights) == 5:
+                    rewards["rarity_weights"] = list(rolled_weights)
+                rewards["power_gating"] = rolled_power_gating
         
         # Create entry
         new_entry = {
@@ -14173,15 +14194,6 @@ class ActivityTab(QtWidgets.QWidget):
         self.blocker.activity_entries.sort(key=lambda x: x.get("date", ""), reverse=True)
         
         self.blocker.save_config()
-        
-        # Emit signal for timeline updates via GameState
-        try:
-            main_window = self.window()
-            game_state = getattr(main_window, 'game_state', None)
-            if game_state:
-                game_state.notify_activity_entry_changed()
-        except Exception:
-            pass
         
         # Award city activity resource based on EFFECTIVE minutes (duration × intensity)
         # This rewards more intense and longer activities proportionally
@@ -14289,7 +14301,16 @@ class ActivityTab(QtWidgets.QWidget):
                 self.blocker.save_config()
         except Exception:
             self.blocker.save_config()
-        
+
+        # Emit timeline signal after rewards/city side effects are finalized.
+        try:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state:
+                game_state.notify_activity_entry_changed()
+        except Exception:
+            pass
+
         # Update main timeline widget if parent window has it
         if self.parent() and hasattr(self.parent(), 'timeline_widget'):
             try:
@@ -17788,7 +17809,122 @@ class SleepTab(QtWidgets.QWidget):
                         "context": f"Screen-off: {screenoff_time}",
                     })
             
-            # Award all items via GameState
+            # Show the primary lottery before committing rewards so visible roll
+            # and awarded outcome stay aligned.
+            if items_earned:
+                rarity_order = _get_item_rarity_order()
+                if items_meta:
+                    primary_meta = max(
+                        items_meta,
+                        key=lambda entry: _get_item_rarity_index(entry["item"].get("rarity", "Common"), rarity_order)
+                    )
+                    primary_item = primary_meta["item"]
+                    primary_source = primary_meta.get("source", "Sleep Logged!")
+                    primary_weights = primary_meta.get("weights")
+                    primary_power_gating = primary_meta.get("power_gating")
+                    primary_context = primary_meta.get("context")
+                else:
+                    primary_item = max(
+                        items_earned,
+                        key=lambda x: _get_item_rarity_index(x.get("rarity", "Common"), rarity_order),
+                    )
+                    primary_source = "Sleep Logged!"
+                    primary_weights = None
+                    primary_power_gating = None
+                    primary_context = None
+
+                if not primary_weights:
+                    weights = [0] * len(rarity_order)
+                    idx = _get_item_rarity_index(primary_item.get("rarity", "Common"), rarity_order)
+                    weights[idx] = 100
+                    primary_weights = weights
+
+                def _format_weights_line(weights: list) -> str:
+                    if not weights:
+                        return ""
+                    tiers = rarity_order
+                    parts = [f"{t}: {w:.0f}%" for t, w in zip(tiers, weights) if w > 0]
+                    return f"Odds: {', '.join(parts)}" if parts else ""
+
+                tooltip_lines = []
+                if primary_source:
+                    tooltip_lines.append(primary_source)
+                if primary_context:
+                    tooltip_lines.append(primary_context)
+                weights_line = _format_weights_line(primary_weights)
+                if weights_line:
+                    tooltip_lines.append(weights_line)
+                primary_tooltip = "\n".join(tooltip_lines) if tooltip_lines else None
+
+                extra_items = [i for i in items_earned if i is not primary_item]
+                active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+                sleep_score = reward_info.get("score")
+                canonical_base_sleep = primary_source == "Sleep Logged!" and isinstance(sleep_score, (int, float))
+
+                from lottery_animation import SleepLotteryDialog
+                if canonical_base_sleep:
+                    lottery_dialog = SleepLotteryDialog(
+                        item=None,
+                        reward_source=primary_source,
+                        extra_items=extra_items,
+                        tier_weights=primary_weights,
+                        power_gating=primary_power_gating,
+                        odds_tooltip=primary_tooltip,
+                        story_id=active_story,
+                        adhd_buster=self.blocker.adhd_buster,
+                        sleep_score=int(sleep_score),
+                        parent=self.window()
+                    )
+                else:
+                    lottery_dialog = SleepLotteryDialog(
+                        item=primary_item,
+                        reward_source=primary_source,
+                        extra_items=extra_items,
+                        tier_weights=primary_weights,
+                        power_gating=primary_power_gating,
+                        odds_tooltip=primary_tooltip,
+                        parent=self.window()
+                    )
+                lottery_dialog.exec()
+                rolled_tier, rolled_item = lottery_dialog.get_results()
+                lottery_dialog.hide()  # Explicitly hide before deletion
+                lottery_dialog.deleteLater()
+
+                if canonical_base_sleep and isinstance(rolled_item, dict):
+                    previous_primary = primary_item
+                    primary_item = rolled_item
+                    reward_info["reward"] = rolled_item
+                    reward_info["rarity"] = rolled_tier
+                    reward_info["reward_roll"] = getattr(lottery_dialog, "tier_roll", reward_info.get("reward_roll"))
+                    reward_info["reward_weights"] = getattr(lottery_dialog, "tier_weights", reward_info.get("reward_weights"))
+                    reward_info["power_gating"] = getattr(lottery_dialog, "power_gating", reward_info.get("power_gating"))
+
+                    # Keep human-readable reward text aligned with the canonical roll.
+                    messages = reward_info.get("messages")
+                    if isinstance(messages, list):
+                        canonical_message = (
+                            f"Sleep logged ({sleep_hours:.1f}h, score {int(sleep_score)}/100). "
+                            f"Earned a {rolled_tier} item!"
+                        )
+                        replaced = False
+                        for idx, message in enumerate(messages):
+                            if isinstance(message, str) and "Earned a " in message and " item" in message:
+                                messages[idx] = canonical_message
+                                replaced = True
+                                break
+                        if not replaced:
+                            messages.insert(0, canonical_message)
+
+                    items_earned = [rolled_item if item is previous_primary else item for item in items_earned]
+                    for meta in items_meta:
+                        if meta.get("item") is previous_primary:
+                            meta["item"] = rolled_item
+                            meta["weights"] = reward_info.get("reward_weights")
+                            meta["power_gating"] = reward_info.get("power_gating")
+                            meta["context"] = f"Score: {int(sleep_score)}/100"
+                            break
+
+            # Award all items via GameState (after lottery resolves)
             auto_equipped_slots = []
             equipped_after = {}
             if items_earned:
@@ -17857,70 +17993,7 @@ class SleepTab(QtWidgets.QWidget):
             # Get game state for equip functionality
             main_window = self.window()
             game_state = getattr(main_window, 'game_state', None)
-            
-            # Show lottery animation for the primary item (most exciting)
-            # Pick the highest rarity item as the primary
-            rarity_order = _get_item_rarity_order()
-            if items_meta:
-                primary_meta = max(
-                    items_meta,
-                    key=lambda entry: _get_item_rarity_index(entry["item"].get("rarity", "Common"), rarity_order)
-                )
-                primary_item = primary_meta["item"]
-                primary_source = primary_meta.get("source", "Sleep Logged!")
-                primary_weights = primary_meta.get("weights")
-                primary_power_gating = primary_meta.get("power_gating")
-                primary_context = primary_meta.get("context")
-            else:
-                primary_item = max(
-                    items_earned,
-                    key=lambda x: _get_item_rarity_index(x.get("rarity", "Common"), rarity_order),
-                )
-                primary_source = "Sleep Logged!"
-                primary_weights = None
-                primary_power_gating = None
-                primary_context = None
-            extra_items = [i for i in items_earned if i is not primary_item]
-            
-            # If no explicit weights, use a fixed 100% weight for the rolled rarity
-            if not primary_weights:
-                weights = [0] * len(rarity_order)
-                idx = _get_item_rarity_index(primary_item.get("rarity", "Common"), rarity_order)
-                weights[idx] = 100
-                primary_weights = weights
 
-            def _format_weights_line(weights: list) -> str:
-                if not weights:
-                    return ""
-                tiers = rarity_order
-                parts = [f"{t}: {w:.0f}%" for t, w in zip(tiers, weights) if w > 0]
-                return f"Odds: {', '.join(parts)}" if parts else ""
-
-            tooltip_lines = []
-            if primary_source:
-                tooltip_lines.append(primary_source)
-            if primary_context:
-                tooltip_lines.append(primary_context)
-            weights_line = _format_weights_line(primary_weights)
-            if weights_line:
-                tooltip_lines.append(weights_line)
-            primary_tooltip = "\n".join(tooltip_lines) if tooltip_lines else None
-            
-            # Show lottery animation first
-            from lottery_animation import SleepLotteryDialog
-            lottery_dialog = SleepLotteryDialog(
-                item=primary_item,
-                reward_source=primary_source,
-                extra_items=extra_items,
-                tier_weights=primary_weights,
-                power_gating=primary_power_gating,
-                odds_tooltip=primary_tooltip,
-                parent=self.window()
-            )
-            lottery_dialog.exec()
-            lottery_dialog.hide()  # Explicitly hide before deletion
-            lottery_dialog.deleteLater()
-            
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
@@ -25694,28 +25767,11 @@ class HydrationTab(QtWidgets.QWidget):
             from lottery_animation import WaterLotteryDialog
             
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-            pre_rolled_outcome = None
-            pre_rolled_item = None
-            try:
-                from gamification import roll_water_reward_outcome
-                pre_rolled_outcome = roll_water_reward_outcome(
-                    glass_number=glass_number,
-                    adhd_buster=self.blocker.adhd_buster,
-                )
-                if pre_rolled_outcome.get("won"):
-                    rolled_tier = pre_rolled_outcome.get("rolled_tier")
-                    if rolled_tier:
-                        pre_rolled_item = generate_item(rarity=rolled_tier, story_id=active_story)
-            except Exception:
-                pre_rolled_outcome = None
-                pre_rolled_item = None
 
             lottery = WaterLotteryDialog(
                 glass_number=glass_number,
                 lottery_attempts=self.blocker.water_lottery_attempts,
                 story_id=active_story,
-                pre_rolled_outcome=pre_rolled_outcome,
-                pre_rolled_item=pre_rolled_item,
                 adhd_buster=self.blocker.adhd_buster,
                 parent=self
             )
@@ -31174,26 +31230,12 @@ class PrioritiesDialog(StyledDialog):
         
         # Show animated lottery dialog for priority completion
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        pre_rolled_result = None
-        try:
-            from gamification import roll_priority_completion_reward
-            pre_rolled_result = roll_priority_completion_reward(
-                story_id=active_story,
-                logged_hours=logged_hours,
-                adhd_buster=self.blocker.adhd_buster,
-            )
-            if isinstance(pre_rolled_result, dict) and "chance" in pre_rolled_result:
-                chance = int(pre_rolled_result["chance"])
-        except Exception:
-            pre_rolled_result = None
-        
         from lottery_animation import PriorityLotteryDialog
         lottery = PriorityLotteryDialog(
             win_chance=chance / 100.0,
             priority_title=title,
             logged_hours=logged_hours,
             story_id=active_story,
-            pre_rolled_result=pre_rolled_result,
             adhd_buster=self.blocker.adhd_buster,
             parent=self
         )
@@ -35310,11 +35352,12 @@ class DevTab(QtWidgets.QWidget):
                 pass
             is_exceptional = random.random() < exceptional_chance
             
-            def bond_callback_wrapper(eid: str, exceptional: bool = is_exceptional):
+            def bond_callback_wrapper(eid: str, exceptional: bool = is_exceptional, roll_override: Optional[float] = None):
                 result = attempt_entitidex_bond(
                     self.blocker.adhd_buster, 
                     eid,
-                    is_exceptional=exceptional
+                    is_exceptional=exceptional,
+                    roll_override=roll_override,
                 )
                 self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
                 xp_awarded = result.get('xp_awarded', 0)
@@ -35490,12 +35533,13 @@ class DevTab(QtWidgets.QWidget):
             # Generate customized flavor text
             flavor_text = get_encounter_flavor_text(entity, hero_power, is_exceptional)
             
-            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
+            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional, roll_override: Optional[float] = None):
                 from gamification import attempt_entitidex_bond
                 result = attempt_entitidex_bond(
                     self.blocker.adhd_buster, 
                     entity_id,
-                    is_exceptional=exceptional
+                    is_exceptional=exceptional,
+                    roll_override=roll_override,
                 )
                 self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
                 # Emit XP signal if XP was awarded
@@ -35606,10 +35650,10 @@ class DevTab(QtWidgets.QWidget):
             # Generate customized flavor text
             flavor_text = get_encounter_flavor_text(entity, hero_power, is_exceptional)
             
-            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
+            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional, roll_override: Optional[float] = None):
                 from gamification import attempt_entitidex_bond
                 result = attempt_entitidex_bond(
-                    self.blocker.adhd_buster, entity_id, is_exceptional=exceptional
+                    self.blocker.adhd_buster, entity_id, is_exceptional=exceptional, roll_override=roll_override
                 )
                 self.status_label.setText(f"Result: {result['success']}")
                 # Emit XP signal if XP was awarded
@@ -35723,10 +35767,10 @@ class DevTab(QtWidgets.QWidget):
             # Generate customized flavor text
             flavor_text = get_encounter_flavor_text(entity, hero_power, is_exceptional)
             
-            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
+            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional, roll_override: Optional[float] = None):
                 from gamification import attempt_entitidex_bond
                 result = attempt_entitidex_bond(
-                    self.blocker.adhd_buster, entity_id, is_exceptional=exceptional
+                    self.blocker.adhd_buster, entity_id, is_exceptional=exceptional, roll_override=roll_override
                 )
                 # Emit XP signal if XP was awarded
                 xp_awarded = result.get('xp_awarded', 0)
@@ -39995,3 +40039,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

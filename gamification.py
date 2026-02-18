@@ -6888,6 +6888,8 @@ def roll_priority_completion_reward(
     story_id: str = None,
     logged_hours: float = 0,
     adhd_buster: Optional[dict] = None,
+    win_roll_override: Optional[float] = None,
+    rarity_roll_override: Optional[float] = None,
 ) -> Optional[dict]:
     """
     Roll for a priority completion reward.
@@ -6896,6 +6898,8 @@ def roll_priority_completion_reward(
     Args:
         story_id: Story theme for item generation
         logged_hours: Hours logged on this priority (higher = better chance)
+        win_roll_override: Optional canonical win roll from UI animation (0.0-1.0)
+        rarity_roll_override: Optional canonical rarity roll from UI animation (0-100)
     
     Returns:
         dict with 'won' (bool), 'item' (dict or None), 'message' (str), 'chance' (int)
@@ -6911,7 +6915,14 @@ def roll_priority_completion_reward(
         chance = PRIORITY_BASE_COMPLETION_CHANCE
     
     # First roll: did the user win?
-    win_roll = random.random()
+    if win_roll_override is None:
+        win_roll = random.random()
+    else:
+        try:
+            win_roll = float(win_roll_override)
+        except (TypeError, ValueError):
+            win_roll = random.random()
+    win_roll = max(0.0, min(1.0, win_roll))
     won = win_roll < (chance / 100.0)
     if not won:
         return {
@@ -6926,7 +6937,14 @@ def roll_priority_completion_reward(
         }
     
     # User won! Roll for rarity (weighted toward high tiers).
-    rarity_roll = random.random() * 100.0
+    if rarity_roll_override is None:
+        rarity_roll = random.random() * 100.0
+    else:
+        try:
+            rarity_roll = float(rarity_roll_override)
+        except (TypeError, ValueError):
+            rarity_roll = random.random() * 100.0
+    rarity_roll = max(0.0, min(100.0, rarity_roll))
     rarity_order = list(get_standard_reward_rarity_order()) or [
         "Common", "Uncommon", "Rare", "Epic", "Legendary"
     ]
@@ -19259,6 +19277,22 @@ def get_sleep_reward_rarity(
     Returns:
         Rarity string or None if below threshold
     """
+    outcome = roll_sleep_reward_outcome(score=score, adhd_buster=adhd_buster)
+    if not outcome:
+        return None
+    return outcome.get("rarity")
+
+
+def roll_sleep_reward_outcome(
+    score: int,
+    adhd_buster: Optional[dict] = None,
+    roll: Optional[float] = None,
+) -> Optional[dict]:
+    """
+    Canonical backend roll for sleep-entry reward rarity.
+
+    The slider's final position maps directly to this roll (0..100).
+    """
     weights = get_sleep_reward_weights(score)
     if not weights:
         return None
@@ -19267,8 +19301,15 @@ def get_sleep_reward_rarity(
         rarities,
         weights,
         adhd_buster=adhd_buster,
+        roll=roll,
     )
-    return gated_outcome.get("rarity")
+    return {
+        "rarity": gated_outcome.get("rarity", rarities[0] if rarities else "Common"),
+        "roll": gated_outcome.get("roll", 0.0),
+        "weights": weights,
+        "rarities": rarities,
+        "power_gating": gated_outcome,
+    }
 
 
 def get_sleep_reward_weights(score: int) -> Optional[list]:
@@ -19335,6 +19376,7 @@ def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
         "score": 0,
         "score_breakdown": {},
         "rarity": None,
+        "reward_roll": None,
         "reward_weights": None,
         "power_gating": None,
         "messages": [],
@@ -19356,14 +19398,15 @@ def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
     result["reward_weights"] = reward_weights
     rarity = None
     if reward_weights:
-        rarities = get_standard_reward_rarity_order()
-        gated_outcome = evaluate_power_gated_rarity_roll(
-            rarities,
-            reward_weights,
+        sleep_outcome = roll_sleep_reward_outcome(
+            score_info["total_score"],
             adhd_buster=adhd_buster,
         )
-        rarity = gated_outcome.get("rarity")
-        result["power_gating"] = gated_outcome
+        if sleep_outcome:
+            rarity = sleep_outcome.get("rarity")
+            result["reward_roll"] = sleep_outcome.get("roll")
+            result["reward_weights"] = sleep_outcome.get("weights")
+            result["power_gating"] = sleep_outcome.get("power_gating")
     result["rarity"] = rarity
     
     if rarity:
@@ -21259,7 +21302,8 @@ def attempt_entitidex_bond(
     adhd_buster: dict, 
     entity_id: str, 
     is_exceptional: bool = False,
-    force_success: bool = False
+    force_success: bool = False,
+    roll_override: Optional[float] = None,
 ) -> dict:
     """
     Attempt to bond with an encountered entity.
@@ -21272,25 +21316,21 @@ def attempt_entitidex_bond(
         entity_id: ID of the entity to bond with
         is_exceptional: Whether this is an exceptional variant encounter
         force_success: If True, skip probability roll and guarantee success (for Chad gifts)
+        roll_override: Optional canonical roll value (0.0-1.0) supplied by lottery UI
         
     Returns:
-        dict with bond attempt result:
-        {
-            "success": bool,
-            "entity": Entity,
-            "probability": float,
-            "pity_bonus": float,
-            "consecutive_fails": int,
-            "message": str,
-            "is_exceptional": bool,
-            "exceptional_colors": dict or None
-        }
+        dict with bond attempt result.
+        Includes:
+        - operation_success: whether the bond attempt could be executed
+        - bond_success: whether the lottery succeeded (alias: success)
     """
     from entitidex import get_entity_by_id
     
     entity = get_entity_by_id(entity_id)
     if not entity:
         return {
+            "operation_success": False,
+            "bond_success": False,
             "success": False,
             "entity": None,
             "probability": 0.0,
@@ -21360,6 +21400,8 @@ def attempt_entitidex_bond(
         message = f"🎁 Chad's gift: {display_name} has joined your team! +{xp_awarded} XP!"
         
         return {
+            "operation_success": True,
+            "bond_success": True,
             "success": True,
             "entity": entity,
             "probability": 1.0,
@@ -21375,10 +21417,16 @@ def attempt_entitidex_bond(
     # Normal probability-based attempt
     # Attempt the bond (hero_power is already set in manager)
     # Pass is_exceptional to handle pity tracking correctly
-    catch_result = manager.attempt_catch(entity, is_exceptional=is_exceptional)
+    catch_result = manager.attempt_catch(
+        entity,
+        is_exceptional=is_exceptional,
+        roll_override=roll_override,
+    )
     
     if catch_result is None:
         return {
+            "operation_success": False,
+            "bond_success": False,
             "success": False,
             "entity": entity,
             "probability": 0.0,
@@ -21398,6 +21446,13 @@ def attempt_entitidex_bond(
     
     # Save progress
     save_entitidex_progress(adhd_buster, manager)
+
+    # Emit entity collected signal for timeline ring on successful normal-path catches.
+    if catch_result.success:
+        from game_state import get_game_state
+        gs = get_game_state()
+        if gs:
+            gs.notify_entity_collected(entity_id)
     
     # Award XP for successful catches
     xp_awarded = 0
@@ -21441,6 +21496,8 @@ def attempt_entitidex_bond(
             message = f"💨 {entity.name} slipped away... Try again next time!"
     
     return {
+        "operation_success": True,
+        "bond_success": catch_result.success,
         "success": catch_result.success,
         "entity": catch_result.entity,
         "probability": catch_result.probability,
@@ -21934,7 +21991,11 @@ def _calculate_power_for_story(adhd_buster: dict, story_id: str) -> int:
     return base_total + city_power_bonus
 
 
-def open_saved_encounter(adhd_buster: dict, index: int = 0) -> dict:
+def open_saved_encounter(
+    adhd_buster: dict,
+    index: int = 0,
+    roll_override: Optional[float] = None,
+) -> dict:
     """
     Open a saved encounter and attempt to bond with the entity.
     
@@ -21947,12 +22008,18 @@ def open_saved_encounter(adhd_buster: dict, index: int = 0) -> dict:
     Args:
         adhd_buster: Hero data dictionary
         index: Index of saved encounter to open (0 = oldest)
+        roll_override: Optional canonical roll value (0.0-1.0) supplied by lottery UI
         
     Returns:
         dict with bond attempt result (same format as attempt_entitidex_bond)
     """
     # Delegate to the full function with recalculate=False
-    return open_saved_encounter_with_recalculate(adhd_buster, index, recalculate=False)
+    return open_saved_encounter_with_recalculate(
+        adhd_buster,
+        index,
+        recalculate=False,
+        roll_override=roll_override,
+    )
 
 
 def get_saved_encounter_count(adhd_buster: dict) -> int:
@@ -23056,6 +23123,7 @@ def open_saved_encounter_with_recalculate(
     adhd_buster: dict, 
     index: int = 0,
     recalculate: bool = False,
+    roll_override: Optional[float] = None,
 ) -> dict:
     """
     Open a saved encounter with optional paid probability recalculation.
@@ -23067,6 +23135,7 @@ def open_saved_encounter_with_recalculate(
         adhd_buster: Hero data dictionary
         index: Index of saved encounter to open (0 = oldest)
         recalculate: If True, pay coins to recalculate with current power
+        roll_override: Optional canonical roll value (0.0-1.0) supplied by lottery UI
         
     Returns:
         dict with bond attempt result
@@ -23080,6 +23149,7 @@ def open_saved_encounter_with_recalculate(
     saved_list = manager.progress.get_saved_encounters()
     if index < 0 or index >= len(saved_list):
         return {
+            "operation_success": False,
             "success": False,
             "message": "No saved encounter at that index",
             "remaining_saved": manager.progress.get_saved_encounter_count(),
@@ -23093,6 +23163,7 @@ def open_saved_encounter_with_recalculate(
         manager.progress.pop_saved_encounter(index)
         save_entitidex_progress(adhd_buster, manager)
         return {
+            "operation_success": False,
             "success": False,
             "message": "Entity no longer exists",
             "remaining_saved": manager.progress.get_saved_encounter_count(),
@@ -23109,6 +23180,8 @@ def open_saved_encounter_with_recalculate(
             paid_unlocks = get_recalculate_provider_names(risky=False, include_ids=True)
             unlock_lines = "\n".join(f"• {name}" for name in paid_unlocks) if paid_unlocks else "• Any entity with Paid Recalculate"
             return {
+                "operation_success": False,
+                "bond_success": False,
                 "success": False,
                 "message": (
                     "💰 Collect any of these to unlock Paid Recalculate:\n"
@@ -23124,6 +23197,8 @@ def open_saved_encounter_with_recalculate(
         
         if current_coins < cost:
             return {
+                "operation_success": False,
+                "bond_success": False,
                 "success": False,
                 "message": f"Not enough coins! Need {cost}, have {current_coins}",
                 "remaining_saved": manager.progress.get_saved_encounter_count(),
@@ -23145,8 +23220,15 @@ def open_saved_encounter_with_recalculate(
     # Now pop the encounter
     manager.progress.pop_saved_encounter(index)
     
-    # Roll the dice!
-    roll = random.random()
+    # Roll the dice! Prefer a caller-supplied canonical roll (from UI animation).
+    if roll_override is None:
+        roll = random.random()
+    else:
+        try:
+            roll = float(roll_override)
+        except (TypeError, ValueError):
+            roll = random.random()
+        roll = max(0.0, min(1.0, roll))
     success = roll < probability_to_use
     
     display_name = entity.exceptional_name if saved.is_exceptional and entity.exceptional_name else entity.name
@@ -23210,6 +23292,8 @@ def open_saved_encounter_with_recalculate(
             gs.notify_entity_collected(saved.entity_id)
     
     return {
+        "operation_success": True,
+        "bond_success": success,
         "success": success,
         "entity": entity,
         "probability": probability_to_use,
@@ -23229,6 +23313,7 @@ def open_saved_encounter_with_recalculate(
 def open_saved_encounter_risky_recalculate(
     adhd_buster: dict,
     index: int = 0,
+    risky_roll_override: Optional[float] = None,
 ) -> dict:
     """
     Open a saved encounter with FREE risky probability recalculation.
@@ -23246,6 +23331,7 @@ def open_saved_encounter_risky_recalculate(
     Args:
         adhd_buster: Hero data dictionary
         index: Index of saved encounter to open (0 = oldest)
+        risky_roll_override: Optional canonical risky-roll value from UI.
         
     Returns:
         dict with encounter info for lottery animation, or error
@@ -23298,12 +23384,21 @@ def open_saved_encounter_risky_recalculate(
     
     display_name = entity.exceptional_name if saved.is_exceptional and entity.exceptional_name else entity.name
     
-    # Pre-roll the risky recalc in backend so UI only reveals the result.
-    risky_roll = random.random()
-    risky_recalc_succeeded = risky_roll < RISKY_RECALC_SUCCESS_RATE
+    # Do not force backend pre-rolls by default. The UI can provide a canonical
+    # roll so the visible animation is the source of truth.
+    risky_roll = None
+    risky_recalc_succeeded = None
+    if risky_roll_override is not None:
+        try:
+            risky_roll = float(risky_roll_override)
+        except (TypeError, ValueError):
+            risky_roll = None
+        if risky_roll is not None:
+            risky_roll = max(0.0, min(1.0, risky_roll))
+            risky_recalc_succeeded = risky_roll < RISKY_RECALC_SUCCESS_RATE
 
     # Return data for lottery animation.
-    # UI should reveal this backend roll, then call finalize_risky_recalculate.
+    # UI should animate and then call finalize_risky_recalculate with the same rolls.
     return {
         "success": True,
         "ready_for_lottery": True,
@@ -23326,6 +23421,7 @@ def finalize_risky_recalculate(
     index: int,
     recalc_succeeded: Optional[bool] = None,
     risky_roll: Optional[float] = None,
+    roll_override: Optional[float] = None,
 ) -> dict:
     """
     Finalize a risky recalculate after the lottery animation.
@@ -23337,6 +23433,7 @@ def finalize_risky_recalculate(
         index: Index of saved encounter
         recalc_succeeded: Optional legacy override from UI. If omitted, derived from risky_roll.
         risky_roll: Optional pre-rolled value from open_saved_encounter_risky_recalculate.
+        roll_override: Optional canonical bond roll value (0.0-1.0) supplied by lottery UI.
         
     Returns:
         dict with bond attempt result
@@ -23349,6 +23446,7 @@ def finalize_risky_recalculate(
     
     if index < 0 or index >= len(saved_list):
         return {
+            "operation_success": False,
             "success": False,
             "message": "No saved encounter at that index",
             "remaining_saved": manager.progress.get_saved_encounter_count(),
@@ -23361,6 +23459,7 @@ def finalize_risky_recalculate(
         manager.progress.pop_saved_encounter(index)
         save_entitidex_progress(adhd_buster, manager)
         return {
+            "operation_success": False,
             "success": False,
             "message": "Entity no longer exists",
             "remaining_saved": manager.progress.get_saved_encounter_count(),
@@ -23396,8 +23495,15 @@ def finalize_risky_recalculate(
     # Pop the encounter
     manager.progress.pop_saved_encounter(index)
     
-    # Roll for bonding!
-    roll = random.random()
+    # Roll for bonding! Prefer a caller-supplied canonical roll (from UI animation).
+    if roll_override is None:
+        roll = random.random()
+    else:
+        try:
+            roll = float(roll_override)
+        except (TypeError, ValueError):
+            roll = random.random()
+        roll = max(0.0, min(1.0, roll))
     success = roll < probability_to_use
     
     display_name = entity.exceptional_name if saved.is_exceptional and entity.exceptional_name else entity.name
@@ -23463,6 +23569,8 @@ def finalize_risky_recalculate(
             gs.notify_entity_collected(saved.entity_id)
     
     return {
+        "operation_success": True,
+        "bond_success": success,
         "success": success,
         "entity": entity,
         "probability": probability_to_use,

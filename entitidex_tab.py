@@ -9,6 +9,7 @@ Shows all entities in the current story theme with:
 import os
 import math
 import logging
+import random
 from pathlib import Path
 from typing import Optional
 from collections import OrderedDict
@@ -3476,11 +3477,10 @@ class EntitidexTab(QtWidgets.QWidget):
         from gamification import (
             open_saved_encounter,
             open_saved_encounter_with_recalculate, 
-            attempt_entitidex_bond,
             get_saved_encounters,
+            get_recalculate_provider_names,
         )
         from entity_drop_dialog import show_entity_encounter
-        from entitidex import get_entity_by_id
         
         if not hasattr(self.blocker, 'adhd_buster'):
             return
@@ -3520,26 +3520,55 @@ class EntitidexTab(QtWidgets.QWidget):
         
         # If recalculating, update the displayed probability to current potential
         if recalculate:
+            # Preflight checks before showing animation, so failures are surfaced
+            # immediately and not after the lottery reveal.
+            if not item.get("has_paid_recalculate", False):
+                provider_names = get_recalculate_provider_names(risky=False, include_ids=False)
+                if provider_names:
+                    provider_hint = ", ".join(provider_names[:5])
+                    if len(provider_names) > 5:
+                        provider_hint += ", ..."
+                else:
+                    provider_hint = "an entity with Paid Recalculate"
+                styled_warning(
+                    self,
+                    "Recalculate Locked",
+                    f"You need {provider_hint} to use paid recalculation."
+                )
+                return
+
+            recalc_cost = int(item.get("recalculate_cost", 100))
+            current_coins = int(self.blocker.adhd_buster.get("coins", 0))
+            if current_coins < recalc_cost:
+                styled_warning(
+                    self,
+                    "Not Enough Coins",
+                    f"Paid recalculation costs {recalc_cost} coins, but you only have {current_coins}."
+                )
+                return
+
             potential_prob = item.get("potential_probability", saved_probability)
             saved_probability = potential_prob
-        
+
+        bond_result = None
+
         # Create a bond callback that opens the saved encounter
-        def bond_callback(entity_id: str) -> dict:
+        def bond_callback(entity_id: str, roll_override: Optional[float] = None) -> dict:
+            nonlocal bond_result
             if recalculate:
-                result = open_saved_encounter_with_recalculate(self.blocker.adhd_buster, index, recalculate=True)
+                result = open_saved_encounter_with_recalculate(
+                    self.blocker.adhd_buster,
+                    index,
+                    recalculate=True,
+                    roll_override=roll_override,
+                )
             else:
-                result = open_saved_encounter(self.blocker.adhd_buster, index)
-            
-            # Persist to disk (critical: encounter was consumed, must save)
-            main_window = self.window()
-            game_state = getattr(main_window, "game_state", None)
-            if game_state:
-                game_state.force_save()
-            else:
-                self.blocker.save_config()
-            
-            if result.get("success"):
-                self.refresh()  # Refresh the collection
+                result = open_saved_encounter(
+                    self.blocker.adhd_buster,
+                    index,
+                    roll_override=roll_override,
+                )
+            bond_result = result
             return result
         
         # Show the encounter dialog
@@ -3551,7 +3580,16 @@ class EntitidexTab(QtWidgets.QWidget):
             is_exceptional=is_exceptional,
             save_callback=None,  # No save option for already-saved encounters
         )
-        
+
+        # Persist only after the encounter flow (including lottery reveal) finishes.
+        if bond_result is not None:
+            main_window = self.window()
+            game_state = getattr(main_window, "game_state", None)
+            if game_state:
+                game_state.force_save()
+            else:
+                self.blocker.save_config()
+
         # Refresh after dialog closes
         self._update_saved_button_count()
         self.refresh()
@@ -3562,6 +3600,7 @@ class EntitidexTab(QtWidgets.QWidget):
             open_saved_encounter_risky_recalculate,
             finalize_risky_recalculate,
         )
+        from lottery_animation import LotteryRollDialog
         
         if not hasattr(self.blocker, 'adhd_buster'):
             return
@@ -3573,35 +3612,60 @@ class EntitidexTab(QtWidgets.QWidget):
             styled_warning(self, "Risky Recalculate", prep_result.get("message", "Error"))
             return
         
-        # Use backend-prepared risky roll so UI only reveals the canonical result.
-        risky_roll = prep_result.get("risky_roll")
-        risky_success = prep_result.get("risky_recalc_succeeded", False)
-        new_prob = prep_result.get("new_probability", 0)
-        old_prob = prep_result.get("old_probability", 0)
+        old_prob = max(0.0, min(1.0, float(prep_result.get("old_probability", 0.0))))
+        new_prob = max(0.0, min(1.0, float(prep_result.get("new_probability", old_prob))))
+        risky_threshold = max(0.0, min(1.0, float(prep_result.get("risky_success_rate", 0.0))))
+
+        # Stage 1: risky recalc roll (animation is canonical source of truth).
+        risky_roll = random.random()
+        risky_dialog = LotteryRollDialog(
+            target_roll=risky_roll,
+            success_threshold=risky_threshold,
+            title="🎲 Risky Recalculate",
+            success_text="✨ Recalculate succeeded!",
+            failure_text="💥 Recalculate failed",
+            animation_duration=3.5,
+            parent=self,
+        )
+        risky_dialog.exec()
+        risky_dialog.hide()
+        risky_dialog.deleteLater()
+        risky_success = risky_roll < risky_threshold
+
+        # Stage 2: bond roll with the probability selected by Stage 1.
+        probability_for_bond = new_prob if risky_success else old_prob
+        bond_roll = random.random()
+        prepared_entity = prep_result.get("entity")
+        prepared_display_name = prep_result.get("display_name")
+        if not prepared_display_name and prepared_entity is not None:
+            prepared_display_name = getattr(prepared_entity, "name", "Entity")
+        if not prepared_display_name:
+            prepared_display_name = "Entity"
+        bond_dialog = LotteryRollDialog(
+            target_roll=bond_roll,
+            success_threshold=probability_for_bond,
+            title=f"🎲 Bonding with {prepared_display_name}...",
+            success_text="✨ Bond succeeds!",
+            failure_text="💔 Bond failed",
+            animation_duration=4.0,
+            parent=self,
+        )
+        bond_dialog.exec()
+        bond_dialog.hide()
+        bond_dialog.deleteLater()
         
-        # Show the risky roll result
-        if risky_success:
-            styled_info(
-                self, "🎲 Risky Recalculate SUCCESS!",
-                f"<b>The odds are in your favor!</b><br><br>"
-                f"📈 Probability boosted: <b>{int(old_prob*100)}%</b> ➔ <b>{int(new_prob*100)}%</b><br><br>"
-                f"<i>Now attempting to bond...</i>"
-            )
-        else:
-            styled_info(
-                self, "🎲 Risky Recalculate Failed",
-                f"<b>The dice were not kind...</b><br><br>"
-                f"📊 Using original probability: <b>{int(old_prob*100)}%</b><br><br>"
-                f"<i>Now attempting to bond anyway...</i>"
-            )
-        
-        # Finalize - this does the bond attempt
+        # Finalize using the exact rolls shown to the user.
         final_result = finalize_risky_recalculate(
             self.blocker.adhd_buster, 
             index, 
             recalc_succeeded=risky_success,
             risky_roll=risky_roll,
+            roll_override=bond_roll,
         )
+
+        if not final_result.get("operation_success", True):
+            styled_warning(self, "Risky Recalculate", final_result.get("message", "Error"))
+            return
         
         # Save config after encounter consumed
         main_window = self.window()
@@ -3611,7 +3675,8 @@ class EntitidexTab(QtWidgets.QWidget):
         else:
             self.blocker.save_config()
         
-        if not final_result.get("success", True):  # success here means bond success
+        bond_success = final_result.get("bond_success", final_result.get("success", True))
+        if not bond_success:
             # Bond failed
             prob_used = final_result.get("probability", old_prob)
             entity = final_result.get("entity")

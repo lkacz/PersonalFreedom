@@ -6,7 +6,7 @@ for bonding with entities.
 """
 
 import random
-from typing import Tuple
+from typing import Optional, Tuple
 from .entity import Entity
 
 
@@ -187,6 +187,7 @@ def attempt_catch(
     failed_attempts: int = 0,
     luck_bonus: float = 0.0,
     city_bonus: float = 0.0,
+    roll_override: Optional[float] = None,
 ) -> Tuple[bool, float, float, str]:
     """
     Attempt to catch (bond with) an entity.
@@ -197,7 +198,8 @@ def attempt_catch(
         failed_attempts: Number of previous failed attempts on this entity
         luck_bonus: Bonus from equipped luck items
         city_bonus: Bonus from city buildings (University) - percentage
-        
+        roll_override: Optional canonical roll value (0.0-1.0) supplied by UI
+
     Returns:
         Tuple of (success: bool, probability: float, roll: float, message: str)
     """
@@ -210,8 +212,15 @@ def attempt_catch(
         city_bonus=city_bonus,
     )
     
-    # Roll the dice
-    roll = random.random()
+    # Roll the dice (or consume the canonical roll provided by caller/UI).
+    if roll_override is None:
+        roll = random.random()
+    else:
+        try:
+            roll = float(roll_override)
+        except (TypeError, ValueError):
+            roll = random.random()
+        roll = max(0.0, min(1.0, roll))
     success = roll < probability
     
     # Generate appropriate message
