@@ -12,7 +12,7 @@
     <!-- Bloom Glow for Eye -->
     <filter id="eye-bloom" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="4" result="blur" />
-      <feComposite operator="screen" in="blur" in2="SourceGraphic" />
+      <feBlend mode="screen" in="blur" in2="SourceGraphic" />
     </filter>
 
     <!-- Gradients -->
