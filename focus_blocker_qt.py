@@ -11739,7 +11739,8 @@ class WeightTab(QtWidgets.QWidget):
                 "Uncommon": "#4caf50", 
                 "Rare": "#2196f3",
                 "Epic": "#9c27b0",
-                "Legendary": "#ff9800"
+                "Legendary": "#ff9800",
+                "Celestial": "#00e5ff",
             }
             msg_parts = []
             for source, item in items_earned:
@@ -17385,6 +17386,7 @@ class SleepTab(QtWidgets.QWidget):
                 "Rare": "#0070dd",
                 "Uncommon": "#1eff00",
                 "Common": "#ffffff",
+                "Celestial": "#00e5ff",
             }
             color = rarity_colors.get(rarity, "#888")
             
@@ -26166,7 +26168,8 @@ class PowerAnalysisDialog(StyledDialog):
         "Uncommon": "#4caf50", 
         "Rare": "#2196f3",
         "Epic": "#9c27b0",
-        "Legendary": "#ff9800"
+        "Legendary": "#ff9800",
+        "Celestial": "#00e5ff",
     }
     
     # Max power per slot by rarity
@@ -26175,7 +26178,8 @@ class PowerAnalysisDialog(StyledDialog):
         "Uncommon": 25,
         "Rare": 50,
         "Epic": 100,
-        "Legendary": 250
+        "Legendary": 250,
+        "Celestial": 500,
     }
     
     def __init__(self, breakdown: dict, equipped: dict, parent=None, *,
@@ -34416,10 +34420,10 @@ class DevTab(QtWidgets.QWidget):
         
         # Rarity-specific encounter buttons
         rarity_btn_layout = QtWidgets.QHBoxLayout()
-        for rarity in ["common", "uncommon", "rare", "epic", "legendary"]:
+        for rarity in ["common", "uncommon", "rare", "epic", "legendary", "celestial"]:
             btn = QtWidgets.QPushButton(rarity.capitalize())
             color = {"common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3", 
-                     "epic": "#9c27b0", "legendary": "#ff9800"}[rarity]
+                     "epic": "#9c27b0", "legendary": "#ff9800", "celestial": "#00e5ff"}[rarity]
             btn.setStyleSheet(f"background-color: {color}; color: white; font-weight: bold; padding: 6px;")
             btn.clicked.connect(lambda checked, r=rarity: self._encounter_by_rarity(r))
             rarity_btn_layout.addWidget(btn)
@@ -35795,7 +35799,7 @@ class DevTab(QtWidgets.QWidget):
             
             self.status_label.setText(f"âś¨ {rarity.upper()}: {entity.name}{' â­' if is_exceptional else ''}")
             color = {"common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3", 
-                     "epic": "#9c27b0", "legendary": "#ff9800"}.get(rarity, "#4caf50")
+                     "epic": "#9c27b0", "legendary": "#ff9800", "celestial": "#00e5ff"}.get(rarity, "#4caf50")
             self.status_label.setStyleSheet(f"color: {color}; padding: 10px;")
             
         except Exception as e:
@@ -35894,7 +35898,7 @@ class DevTab(QtWidgets.QWidget):
             
             rarity_colors = {
                 "common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3",
-                "epic": "#9c27b0", "legendary": "#ff9800"
+                "epic": "#9c27b0", "legendary": "#ff9800", "celestial": "#00e5ff"
             }
             
             for i, entity in enumerate(entities):
