@@ -18903,7 +18903,7 @@ class CharacterCanvas(QtWidgets.QWidget):
                 is_visible = True
         if self._is_web_renderer_active() and self._animations_requested and is_visible:
             if not self._web_paused_for_resize:
-                self._set_web_page_active(False)
+                self._pause_web_page_animations_for_resize()
                 self._web_paused_for_resize = True
         if self._web_resize_settle_timer.isActive():
             self._web_resize_settle_timer.stop()
@@ -19179,6 +19179,35 @@ class CharacterCanvas(QtWidgets.QWidget):
                 })();
                 """
             )
+
+    def _pause_web_page_animations_for_resize(self) -> None:
+        """Pause WebEngine animation work during active resize without hiding page."""
+        if not self.web_view or not HAS_WEBENGINE:
+            return
+        page = self.web_view.page()
+        if QWebEnginePage is not None:
+            try:
+                page.setLifecycleState(QWebEnginePage.LifecycleState.Frozen)
+            except Exception:
+                pass
+        if not self._web_content_loaded:
+            return
+        page.runJavaScript(
+            """
+            (() => {
+                document.querySelectorAll('svg').forEach(svg => {
+                    try {
+                        if (typeof svg.pauseAnimations === 'function') {
+                            svg.pauseAnimations();
+                        }
+                    } catch (_err) {}
+                });
+                document.querySelectorAll('*').forEach(el => {
+                    el.style.animationPlayState = 'paused';
+                });
+            })();
+            """
+        )
 
     def _suspend_svg_renderer_bindings(self) -> None:
         if not self._manage_svg_animations:
