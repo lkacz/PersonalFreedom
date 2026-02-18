@@ -715,7 +715,8 @@ class ItemRewardDialog(StyledDialog):
         "Uncommon": ["Nice find! 🌟", "Your focus is paying off!", "Quality gear!"],
         "Rare": ["Rare drop! You're on fire! 🔥", "Sweet loot! ⚡", "Excellent!"],
         "Epic": ["EPIC! Your dedication shows! 💜", "Champion tier! 👑", "Incredible!"],
-        "Legendary": ["LEGENDARY! Unstoppable! ⭐", "GODLIKE FOCUS! 🏆", "You are a legend!"]
+        "Legendary": ["LEGENDARY! Unstoppable! ⭐", "GODLIKE FOCUS! 🏆", "You are a legend!"],
+        "Celestial": ["CELESTIAL! Beyond Legendary. Beyond limits.", "Reality bends to your discipline.", "A new apex tier has arrived."],
     }
     
     def __init__(
@@ -761,21 +762,19 @@ class ItemRewardDialog(StyledDialog):
         
         super().__init__(parent, title, header_emoji, 480, 700, closable=True)
         
-        # Play celebration sound for Epic/Legendary
-        if self._show_celebration and self._best_rarity in ["Epic", "Legendary"]:
+        # Play celebration sound for top-tier drops.
+        if self._show_celebration and self._best_rarity in ["Epic", "Legendary", "Celestial"]:
             QtCore.QTimer.singleShot(100, self._play_celebration)
     
     def _get_best_rarity(self) -> str:
         """Get the highest rarity among earned items."""
         best_idx = 0
+        rarity_index = {r.lower(): idx for idx, r in enumerate(self.RARITY_ORDER)}
         for item in self._items_earned:
-            rarity = item.get("rarity", "Common")
-            try:
-                idx = self.RARITY_ORDER.index(rarity)
-                if idx > best_idx:
-                    best_idx = idx
-            except ValueError:
-                pass
+            rarity = str(item.get("rarity", "Common")).strip().lower()
+            idx = rarity_index.get(rarity)
+            if idx is not None and idx > best_idx:
+                best_idx = idx
         return self.RARITY_ORDER[best_idx]
     
     def _get_dynamic_title(self) -> tuple:
@@ -786,6 +785,8 @@ class ItemRewardDialog(StyledDialog):
         
         if has_lucky:
             return "🍀 LUCKY UPGRADE!", "🍀"
+        elif rarity == "Celestial":
+            return "✨ CELESTIAL DROP!", "✨"
         elif rarity == "Legendary":
             return "⭐ LEGENDARY DROP!", "⭐"
         elif rarity == "Epic":

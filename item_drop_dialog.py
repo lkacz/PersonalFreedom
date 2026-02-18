@@ -23,6 +23,17 @@ except ImportError:
     RARITY_POWER = {}
 
 
+def _canonical_rarity_name(rarity: str, default: str = "Common") -> str:
+    """Normalize rarity labels to canonical casing."""
+    if not isinstance(rarity, str):
+        return default
+    normalized = rarity.strip().lower()
+    for known in ITEM_RARITIES.keys():
+        if str(known).strip().lower() == normalized:
+            return known
+    return default
+
+
 class ItemComparisonWidget(QtWidgets.QWidget):
     """Side-by-side comparison of new item vs currently equipped (dark theme)."""
     
@@ -165,7 +176,7 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         layout.addWidget(title_label)
         
         # Rarity color
-        rarity = item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(item.get("rarity", "Common"))
         rarity_info = ITEM_RARITIES.get(rarity, {})
         color = rarity_info.get("color", "#9e9e9e")
         
@@ -268,7 +279,7 @@ class EnhancedItemDropDialog(StyledDialog):
         self.item.setdefault("power", 10)
         
         # Determine header based on rarity
-        rarity = self.item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(self.item.get("rarity", "Common"))
         if self.item.get("lucky_upgrade"):
             header_text = "LUCKY UPGRADE!"
             header_icon = "🍀"
@@ -301,7 +312,7 @@ class EnhancedItemDropDialog(StyledDialog):
     
     def _build_content(self, layout: QtWidgets.QVBoxLayout):
         """Build the complete dialog content."""
-        rarity = self.item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(self.item.get("rarity", "Common"))
         rarity_info = ITEM_RARITIES.get(rarity, {})
         color = rarity_info.get("color", "#9e9e9e")
         
@@ -481,7 +492,7 @@ class EnhancedItemDropDialog(StyledDialog):
         visual.setAlignment(QtCore.Qt.AlignCenter)
         
         # Use pixmap if available, otherwise show large emoji
-        rarity = self.item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(self.item.get("rarity", "Common"))
         rarity_order = list(ITEM_RARITIES.keys()) if ITEM_RARITIES else ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
         try:
             stars = rarity_order.index(rarity) + 1
@@ -613,7 +624,7 @@ class EnhancedItemDropDialog(StyledDialog):
     
     def _start_celebration(self):
         """Start celebration animation."""
-        rarity = self.item.get("rarity", "Common")
+        rarity = _canonical_rarity_name(self.item.get("rarity", "Common"))
         
         # Play special sounds for Epic and above.
         if rarity == "Celestial":

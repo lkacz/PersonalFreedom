@@ -38,10 +38,12 @@ def _get_item_rarity_order(include_unreleased: bool = False) -> List[str]:
 
 def _get_item_rarity_index(rarity: str, order: Optional[List[str]] = None) -> int:
     tiers = order or _get_item_rarity_order(include_unreleased=True)
-    try:
-        return tiers.index(rarity)
-    except ValueError:
-        return 0
+    if isinstance(rarity, str):
+        normalized = rarity.strip().lower()
+        for idx, tier in enumerate(tiers):
+            if str(tier).strip().lower() == normalized:
+                return idx
+    return 0
 
 try:
     from __version__ import __version__ as APP_VERSION
@@ -18874,6 +18876,7 @@ class CharacterCanvas(QtWidgets.QWidget):
 
     def _on_web_resize_settled(self) -> None:
         """Resume WebEngine animations after resize drag settles."""
+        was_resize_paused = self._web_paused_for_resize
         self._web_paused_for_resize = False
         if not self.web_view:
             return
@@ -18884,7 +18887,7 @@ class CharacterCanvas(QtWidgets.QWidget):
             except Exception:
                 is_visible = True
         if self._is_web_renderer_active() and self._animations_requested and is_visible:
-            self._set_web_page_active(True)
+            self._set_web_page_active(True, force=was_resize_paused)
         self._schedule_web_view_scale_update(immediate=True)
 
     def _note_web_resize_activity(self) -> None:
@@ -19124,13 +19127,13 @@ class CharacterCanvas(QtWidgets.QWidget):
     def _is_web_renderer_active(self) -> bool:
         return bool(self.web_view and self.web_view.isVisible())
 
-    def _set_web_page_active(self, active: bool) -> None:
+    def _set_web_page_active(self, active: bool, *, force: bool = False) -> None:
         """Pause/resume WebEngine SVG/CSS animations via lifecycle + SMIL controls."""
         if not self.web_view or not HAS_WEBENGINE:
             return
         target_active = bool(active)
         current_state = getattr(self, "_web_page_active_state", None)
-        if current_state is target_active and self._web_content_loaded:
+        if not force and current_state is target_active and self._web_content_loaded:
             return
         self._web_page_active_state = target_active
         page = self.web_view.page()
@@ -27473,7 +27476,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
             "Uncommon": "#4caf50",
             "Rare": "#2196f3",
             "Epic": "#9c27b0",
-            "Legendary": "#ff9800"
+            "Legendary": "#ff9800",
+            "Celestial": "#00e5ff",
         }
 
         for slot in slots:
@@ -27941,7 +27945,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 "Uncommon": "#4caf50",
                 "Rare": "#2196f3",
                 "Epic": "#9c27b0",
-                "Legendary": "#ff9800"
+                "Legendary": "#ff9800",
+                "Celestial": "#00e5ff",
             }
             
             # Prepare item data
@@ -28420,7 +28425,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
             "Uncommon": "#4caf50",
             "Rare": "#2196f3",
             "Epic": "#9c27b0",
-            "Legendary": "#ff9800"
+            "Legendary": "#ff9800",
+            "Celestial": "#00e5ff",
         }
         
         # Update slot labels with themed names (no rarity - shown in dropdown)
@@ -28549,7 +28555,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
             "Uncommon": "#4caf50",
             "Rare": "#2196f3",
             "Epic": "#9c27b0",
-            "Legendary": "#ff9800"
+            "Legendary": "#ff9800",
+            "Celestial": "#00e5ff",
         }
         
         # Update slot label
@@ -28964,7 +28971,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     max_obtainable_rarity = get_obtainable_rarity_order()[-1]
                 except Exception:
                     pass
-                all_top_tier = all(i.get("rarity") == max_obtainable_rarity for i in items)
+                all_top_tier = all(
+                    str(i.get("rarity", "")).strip().lower() == str(max_obtainable_rarity).lower()
+                    for i in items
+                )
                 if all_top_tier:
                     # Top-tier-only merges act as a reroll to a new top-tier item/slot.
                     if items_merge_luck > 0:
@@ -35957,13 +35967,16 @@ class DevTab(QtWidgets.QWidget):
             
             rarity_colors = {
                 "common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3",
-                "epic": "#9c27b0", "legendary": "#ff9800"
+                "epic": "#9c27b0", "legendary": "#ff9800", "celestial": "#00e5ff"
             }
-            
-            for entity in sorted(entities, key=lambda e: (
-                ["common", "uncommon", "rare", "epic", "legendary"].index(e.rarity.lower()),
-                e.name
-            )):
+            rarity_order = {
+                rarity: idx
+                for idx, rarity in enumerate(["common", "uncommon", "rare", "epic", "legendary", "celestial"])
+            }
+            for entity in sorted(
+                entities,
+                key=lambda e: (rarity_order.get(str(e.rarity).lower(), len(rarity_order)), e.name),
+            ):
                 color = rarity_colors.get(entity.rarity.lower(), "#9e9e9e")
                 
                 # Normal variant row
