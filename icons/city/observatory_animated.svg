@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <!-- Observatory with rotating dome and twinkling stars - 128x128 Enhanced Animated Version -->
   <defs>
     <linearGradient id="nightSky" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -63,7 +63,7 @@
       <stop offset="50%" style="stop-color:#7C4DFF" stop-opacity="0.15"/>
       <stop offset="100%" style="stop-color:#651FFF" stop-opacity="0"/>
     </radialGradient>
-    <filter id="starBlur" x="-100%" y="-100%" width="300%" height="300%">
+    <filter id="starBlur" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="1.5" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
@@ -382,3 +382,4 @@
     <animate attributeName="cy" values="102;98;102" dur="3.5s" repeatCount="indefinite" begin="1s"/>
   </circle>
 </svg>
+

@@ -74,6 +74,7 @@ artifacts/hero_previews/
 artifacts/previews/
 artifacts/perf_session_*/
 artifacts/repro_*/
+artifacts/run_*/
 artifacts/svg_deep_scan_report.json
 preview_hoodie_alignment_inline.html
 preview_thief_hoodies_composite.svg

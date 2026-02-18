@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <!-- Library Level 3 (Animated) - Futuristic Neural Knowledge Center -->
   <defs>
@@ -34,7 +34,7 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <filter id="strongGlow" x="-100%" y="-100%" width="300%" height="300%">
+    <filter id="strongGlow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
@@ -286,3 +286,4 @@
     <animate attributeName="r" values="2;1;2" dur="1.2s" repeatCount="indefinite"/>
   </circle>
 </svg>
+

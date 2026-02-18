@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <!-- Royal Mint Level 3 (Animated) - Futuristic Quantum Currency Generator -->
   <defs>
@@ -95,7 +95,7 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <filter id="strongGlow" x="-100%" y="-100%" width="300%" height="300%">
+    <filter id="strongGlow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
@@ -176,7 +176,7 @@
   </circle>
   <circle cx="64" cy="36" r="5" fill="url(#coinShine)"/>
   <!-- Bitcoin symbol rotating -->
-  <text x="61" y="39" font-size="6" fill="#FFFFFF" font-weight="bold">₿
+  <text x="61" y="39" font-size="6" fill="#FFFFFF" font-weight="bold">â‚ż
     <animateTransform attributeName="transform" type="rotate" values="0 64 36;360 64 36" dur="8s" repeatCount="indefinite"/>
   </text>
   
@@ -258,17 +258,17 @@
       <animate attributeName="y" values="55;51;55" dur="2s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
     </text>
-    <text x="72" y="55" font-size="7" font-weight="bold">€
+    <text x="72" y="55" font-size="7" font-weight="bold">â‚¬
       <animate attributeName="y" values="55;52;55" dur="2.5s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="1;0.5;1" dur="2.5s" repeatCount="indefinite"/>
     </text>
   </g>
   <g fill="url(#cryptoCoinGrad)">
-    <text x="36" y="48" font-size="6" font-weight="bold">¥
+    <text x="36" y="48" font-size="6" font-weight="bold">ÂĄ
       <animate attributeName="y" values="48;44;48" dur="3s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
     </text>
-    <text x="86" y="48" font-size="6" font-weight="bold">£
+    <text x="86" y="48" font-size="6" font-weight="bold">ÂŁ
       <animate attributeName="y" values="48;45;48" dur="2.8s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="1;0.6;1" dur="2.8s" repeatCount="indefinite"/>
     </text>
@@ -626,3 +626,4 @@
     <animate attributeName="opacity" values="0.9;0.4;0.9" dur="2.2s" repeatCount="indefinite"/>
   </circle>
 </svg>
+

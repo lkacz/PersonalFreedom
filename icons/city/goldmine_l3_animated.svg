@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <!-- Goldmine Level 3 Animated - Futuristic Plasma Extraction Facility -->
   <defs>
@@ -61,7 +61,7 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <filter id="strongGlow" x="-100%" y="-100%" width="300%" height="300%">
+    <filter id="strongGlow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
@@ -311,3 +311,4 @@
     <animate attributeName="opacity" values="0;0.6;0" dur="3.5s" repeatCount="indefinite" begin="1s"/>
   </path>
 </svg>
+
