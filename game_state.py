@@ -334,7 +334,7 @@ class GameStateManager(QtCore.QObject):
                 name, slot, rarity = parts
                 if (item.get("name") == name and 
                     item.get("slot") == slot and 
-                    item.get("rarity") == rarity):
+                    str(item.get("rarity", "")).strip().lower() == str(rarity).strip().lower()):
                     return True
         
         return False
