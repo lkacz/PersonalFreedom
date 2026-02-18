@@ -1692,18 +1692,34 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self._pre_rolled_result = pre_rolled_result if isinstance(pre_rolled_result, dict) else {}
         required_roll_keys = {"won", "chance", "win_roll"}
         if not required_roll_keys.issubset(self._pre_rolled_result.keys()):
+            canonical_win_roll = random.random()
+            canonical_rarity_roll = random.random() * 100.0
             try:
                 from gamification import roll_priority_completion_reward
                 fallback_result = roll_priority_completion_reward(
                     story_id=story_id,
                     logged_hours=logged_hours,
                     adhd_buster=adhd_buster,
+                    win_roll_override=canonical_win_roll,
+                    rarity_roll_override=canonical_rarity_roll,
                 )
                 if isinstance(fallback_result, dict):
                     self._pre_rolled_result = fallback_result
             except Exception:
                 # Keep deterministic fallback behavior below if backend roll is unavailable.
                 pass
+            if not required_roll_keys.issubset(self._pre_rolled_result.keys()):
+                fallback_chance = int(max(0.0, min(99.0, float(win_chance) * 100.0)))
+                fallback_won = canonical_win_roll < (fallback_chance / 100.0)
+                self._pre_rolled_result = {
+                    "won": fallback_won,
+                    "chance": fallback_chance,
+                    "win_roll": canonical_win_roll,
+                    "rarity_roll": canonical_rarity_roll if fallback_won else None,
+                    "rarity": "",
+                    "item": None,
+                    "power_gating": None,
+                }
 
         self.rarity_locked_tiers, self.rarity_roll_ceiling, self.rarity_lock_message = _extract_power_gate_ui_state(
             self._pre_rolled_result.get("power_gating")
@@ -2318,9 +2334,6 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         cumulative = 0.0
         for tier, zone_pct in zones:
             if pos < cumulative + zone_pct:
-                if tier == "Celestial":
-                    # Celestial is a separate bonus roll; stage-1 roll maps to Legendary.
-                    tier = "Legendary"
                 return _coerce_unlocked_tier(tier, self.TIERS, self.locked_tiers)
             cumulative += zone_pct
         return _coerce_unlocked_tier("Legendary", self.TIERS, self.locked_tiers)
@@ -2763,7 +2776,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                  celestial_chance: float = 0.0,
                  legendary_count: int = 0,
                  final_rarity: Optional[str] = None,
-                 celestial_triggered: bool = False):
+                 celestial_triggered: bool = False,
+                 celestial_roll: Optional[float] = None):
         """
         Args:
             success_roll: The actual success roll (0.0-1.0). If negative, generates random roll.
@@ -2780,6 +2794,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             legendary_count: Legendary item count used for Celestial unlock context
             final_rarity: Backend-authoritative final rarity (may be Celestial)
             celestial_triggered: Whether backend Celestial bonus already triggered
+            celestial_roll: Optional Celestial roll (0.0-1.0). If omitted and chance
+                is available, a roll is generated for animation-authored outcomes.
         """
         super().__init__(parent)
         # Generate random roll if not provided (negative means "generate one")
@@ -2811,8 +2827,27 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.tier_roll = max(0.0, min(self.tier_roll_ceiling, self.tier_roll))
         self.rolled_tier = rolled_tier if rolled_tier in self.TIERS else self._determine_tier(self.tier_roll)
         self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
-        self.celestial_triggered = bool(celestial_triggered)
-        resolved_final_rarity = str(final_rarity or "").strip()
+        resolved_celestial_roll = celestial_roll
+        if resolved_celestial_roll is None and self.celestial_chance > 0.0:
+            resolved_celestial_roll = random.random()
+        if resolved_celestial_roll is not None:
+            try:
+                resolved_celestial_roll = float(resolved_celestial_roll)
+            except (TypeError, ValueError):
+                resolved_celestial_roll = 1.0
+            resolved_celestial_roll = max(0.0, min(1.0, resolved_celestial_roll))
+        self.celestial_roll = resolved_celestial_roll
+
+        explicit_final_rarity = str(final_rarity or "").strip()
+        explicit_celestial = bool(celestial_triggered or explicit_final_rarity == "Celestial")
+        auto_celestial = bool(
+            (not explicit_final_rarity)
+            and self.is_success
+            and self.celestial_roll is not None
+            and self.celestial_roll < self.celestial_chance
+        )
+        self.celestial_triggered = explicit_celestial or auto_celestial
+        resolved_final_rarity = explicit_final_rarity
         if resolved_final_rarity not in self.TIER_COLORS:
             resolved_final_rarity = "Celestial" if self.celestial_triggered else self.rolled_tier
         self.final_rarity = resolved_final_rarity
@@ -2965,16 +3000,6 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             self.stage1_lock_label.setWordWrap(True)
             self.stage1_lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
             stage1_layout.addWidget(self.stage1_lock_label)
-        
-        if self.celestial_chance > 0.0:
-            celestial_pct = int(round(self.celestial_chance * 100))
-            celestial_text = (
-                f"Celestial bonus unlocked: {celestial_pct}% "
-                f"({self.legendary_count} Legendary merged)"
-            )
-            self.stage1_celestial_label = QtWidgets.QLabel(celestial_text)
-            self.stage1_celestial_label.setStyleSheet("color: #00e5ff; font-size: 10px;")
-            stage1_layout.addWidget(self.stage1_celestial_label)
         
         self.stage1_result = QtWidgets.QLabel("Waiting...")
         self.stage1_result.setAlignment(QtCore.Qt.AlignCenter)
@@ -3178,10 +3203,23 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage1_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage1_result.setText("Rolling...")
         display_target_roll = self.stage1_slider.map_roll_to_display(self.tier_roll)
-        # Keep animation physically aligned to the full visible bar so it can
-        # traverse the Celestial lane when present. Only clamp if backend
-        # power-gating ceiling is explicitly below 100.
-        if self.tier_roll_ceiling < 100.0:
+        if self.celestial_triggered and self.celestial_chance > 0.0:
+            base_lane_end = self.stage1_slider.get_base_display_scale() * 100.0
+            celestial_lane_width = max(0.0, 100.0 - base_lane_end)
+            celestial_roll = self.celestial_roll if self.celestial_roll is not None else 0.5
+            celestial_roll = max(0.0, min(1.0, float(celestial_roll)))
+            display_target_roll = base_lane_end + (celestial_lane_width * celestial_roll)
+        # Keep animation aligned with the full visible bar whenever the full
+        # range is effectively unlocked (including near-100 float drift).
+        # Only clamp when backend gating explicitly limits the legal span.
+        ceiling_epsilon = 1e-3
+        if (
+            self.celestial_chance > 0.0
+            and not self.locked_tiers
+            and self.tier_roll_ceiling >= (100.0 - ceiling_epsilon)
+        ):
+            display_roll_ceiling = 100.0
+        elif self.tier_roll_ceiling < (100.0 - ceiling_epsilon):
             display_roll_ceiling = self.stage1_slider.map_roll_to_display(self.tier_roll_ceiling)
         else:
             display_roll_ceiling = 100.0
@@ -3196,18 +3234,21 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
     
     def _on_stage1_complete(self):
         """Handle tier roll result."""
-        color = self.TIER_COLORS.get(self.rolled_tier, "#aaa")
-        
-        if self.rolled_tier == "Legendary":
-            label = f"🌟 {self.rolled_tier.upper()}!! 🌟"
-        elif self.rolled_tier == "Epic":
-            label = f"✨ {self.rolled_tier}! ✨"
+        stage1_tier = "Celestial" if self.celestial_triggered else self.rolled_tier
+        color = self.TIER_COLORS.get(stage1_tier, "#aaa")
+
+        if stage1_tier == "Celestial":
+            label = "🌌 CELESTIAL!!! 🌌"
+        elif stage1_tier == "Legendary":
+            label = f"🌟 {stage1_tier.upper()}!! 🌟"
+        elif stage1_tier == "Epic":
+            label = f"✨ {stage1_tier}! ✨"
         else:
-            label = f"{self.rolled_tier}!"
+            label = f"{stage1_tier}!"
         
         self.stage1_result.setText(label)
         self.stage1_result.setStyleSheet(f"color: {color}; font-size: 16px; font-weight: bold;")
-        self.stage1_slider.set_result(self.rolled_tier)
+        self.stage1_slider.set_result(stage1_tier)
         
         # Skip stage 2 if guaranteed success (100%)
         if self.success_threshold >= 1.0:
@@ -3229,7 +3270,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             QFrame { background: #2a2a50; border: none; border-radius: 8px; }
         """)
         self.stage2_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
-        self.stage2_title.setText(f"🎲 Stage 2: Will you get the {self.rolled_tier}? ({self.success_threshold*100:.0f}% chance)")
+        stage2_target = self.final_rarity if self.celestial_triggered else self.rolled_tier
+        self.stage2_title.setText(f"🎲 Stage 2: Will you get the {stage2_target}? ({self.success_threshold*100:.0f}% chance)")
         self.stage2_slider.setEnabled(True)
         self.stage2_result.setText("Rolling for success...")
         self.stage2_result.setStyleSheet("color: #aaa; font-size: 14px;")
@@ -3249,7 +3291,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
     
     def _on_stage2_complete(self):
         """Handle success/fail result."""
-        color = self.TIER_COLORS.get(self.rolled_tier, "#aaa")
+        color = self.TIER_COLORS.get(self.final_rarity if self.celestial_triggered else self.rolled_tier, "#aaa")
 
         if self.is_success:
             self.stage2_result.setText("SUCCESS!")
@@ -3287,7 +3329,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             self.stage2_result.setStyleSheet("color: #f44336; font-size: 14px; font-weight: bold;")
             self.stage2_slider.set_result(False)
 
-            self.final_result.setText(f"You almost had {self.rolled_tier}... All items were destroyed.")
+            lost_rarity = self.final_rarity if self.celestial_triggered else self.rolled_tier
+            self.final_result.setText(f"You almost had {lost_rarity}... All items were destroyed.")
             self.final_result.setStyleSheet("color: #f44336; font-size: 14px;")
             _play_lottery_result_sound(False)  # Play lose sound
             _reveal_continue_btn(self.continue_btn)  # Show continue button for user to close when ready
@@ -3745,8 +3788,14 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         if not required_roll_keys.issubset(self._pre_rolled_outcome.keys()):
             try:
                 from gamification import roll_water_reward_outcome
+                # Dialog owns canonical roll generation when caller does not
+                # provide a pre-rolled outcome.
+                canonical_success_roll = random.random()
+                canonical_tier_roll = random.random() * 100.0
                 fallback_outcome = roll_water_reward_outcome(
                     glass_number=glass_number,
+                    success_roll=canonical_success_roll,
+                    tier_roll=canonical_tier_roll,
                     adhd_buster=adhd_buster,
                 )
                 if isinstance(fallback_outcome, dict):
@@ -4506,7 +4555,9 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         self,
         session_minutes: int,
         streak_days: int,
-        item: dict,
+        item: Optional[dict] = None,
+        story_id: Optional[str] = None,
+        adhd_buster: Optional[dict] = None,
         tier_weights: Optional[list] = None,
         tier_roll: Optional[float] = None,
         power_gating: Optional[dict] = None,
@@ -4516,25 +4567,77 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         Args:
             session_minutes: Session duration in minutes
             streak_days: Current streak for bonus calculation
-            item: Pre-generated item to reveal
+            item: Optional pre-generated item to reveal
+            story_id: Story theme for generated item (when item is omitted)
+            adhd_buster: Hero data used for power-gating and item generation
         """
         super().__init__(parent)
         self.session_minutes = session_minutes
         self.streak_days = streak_days
-        self.item = item
+        self.story_id = story_id
+        self.adhd_buster = adhd_buster if isinstance(adhd_buster, dict) else None
+        self.item = item if isinstance(item, dict) else None
         self.tier_weights = tier_weights if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == 5 else None
-        self.rolled_tier = item.get("rarity", "Common")
+        self.rolled_tier = (self.item or {}).get("rarity", "Common")
         self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(power_gating)
+
+        # Dialog-owned canonical roll path when caller does not pre-generate item/outcome.
+        resolved_tier_roll = tier_roll
+        if self.item is None:
+            if resolved_tier_roll is None:
+                resolved_tier_roll = random.random() * 100.0
+            try:
+                resolved_tier_roll = float(resolved_tier_roll)
+            except (TypeError, ValueError):
+                resolved_tier_roll = random.random() * 100.0
+            resolved_tier_roll = max(0.0, min(100.0, resolved_tier_roll))
+
+            try:
+                from gamification import generate_item, roll_focus_reward_outcome
+                focus_outcome = roll_focus_reward_outcome(
+                    session_minutes=self.session_minutes,
+                    streak_days=self.streak_days,
+                    adhd_buster=self.adhd_buster,
+                    roll=resolved_tier_roll,
+                )
+                if isinstance(focus_outcome, dict):
+                    backend_weights = focus_outcome.get("weights")
+                    if isinstance(backend_weights, (list, tuple)) and len(backend_weights) == 5:
+                        self.tier_weights = list(backend_weights)
+                    backend_rarity = focus_outcome.get("rarity")
+                    if isinstance(backend_rarity, str):
+                        self.rolled_tier = backend_rarity
+                    self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(
+                        focus_outcome.get("power_gating")
+                    )
+                    resolved_tier_roll = focus_outcome.get("roll", resolved_tier_roll)
+                self.rolled_tier = _coerce_unlocked_tier(
+                    self.rolled_tier,
+                    ["Common", "Uncommon", "Rare", "Epic", "Legendary"],
+                    self.locked_tiers,
+                )
+                self.item = generate_item(
+                    rarity=self.rolled_tier,
+                    story_id=self.story_id,
+                    adhd_buster=self.adhd_buster,
+                )
+            except Exception:
+                self.item = {
+                    "name": f"{self.rolled_tier} Item",
+                    "rarity": self.rolled_tier,
+                    "slot": "item",
+                    "power": 10,
+                }
         
         # Calculate target position in the slider
         self._setup_ui()
         
         # Calculate roll position based on tier
-        if tier_roll is None:
+        if resolved_tier_roll is None:
             self.tier_roll = self._calculate_roll_for_tier(self.rolled_tier)
         else:
             try:
-                self.tier_roll = float(tier_roll)
+                self.tier_roll = float(resolved_tier_roll)
             except (TypeError, ValueError):
                 self.tier_roll = self._calculate_roll_for_tier(self.rolled_tier)
         self.tier_roll = max(0.0, min(self.roll_ceiling, self.tier_roll))
@@ -4832,12 +4935,13 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
     }
     BASE_WINDOW = [5, 15, 60, 15, 5]
     
-    def __init__(self, effective_minutes: float, pre_rolled_rarity: str,
+    def __init__(self, effective_minutes: float, pre_rolled_rarity: Optional[str] = None,
                  story_id: str = None, parent: Optional[QtWidgets.QWidget] = None,
                  item: Optional[dict] = None,
                  tier_roll: Optional[float] = None,
                  tier_weights: Optional[list] = None,
-                 power_gating: Optional[dict] = None):
+                 power_gating: Optional[dict] = None,
+                 adhd_buster: Optional[dict] = None):
         """
         Args:
             effective_minutes: Calculated effective minutes for display
@@ -4848,27 +4952,67 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         """
         super().__init__(parent)
         self.effective_minutes = effective_minutes
+        self.adhd_buster = adhd_buster if isinstance(adhd_buster, dict) else None
         self.item = item if isinstance(item, dict) else None
         self.rolled_tier = (self.item or {}).get("rarity", pre_rolled_rarity or "Common")
-        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(power_gating)
+        self.power_gating = power_gating
+        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(self.power_gating)
         if self.rolled_tier not in self.TIERS:
             self.rolled_tier = pre_rolled_rarity if pre_rolled_rarity in self.TIERS else "Common"
-        self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
         self.story_id = story_id
-        
-        # Calculate tier distribution for display
+
         self.tier_weights = (
             list(tier_weights)
             if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == len(self.TIERS)
-            else self._calculate_tier_weights()
+            else None
         )
-        
+        resolved_tier_roll = tier_roll
+
+        # Dialog-owned canonical roll path when caller does not pre-generate item/outcome.
+        if self.item is None:
+            if resolved_tier_roll is None:
+                resolved_tier_roll = random.random() * 100.0
+            try:
+                resolved_tier_roll = float(resolved_tier_roll)
+            except (TypeError, ValueError):
+                resolved_tier_roll = random.random() * 100.0
+            resolved_tier_roll = max(0.0, min(100.0, resolved_tier_roll))
+
+            try:
+                from gamification import generate_item, roll_activity_reward_outcome
+
+                activity_outcome = roll_activity_reward_outcome(
+                    self.effective_minutes,
+                    roll=resolved_tier_roll,
+                    adhd_buster=self.adhd_buster,
+                )
+                if isinstance(activity_outcome, dict):
+                    outcome_weights = activity_outcome.get("weights")
+                    if isinstance(outcome_weights, (list, tuple)) and len(outcome_weights) == len(self.TIERS):
+                        self.tier_weights = list(outcome_weights)
+                    self.power_gating = activity_outcome.get("power_gating")
+                    self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(
+                        self.power_gating
+                    )
+                    outcome_rarity = activity_outcome.get("rarity")
+                    if isinstance(outcome_rarity, str):
+                        self.rolled_tier = outcome_rarity
+                    resolved_tier_roll = activity_outcome.get("roll", resolved_tier_roll)
+                self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
+                self.item = generate_item(rarity=self.rolled_tier, story_id=self.story_id)
+            except Exception:
+                self.item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "slot": "item", "power": 10}
+
+        self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
+        if self.tier_weights is None:
+            self.tier_weights = self._calculate_tier_weights()
+
         # Pre-roll the position (0-100) for animation target
-        if tier_roll is None:
+        if resolved_tier_roll is None:
             self.tier_roll = self._get_position_for_tier(self.rolled_tier)
         else:
             try:
-                self.tier_roll = float(tier_roll)
+                self.tier_roll = float(resolved_tier_roll)
             except (TypeError, ValueError):
                 self.tier_roll = self._get_position_for_tier(self.rolled_tier)
         self.tier_roll = max(0.0, min(self.roll_ceiling, self.tier_roll))
@@ -5304,36 +5448,90 @@ class WeightLotteryDialog(QtWidgets.QDialog):
     }
     BASE_WINDOW = [5, 15, 60, 15, 5]
     
-    def __init__(self, item: dict, reward_source: str = "Weight Tracking",
+    def __init__(self, item: Optional[dict] = None, reward_source: str = "Weight Tracking",
                  extra_items: list = None, tier_weights: Optional[list] = None,
                  odds_tooltip: Optional[str] = None,
                  power_gating: Optional[dict] = None,
+                 story_id: Optional[str] = None,
+                 adhd_buster: Optional[dict] = None,
+                 daily_progress_grams: Optional[float] = None,
+                 daily_legendary_bonus: int = 0,
                  parent: Optional[QtWidgets.QWidget] = None):
         """
         Args:
-            item: The primary item that was already generated (with 'rarity' key)
+            item: Optional pre-generated primary item (with 'rarity' key)
             reward_source: Display string for the reward source (e.g., "Daily Weigh-In")
             extra_items: Additional items to show after animation (won't be animated)
             tier_weights: Optional explicit weights [C, U, R, E, L] for odds display
             odds_tooltip: Optional tooltip text describing odds/source
+            story_id: Story theme used when dialog generates canonical daily item
+            adhd_buster: Hero data for power-gating checks
+            daily_progress_grams: Positive progress grams for canonical daily reward roll
+            daily_legendary_bonus: Legendary chance bonus for daily canonical roll
             parent: Parent widget
         """
         super().__init__(parent)
-        self.item = item
+        self.story_id = story_id
+        self.adhd_buster = adhd_buster if isinstance(adhd_buster, dict) else None
+        self.item = item if isinstance(item, dict) else None
         self.reward_source = reward_source
         self.extra_items = extra_items or []
-        self.rolled_tier = item.get("rarity", "Common")
+        self.rolled_tier = (self.item or {}).get("rarity", "Common")
         self.odds_tooltip = odds_tooltip
-        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(power_gating)
+        self.power_gating = power_gating
+        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(self.power_gating)
+        self.tier_weights = list(tier_weights) if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == len(self.TIERS) else None
+        resolved_tier_roll = None
+
+        # Dialog-owned canonical generation for daily progress rewards.
+        if self.item is None and daily_progress_grams is not None:
+            try:
+                progress_grams = max(0.0, float(daily_progress_grams))
+            except (TypeError, ValueError):
+                progress_grams = 0.0
+            canonical_roll = random.random() * 100.0
+            try:
+                from gamification import generate_item, roll_daily_weight_reward_outcome
+                outcome = roll_daily_weight_reward_outcome(
+                    weight_loss_grams=progress_grams,
+                    legendary_bonus=int(daily_legendary_bonus or 0),
+                    adhd_buster=self.adhd_buster,
+                    roll=canonical_roll,
+                )
+                if isinstance(outcome, dict):
+                    weights = outcome.get("weights")
+                    if isinstance(weights, (list, tuple)) and len(weights) == len(self.TIERS):
+                        self.tier_weights = list(weights)
+                    self.power_gating = outcome.get("power_gating")
+                    self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(self.power_gating)
+                    outcome_rarity = outcome.get("rarity")
+                    if isinstance(outcome_rarity, str):
+                        self.rolled_tier = outcome_rarity
+                    resolved_tier_roll = outcome.get("roll", canonical_roll)
+                self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
+                self.item = generate_item(
+                    rarity=self.rolled_tier,
+                    story_id=self.story_id,
+                    adhd_buster=self.adhd_buster,
+                )
+            except Exception:
+                self.item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "slot": "item", "power": 10}
+
         self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
-        
         # Calculate tier weights based on rarity tier (higher tier = better weights shown)
-        self.tier_weights = tier_weights if tier_weights is not None else self._calculate_tier_weights()
-        
+        if self.tier_weights is None:
+            self.tier_weights = self._calculate_tier_weights()
+
         self._setup_ui()
-        
-        # Calculate target position using the slider's method
-        self.tier_roll = self.tier_slider.get_position_for_tier(self.rolled_tier)
+
+        # Calculate target position using the slider's method.
+        if resolved_tier_roll is None:
+            self.tier_roll = self.tier_slider.get_position_for_tier(self.rolled_tier)
+        else:
+            try:
+                self.tier_roll = float(resolved_tier_roll)
+            except (TypeError, ValueError):
+                self.tier_roll = self.tier_slider.get_position_for_tier(self.rolled_tier)
         self.tier_roll = max(0.0, min(self.roll_ceiling, self.tier_roll))
         
         QtCore.QTimer.singleShot(300, self._start_animation)
@@ -5634,36 +5832,84 @@ class SleepLotteryDialog(QtWidgets.QDialog):
     }
     BASE_WINDOW = [5, 15, 60, 15, 5]
     
-    def __init__(self, item: dict, reward_source: str = "Sleep Tracking",
+    def __init__(self, item: Optional[dict] = None, reward_source: str = "Sleep Tracking",
                  extra_items: list = None, tier_weights: Optional[list] = None,
                  odds_tooltip: Optional[str] = None,
                  power_gating: Optional[dict] = None,
+                 story_id: Optional[str] = None,
+                 adhd_buster: Optional[dict] = None,
+                 sleep_score: Optional[int] = None,
                  parent: Optional[QtWidgets.QWidget] = None):
         """
         Args:
-            item: The primary item that was already generated (with 'rarity' key)
+            item: Optional pre-generated primary item (with 'rarity' key)
             reward_source: Display string for the reward source (e.g., "Sleep Logged")
             extra_items: Additional items to show after animation (won't be animated)
             tier_weights: Optional explicit weights [C, U, R, E, L] for odds display
             odds_tooltip: Optional tooltip text describing odds/source
+            story_id: Story theme used when dialog generates canonical base item
+            adhd_buster: Hero data for power-gating checks
+            sleep_score: Score used for canonical base reward roll generation
             parent: Parent widget
         """
         super().__init__(parent)
-        self.item = item
+        self.story_id = story_id
+        self.adhd_buster = adhd_buster if isinstance(adhd_buster, dict) else None
+        self.item = item if isinstance(item, dict) else None
         self.reward_source = reward_source
         self.extra_items = extra_items or []
-        self.rolled_tier = item.get("rarity", "Common")
+        self.rolled_tier = (self.item or {}).get("rarity", "Common")
         self.odds_tooltip = odds_tooltip
-        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(power_gating)
+        self.power_gating = power_gating
+        self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(self.power_gating)
+        self.tier_weights = list(tier_weights) if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == len(self.TIERS) else None
+        resolved_tier_roll = None
+
+        # Dialog-owned canonical generation for base sleep rewards.
+        if self.item is None and sleep_score is not None:
+            canonical_roll = random.random() * 100.0
+            try:
+                from gamification import generate_item, roll_sleep_reward_outcome
+                outcome = roll_sleep_reward_outcome(
+                    score=int(sleep_score),
+                    adhd_buster=self.adhd_buster,
+                    roll=canonical_roll,
+                )
+                if isinstance(outcome, dict):
+                    weights = outcome.get("weights")
+                    if isinstance(weights, (list, tuple)) and len(weights) == len(self.TIERS):
+                        self.tier_weights = list(weights)
+                    self.power_gating = outcome.get("power_gating")
+                    self.locked_tiers, self.roll_ceiling, self.lock_message = _extract_power_gate_ui_state(self.power_gating)
+                    outcome_rarity = outcome.get("rarity")
+                    if isinstance(outcome_rarity, str):
+                        self.rolled_tier = outcome_rarity
+                    resolved_tier_roll = outcome.get("roll", canonical_roll)
+                self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
+                self.item = generate_item(
+                    rarity=self.rolled_tier,
+                    story_id=self.story_id,
+                    adhd_buster=self.adhd_buster,
+                )
+            except Exception:
+                self.item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "slot": "item", "power": 10}
+
         self.rolled_tier = _coerce_unlocked_tier(self.rolled_tier, self.TIERS, self.locked_tiers)
-        
+
         # Calculate tier weights based on rarity tier (higher tier = better weights shown)
-        self.tier_weights = tier_weights if tier_weights is not None else self._calculate_tier_weights()
+        if self.tier_weights is None:
+            self.tier_weights = self._calculate_tier_weights()
         
         self._setup_ui()
         
-        # Calculate target position using the slider's method
-        self.tier_roll = self.tier_slider.get_position_for_tier(self.rolled_tier)
+        # Calculate target position using the slider's method.
+        if resolved_tier_roll is None:
+            self.tier_roll = self.tier_slider.get_position_for_tier(self.rolled_tier)
+        else:
+            try:
+                self.tier_roll = float(resolved_tier_roll)
+            except (TypeError, ValueError):
+                self.tier_roll = self.tier_slider.get_position_for_tier(self.rolled_tier)
         self.tier_roll = max(0.0, min(self.roll_ceiling, self.tier_roll))
         
         QtCore.QTimer.singleShot(300, self._start_animation)

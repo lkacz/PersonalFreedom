@@ -2027,14 +2027,66 @@ class LuckyMergeDialog(QtWidgets.QDialog):
 
         # Determine base rarity for the lottery window display.
         base_rarity = self.result_rarity  # Calculated in __init__
+        success_rate = calculate_merge_success_rate(
+            self.items,
+            items_merge_luck=total_items_merge_luck,
+            city_bonus=self.city_merge_bonus,
+        )
+        success_rate = max(0.0, min(1.0, float(success_rate)))
 
-        # Backend is authoritative for success + tier rolls.
+        # Resolve tier distribution context before animation.
+        tier_weights = calculate_merge_tier_weights(
+            base_rarity,
+            tier_upgrade_enabled=self.tier_upgrade_enabled,
+        )
+        celestial_chance = calculate_merge_celestial_chance(self.items)
+        legendary_count = sum(
+            1
+            for item in self.items
+            if isinstance(item, dict) and _canonical_rarity_name(item.get("rarity", "Common")) == "Legendary"
+        )
+
+        # Animation is the source of truth for roll values.
+        animation_dialog = MergeTwoStageLotteryDialog(
+            -1.0,
+            success_rate,
+            tier_upgrade_enabled=self.tier_upgrade_enabled,
+            base_rarity=base_rarity,
+            parent=self,
+            tier_roll=None,
+            rolled_tier=None,
+            tier_weights=tier_weights,
+            celestial_chance=celestial_chance,
+            legendary_count=legendary_count,
+        )
+        if animation_dialog.exec_() != QtWidgets.QDialog.Accepted:
+            for button in self.findChildren(QtWidgets.QPushButton):
+                button.setEnabled(True)
+            return
+
+        resolved_success_roll = max(
+            0.0, min(1.0, float(getattr(animation_dialog, "success_roll", 1.0)))
+        )
+        resolved_tier_roll = max(
+            0.0, min(100.0, float(getattr(animation_dialog, "tier_roll", 100.0)))
+        )
+        resolved_celestial_roll = getattr(animation_dialog, "celestial_roll", None)
+        if resolved_celestial_roll is not None:
+            try:
+                resolved_celestial_roll = max(0.0, min(1.0, float(resolved_celestial_roll)))
+            except (TypeError, ValueError):
+                resolved_celestial_roll = None
+
+        # Resolve final backend outcome using the exact rolls revealed by animation.
         merge_backend = perform_lucky_merge(
             self.items,
             story_id=story_id,
             items_merge_luck=total_items_merge_luck,
             city_bonus=self.city_merge_bonus,
             tier_upgrade_enabled=self.tier_upgrade_enabled,
+            success_roll=resolved_success_roll,
+            tier_roll=resolved_tier_roll,
+            celestial_roll=resolved_celestial_roll,
             base_rarity=base_rarity,
         )
 
@@ -2049,23 +2101,6 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             msg.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
             msg.exec_()
             return
-
-        # Animate exactly the backend-rolled outcome.
-        animation_dialog = MergeTwoStageLotteryDialog(
-            merge_backend.get("roll", 1.0),
-            merge_backend.get("needed", 0.0),
-            tier_upgrade_enabled=self.tier_upgrade_enabled,
-            base_rarity=merge_backend.get("base_rarity", base_rarity),
-            parent=self,
-            tier_roll=merge_backend.get("tier_roll"),
-            rolled_tier=merge_backend.get("rolled_tier"),
-            tier_weights=merge_backend.get("tier_weights"),
-            celestial_chance=merge_backend.get("celestial_chance", 0.0),
-            legendary_count=merge_backend.get("legendary_count", 0),
-            final_rarity=merge_backend.get("final_rarity"),
-            celestial_triggered=merge_backend.get("celestial_triggered", False),
-        )
-        animation_dialog.exec_()
 
         # Calculate scrap earned (leftovers from merging)
         scrap_earned, _scrap_desc = calculate_merge_scrap(

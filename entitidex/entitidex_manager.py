@@ -343,6 +343,7 @@ class EntitidexManager:
         entity: Optional[Entity] = None,
         is_exceptional: Optional[bool] = None,
         exceptional_colors: Optional[dict] = None,
+        roll_override: Optional[float] = None,
     ) -> Optional[CatchResult]:
         """
         Attempt to catch the current or specified entity.
@@ -352,6 +353,7 @@ class EntitidexManager:
             is_exceptional: True if this is an exceptional variant attempt
                            (uses stored value if None)
             exceptional_colors: Colors to use for exceptional variant
+            roll_override: Optional canonical roll value (0.0-1.0)
             
         Returns:
             CatchResult with outcome, or None if no encounter active
@@ -378,6 +380,7 @@ class EntitidexManager:
             failed_attempts=effective_failed_attempts,
             luck_bonus=total_luck_bonus,
             city_bonus=self.city_catch_bonus,
+            roll_override=roll_override,
         )
         
         was_lucky = is_lucky_catch(probability) if success else False

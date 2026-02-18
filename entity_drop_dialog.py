@@ -7,6 +7,7 @@ the reliable lottery animation.
 """
 
 import os
+import random
 from pathlib import Path
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtSvgWidgets import QSvgWidget
@@ -975,7 +976,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
 
 
 def show_entity_encounter(entity, join_probability: float, 
-                          bond_logic_callback: Callable[[str], dict],
+                          bond_logic_callback: Callable[..., dict],
                           parent: QtWidgets.QWidget = None,
                           is_exceptional: bool = False,
                           save_callback: Optional[Callable[[str, int], dict]] = None,
@@ -990,8 +991,9 @@ def show_entity_encounter(entity, join_probability: float,
     Args:
         entity: The Entity object encountered.
         join_probability: Chance of bonding (0.0-1.0).
-        bond_logic_callback: Function that takes entity_id and returns result dict
-                             (from gamification.attempt_entitidex_bond).
+        bond_logic_callback: Function that takes entity_id and returns result dict.
+                             If supported by the callback, show_entity_encounter
+                             passes roll_override=<canonical_roll>.
         parent: Parent widget.
         is_exceptional: True if this is an exceptional variant encounter (20% chance).
         save_callback: Optional callback to save encounter for later (entity_id, coin_cost) -> result.
@@ -1151,44 +1153,16 @@ def show_entity_encounter(entity, join_probability: float,
         gift_dialog.deleteLater()  # Ensure dialog is cleaned up
         return
         
-    # 2. Perform the ACTUAL logic - is_exceptional is already baked into the callback
-    try:
-        result = bond_logic_callback(entity.id)
-        success = result.get("success", False)
-        # Use the is_exceptional from the result (should match what we passed)
-        result_is_exceptional = result.get("is_exceptional", is_exceptional)
-        exceptional_colors = result.get("exceptional_colors", None)
-    except Exception as e:
-        styled_error(parent, "Error", f"Bonding error: {str(e)}")
-        return
+    # 2. Animate first and use that canonical roll to finalize the backend result.
+    prob_used = max(0.0, min(1.0, float(join_probability)))
+    roll = random.random()
 
-    # 3. Calculate visualization roll to match the result
-    # Prefer the actual roll used by the bond logic if available.
-    prob_used = result.get("probability", join_probability)
-    roll = result.get("roll")
-    try:
-        roll = float(roll) if roll is not None else None
-    except (TypeError, ValueError):
-        roll = None
-
-    if roll is None:
-        # Deterministic fallback for legacy/error paths where backend did not return roll.
-        # Keep visualization aligned with already-resolved success/failure outcome.
-        eps = 0.0001
-        if success:
-            roll = prob_used - eps
-        else:
-            roll = prob_used + eps
-
-    roll = max(0.0, min(1.0, roll))
-    
-    # 4. Show the dramatic lottery animation
+    # 3. Show the dramatic lottery animation
     # For exceptional entities, use the playful exceptional_name if available
-    display_name = entity.exceptional_name if result_is_exceptional and entity.exceptional_name else entity.name
+    display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
     
-    if result_is_exceptional:
+    if is_exceptional:
         # Special success text for exceptional
-        border_col = exceptional_colors.get("border", "#FFD700") if exceptional_colors else "#FFD700"
         success_text = f"🌟✨ EXCEPTIONAL {display_name}! ✨🌟"
     else:
         success_text = f"✨ BONDED: {entity.name}! ✨"
@@ -1196,7 +1170,7 @@ def show_entity_encounter(entity, join_probability: float,
     anim_dialog = LotteryRollDialog(
         target_roll=roll,
         success_threshold=prob_used,
-        title=f"🎲 Bonding with {display_name if result_is_exceptional else entity.name}...",
+        title=f"🎲 Bonding with {display_name}...",
         success_text=success_text,
         failure_text="💔 Bond Failed",
         animation_duration=4.0, 
@@ -1206,6 +1180,38 @@ def show_entity_encounter(entity, join_probability: float,
     anim_dialog.exec()
     anim_dialog.hide()  # Explicitly hide before deletion
     anim_dialog.deleteLater()  # Ensure dialog is cleaned up
+
+    # 4. Finalize bond attempt using the exact roll that was animated.
+    try:
+        # Backwards compatibility: callbacks may be legacy (entity_id only)
+        # or updated (entity_id + roll_override keyword).
+        import inspect
+
+        supports_roll_override = False
+        try:
+            signature = inspect.signature(bond_logic_callback)
+            for param in signature.parameters.values():
+                if param.kind == inspect.Parameter.VAR_KEYWORD:
+                    supports_roll_override = True
+                    break
+            supports_roll_override = supports_roll_override or ("roll_override" in signature.parameters)
+        except (TypeError, ValueError):
+            supports_roll_override = False
+
+        if supports_roll_override:
+            result = bond_logic_callback(entity.id, roll_override=roll)
+        else:
+            result = bond_logic_callback(entity.id)
+        if not result.get("operation_success", True):
+            styled_warning(parent, "Bonding Error", result.get("message", "Could not complete bond attempt."))
+            return
+        success = result.get("bond_success", result.get("success", False))
+        # Use backend-returned values for post-roll messaging/rewards.
+        result_is_exceptional = result.get("is_exceptional", is_exceptional)
+        exceptional_colors = result.get("exceptional_colors", None)
+    except Exception as e:
+        styled_error(parent, "Error", f"Bonding error: {str(e)}")
+        return
     
     # 5. Show special exceptional celebration dialog
     if success and result_is_exceptional:
