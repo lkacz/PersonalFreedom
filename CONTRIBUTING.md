@@ -49,5 +49,23 @@ We love new ideas! Open an issue with the "enhancement" label to discuss your id
 - Type hints are encouraged (checked with `mypy`).
 - Docstrings are required for new functions and classes.
 
+## Text Encoding and Emoji Safety
+- Text files are expected to be UTF-8 (see `.editorconfig`).
+- Do not add BOM to Python files.
+- Run integrity checks before opening a PR:
+  ```bash
+  python tools/check_text_integrity.py --mode strict --verbose
+  ```
+  or explicitly:
+  ```bash
+  python -X utf8 tools/check_text_integrity.py --mode strict --verbose
+  ```
+- Install pre-commit hooks:
+  ```bash
+  pip install pre-commit
+  pre-commit install
+  ```
+- For high-risk user-facing emoji constants, prefer canonical tokens from `emoji_tokens.py`.
+
 ## License
 By contributing, you agree that your contributions will be licensed under the MIT License.

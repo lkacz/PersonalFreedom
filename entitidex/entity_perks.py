@@ -130,7 +130,7 @@ PERK_TYPE_FALLBACK_ICONS: Dict[PerkType, str] = {
 }
 
 # Typical mojibake markers from UTF-8 text interpreted as Windows code pages.
-_GARBLED_ICON_MARKERS = ("â", "đ", "ď", "ť", "ź", "Ž", "™", "€", "", "ˆ", "", "")
+_GARBLED_ICON_MARKERS = ("\u00e2", "\u0111", "\u010f", "\u0165", "\u017a", "\u017d", "\u2122", "\u20ac", "\x81", "\u02c6", "\x90", "\x9d")
 
 
 def _is_garbled_icon(icon: str) -> bool:

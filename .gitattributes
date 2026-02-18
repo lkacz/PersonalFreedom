@@ -13,3 +13,19 @@
 
 # IMPORTANT: These files should NOT be pushed to Git at all
 # They are ignored in .gitignore and this is just a safeguard
+
+# Text files (encoding policy enforced by .editorconfig + integrity checker)
+*.py text
+*.md text
+*.txt text
+*.json text
+*.toml text
+*.yml text
+*.yaml text
+*.html text
+*.svg text
+*.spec text
+
+# Shell scripts on Windows
+*.bat text eol=crlf
+*.ps1 text eol=crlf
