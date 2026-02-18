@@ -28680,7 +28680,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             if not item_ts and not eq_ts and not item_id and not eq_id:
                 if (eq_item.get("name") == item_name and 
                     eq_item.get("slot") == item_slot and
-                    eq_item.get("rarity") == item_rarity):
+                    str(eq_item.get("rarity", "")).strip().lower() == str(item_rarity).strip().lower()):
                     return True
         
         return False
@@ -29782,7 +29782,7 @@ class SellItemsDialog(StyledDialog):
         
         to_sell = [
             item for item in inventory
-            if item.get("rarity") == rarity and not is_equipped(item)
+            if str(item.get("rarity", "")).strip().lower() == str(rarity).strip().lower() and not is_equipped(item)
         ]
 
         if not to_sell:

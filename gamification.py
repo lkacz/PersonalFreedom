@@ -3416,7 +3416,7 @@ def calculate_legendary_minimalist_bonus(equipped: dict) -> dict:
         # Consider slot empty if no item, or item is not a valid dict with a name
         if not item or not isinstance(item, dict) or not item.get("name"):
             empty_slots.append(slot)
-        elif item.get("rarity") == "Legendary":
+        elif str(item.get("rarity", "")).strip().lower() == "legendary":
             legendary_slots.append(slot)
         else:
             non_legendary_slots.append(slot)
