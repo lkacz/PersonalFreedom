@@ -2966,10 +2966,6 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             self.stage1_lock_label.setStyleSheet("color: #f4b183; font-size: 11px;")
             stage1_layout.addWidget(self.stage1_lock_label)
         
-        # Distribution legend
-        dist_widget = self._create_distribution_legend()
-        stage1_layout.addWidget(dist_widget)
-
         if self.celestial_chance > 0.0:
             celestial_pct = int(round(self.celestial_chance * 100))
             celestial_text = (
@@ -3182,7 +3178,13 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage1_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage1_result.setText("Rolling...")
         display_target_roll = self.stage1_slider.map_roll_to_display(self.tier_roll)
-        display_roll_ceiling = self.stage1_slider.map_roll_to_display(self.tier_roll_ceiling)
+        # Keep animation physically aligned to the full visible bar so it can
+        # traverse the Celestial lane when present. Only clamp if backend
+        # power-gating ceiling is explicitly below 100.
+        if self.tier_roll_ceiling < 100.0:
+            display_roll_ceiling = self.stage1_slider.map_roll_to_display(self.tier_roll_ceiling)
+        else:
+            display_roll_ceiling = 100.0
 
         self._animate_tier_stage(
             slider=self.stage1_slider,
