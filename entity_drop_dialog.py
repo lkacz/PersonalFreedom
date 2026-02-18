@@ -136,7 +136,8 @@ def _create_mini_entity_card(entity_id: str, is_exceptional: bool = False, size:
         "uncommon": "#27ae60", 
         "rare": "#2980b9", 
         "epic": "#8e44ad", 
-        "legendary": "#d35400"
+        "legendary": "#d35400",
+        "celestial": "#00e5ff",
     }
     border_color = rarity_colors.get(entity.rarity, "#555")
     

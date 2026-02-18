@@ -919,6 +919,7 @@ class EntitidexCollectionDialog(QtWidgets.QDialog):
             "rare": "#2196F3",
             "epic": "#9C27B0",
             "legendary": "#FF9800",
+            "celestial": "#00E5FF",
         }
         
         color = rarity_colors.get(entity.rarity.lower(), "#9E9E9E")
