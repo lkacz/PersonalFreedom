@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: text-integrity
+        name: text integrity
+        entry: python -X utf8 tools/check_text_integrity.py --mode strict
+        language: system
+        pass_filenames: false
