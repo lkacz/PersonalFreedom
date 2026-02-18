@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <!-- Artisan Guild Level 3 - NEURAL DREAM FORGE - Brain-Computer Art Creation -->
   <defs>
@@ -50,7 +50,7 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <filter id="dreamGlow" x="-100%" y="-100%" width="300%" height="300%">
+    <filter id="dreamGlow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
@@ -321,3 +321,4 @@
     <animate attributeName="stroke-dasharray" values="100 0;50 50;0 100" dur="3s" repeatCount="indefinite"/>
   </path>
 </svg>
+
