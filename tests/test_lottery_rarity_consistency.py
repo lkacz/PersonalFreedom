@@ -102,6 +102,52 @@ def test_merge_tier_slider_displays_celestial_zone_when_unlocked(qapp):
     assert sum(zone_map.values()) == pytest.approx(100.0, abs=0.01)
 
 
+def test_merge_stage1_animation_uses_full_bar_with_celestial_lane(monkeypatch, qapp):
+    from lottery_animation import MergeTwoStageLotteryDialog
+
+    captured = {}
+
+    def fake_animate_tier_stage(self, slider, result_label, target_roll, on_complete, max_position=100.0):
+        captured["target_roll"] = target_roll
+        captured["max_position"] = max_position
+
+    monkeypatch.setattr(MergeTwoStageLotteryDialog, "_animate_tier_stage", fake_animate_tier_stage)
+
+    dialog = MergeTwoStageLotteryDialog(
+        success_roll=0.2,
+        success_threshold=0.5,
+        base_rarity="Legendary",
+        tier_roll=80.0,
+        rolled_tier="Legendary",
+        celestial_chance=0.32,
+        legendary_count=36,
+    )
+
+    dialog._start_stage_1()
+
+    assert captured["target_roll"] < 100.0
+    assert captured["max_position"] == pytest.approx(100.0, abs=0.001)
+    dialog.close()
+
+
+def test_merge_stage1_omits_redundant_distribution_legend_row(qapp):
+    from lottery_animation import MergeTwoStageLotteryDialog
+
+    dialog = MergeTwoStageLotteryDialog(
+        success_roll=0.2,
+        success_threshold=0.5,
+        base_rarity="Legendary",
+        tier_roll=80.0,
+        rolled_tier="Legendary",
+        celestial_chance=0.32,
+        legendary_count=36,
+    )
+
+    # Title, slider, celestial hint, result label
+    assert dialog.stage1_frame.layout().count() == 4
+    dialog.close()
+
+
 def test_activity_lottery_can_reveal_pre_awarded_item_without_rarity_drift(qapp):
     from lottery_animation import ActivityLotteryDialog
 
