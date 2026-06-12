@@ -1154,19 +1154,33 @@ class BlockerCore:
                     block_entries.append(f"{REDIRECT_IP} {clean_site}")
             block_entries.append(f"{MARKER_END}\n")
 
-            self._write_hosts_file(content.strip() + '\n' + '\n'.join(block_entries))
+            # Persist crash-recovery state BEFORE touching the hosts file.
+            # check_orphaned_session() keys off this file existing: if we wrote
+            # the hosts file first and crashed before saving state (the window
+            # spans the DNS flush and the bypass server's port-80 bind), the
+            # blocks would be invisible to recovery and never cleaned up.
+            # Writing state first guarantees the invariant: whenever blocks
+            # exist in the hosts file, a session-state file exists to find and
+            # remove them on the next launch.
+            self.session_id = str(uuid.uuid4())
+            self.save_session_state(duration_seconds)
+
+            try:
+                self._write_hosts_file(content.strip() + '\n' + '\n'.join(block_entries))
+            except Exception:
+                # Hosts write failed - roll back recovery state so we don't
+                # leave a phantom session pointing at a hosts file with no blocks.
+                self.session_id = None
+                self.clear_session_state()
+                raise
 
             self.is_blocking = True
-            self.session_id = str(uuid.uuid4())
             self._flush_dns()
-            
+
             # Start bypass attempt logger
             if self.bypass_logger:
                 self.bypass_logger.start_server()
-            
-            # Save session state for crash recovery
-            self.save_session_state(duration_seconds)
-            
+
             return True, f"Blocking {len(sites_to_block)} sites!"
 
         except PermissionError:

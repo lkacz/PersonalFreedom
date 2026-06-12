@@ -3439,7 +3439,7 @@ class TimerTab(QtWidgets.QWidget):
             # Update chart with data
             self.focus_chart.set_data(daily_stats, daily_goal_minutes)
         except Exception as e:
-            print(f"[TimerTab] Error refreshing focus chart: {e}")
+            logger.warning(f"[TimerTab] Error refreshing focus chart: {e}")
 
     def _update_motivation_message(self) -> None:
         """Update the motivational message based on current context."""
@@ -4128,7 +4128,7 @@ class TimerTab(QtWidgets.QWidget):
             
             coins_earned += entity_coin_bonus
         except Exception as e:
-            print(f"[Entity Perks] Error applying coin perks: {e}")
+            logger.warning(f"[Entity Perks] Error applying coin perks: {e}")
         
         # ✨ PERFECT SESSION BONUS: Apply bonus if no distraction attempts
         is_perfect = self._is_perfect_session()
@@ -4143,7 +4143,7 @@ class TimerTab(QtWidgets.QWidget):
                     coins_earned += perfect_coin_bonus
                     coin_perk_breakdown.append(f"+{perfect_session_bonus_pct}% perfect session")
             except Exception as e:
-                print(f"[Perfect Session] Error applying bonus: {e}")
+                logger.warning(f"[Perfect Session] Error applying bonus: {e}")
         
         # Award XP for the focus session (with lucky XP bonus from gear AND entity perks)
         xp_bonus_pct = lucky_bonuses.get("xp_bonus", 0)
@@ -9576,7 +9576,7 @@ class SettingsTab(QtWidgets.QWidget):
                         filepath.unlink()
                         deleted_count += 1
                     except Exception as e:
-                        print(f"Failed to delete {filename}: {e}")
+                        logger.warning(f"Failed to delete {filename}: {e}")
             
             # Reset in-memory state
             self.blocker.blocked_sites = []
@@ -9777,7 +9777,7 @@ class SettingsTab(QtWidgets.QWidget):
             # Connect after populating to avoid triggering on initial setup
             self.voice_combo.currentTextChanged.connect(self._change_voice)
         except Exception as e:
-            print(f"[SettingsTab] Error populating voice combo: {e}")
+            logger.warning(f"[SettingsTab] Error populating voice combo: {e}")
             self.voice_combo.addItem("Default Voice")
 
     def _change_voice(self, voice_name: str) -> None:
@@ -9787,7 +9787,7 @@ class SettingsTab(QtWidgets.QWidget):
             guidance = GuidanceManager.get_instance()
             guidance.set_voice(voice_name, save=True)
         except Exception as e:
-            print(f"[SettingsTab] Error changing voice: {e}")
+            logger.warning(f"[SettingsTab] Error changing voice: {e}")
 
     def _test_voice(self) -> None:
         """Test the selected voice with a sample phrase."""
@@ -9796,7 +9796,7 @@ class SettingsTab(QtWidgets.QWidget):
             guidance = GuidanceManager.get_instance()
             guidance.say("Hello! This is a voice preview. How do I sound?")
         except Exception as e:
-            print(f"[SettingsTab] Error testing voice: {e}")
+            logger.warning(f"[SettingsTab] Error testing voice: {e}")
             show_warning(
                 self, "Voice Test Failed",
                 f"Could not test voice: {e}"
@@ -12497,7 +12497,7 @@ class WeightTab(QtWidgets.QWidget):
             self.weight_entity_section.add_widget(tip_lbl)
             
         except Exception as e:
-            print(f"[Weight Tab] Error updating entity perk display: {e}")
+            logger.warning(f"[Weight Tab] Error updating entity perk display: {e}")
             self.weight_entity_section.setVisible(False)
 
     def _refresh_rodent_tips(self) -> None:
@@ -12732,7 +12732,7 @@ class WeightTab(QtWidgets.QWidget):
             self.rodent_acknowledge_btn.setEnabled(False)
             
         except Exception as e:
-            print(f"[Weight Tab] Error acknowledging rodent tip: {e}")
+            logger.warning(f"[Weight Tab] Error acknowledging rodent tip: {e}")
 
     def _show_weekly_insights(self) -> None:
         """Show weekly insights in a dialog."""
@@ -14830,7 +14830,7 @@ class ActivityTab(QtWidgets.QWidget):
             self.activity_entity_section.add_widget(tip_lbl)
             
         except Exception as e:
-            print(f"[Activity Tab] Error updating entity perk display: {e}")
+            logger.warning(f"[Activity Tab] Error updating entity perk display: {e}")
             self.activity_entity_section.setVisible(False)
 
 
@@ -17488,7 +17488,7 @@ class SleepTab(QtWidgets.QWidget):
             self.sleep_entity_perk_card.show()
             
         except Exception as e:
-            print(f"[Sleep Tab] Error updating entity perk display: {e}")
+            logger.warning(f"[Sleep Tab] Error updating entity perk display: {e}")
             self.sleep_entity_perk_card.hide()
     
     def _load_sleep_entity_svg(self, is_exceptional: bool) -> None:
@@ -17517,7 +17517,7 @@ class SleepTab(QtWidgets.QWidget):
                 self.sleep_entity_svg_label.setPixmap(pixmap)
                 
         except Exception as e:
-            print(f"[Sleep Tab] Error loading entity SVG: {e}")
+            logger.warning(f"[Sleep Tab] Error loading entity SVG: {e}")
 
     def _go_to_sleep_now(self) -> None:
         """Handle 'Go to Sleep NOW' button - give immediate reward based on current time."""
@@ -18298,7 +18298,7 @@ class SleepTab(QtWidgets.QWidget):
             self.sleep_schedule_chart.set_time_range(saved_start, saved_end)
             self.sleep_schedule_chart.set_bedtime_on_top(saved_bedtime_on_top)
         except Exception as e:
-            print(f"[Sleep] Error loading schedule time range: {e}")
+            logger.warning(f"[Sleep] Error loading schedule time range: {e}")
     
     def _find_combo_index_for_time(self, combo: QtWidgets.QComboBox, time_mins: int) -> int:
         """Find the combo box index for a given time in minutes."""
@@ -18327,7 +18327,7 @@ class SleepTab(QtWidgets.QWidget):
             self.blocker.adhd_buster["sleep_schedule_end"] = end_mins
             self.blocker.save_config()
         except Exception as e:
-            print(f"[Sleep] Error updating schedule time range: {e}")
+            logger.warning(f"[Sleep] Error updating schedule time range: {e}")
     
     def _update_yaxis_orientation(self) -> None:
         """Update Y-axis orientation (bedtime top vs bottom) and save."""
@@ -18347,7 +18347,7 @@ class SleepTab(QtWidgets.QWidget):
             self.blocker.adhd_buster["sleep_schedule_bedtime_on_top"] = bedtime_on_top
             self.blocker.save_config()
         except Exception as e:
-            print(f"[Sleep] Error updating Y-axis orientation: {e}")
+            logger.warning(f"[Sleep] Error updating Y-axis orientation: {e}")
     
     def _reset_schedule_view(self) -> None:
         """Reset schedule chart to default view and time range."""
@@ -18390,7 +18390,7 @@ class SleepTab(QtWidgets.QWidget):
             self.blocker.adhd_buster["sleep_schedule_bedtime_on_top"] = default_bedtime_on_top
             self.blocker.save_config()
         except Exception as e:
-            print(f"[Sleep] Error resetting schedule view: {e}")
+            logger.warning(f"[Sleep] Error resetting schedule view: {e}")
 
 
 class AITab(QtWidgets.QWidget):
@@ -26134,7 +26134,7 @@ class HydrationTab(QtWidgets.QWidget):
                 self.entity_perks_layout.addWidget(cards_widget)
                 
         except Exception as e:
-            print(f"[Hydration] Error refreshing entity perks: {e}")
+            logger.warning(f"[Hydration] Error refreshing entity perks: {e}")
             self.entity_perks_container.hide()
 
 
@@ -27366,7 +27366,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 self._optimize_btn.setText(f"⚡ Optimize Gear ({cost}🪙)")
                 self._optimize_btn.setToolTip("Automatically equip the best gear for maximum power")
         except Exception as e:
-            print(f"[GamificationTab] Error updating optimize button: {e}")
+            logger.warning(f"[GamificationTab] Error updating optimize button: {e}")
 
     def set_session_active(self, active: bool) -> None:
         """Enable/disable interactive controls during focus sessions."""
@@ -28917,7 +28917,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.inv_entity_perk_container.setVisible(True)
             
         except Exception as e:
-            print(f"[Gear Tab] Error updating inventory entity perks: {e}")
+            logger.warning(f"[Gear Tab] Error updating inventory entity perks: {e}")
             if hasattr(self, 'inv_entity_perk_container'):
                 self.inv_entity_perk_container.setVisible(False)
 
@@ -29293,7 +29293,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             header_state = self.inv_table.horizontalHeader().saveState()
             settings.setValue("inventory_header_state", header_state)
         except Exception as e:
-            print(f"Error saving inventory state: {e}")
+            logger.warning(f"Error saving inventory state: {e}")
 
     def _load_inventory_state(self) -> None:
         """Load inventory table column configuration."""
@@ -29303,7 +29303,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             if header_state:
                 self.inv_table.horizontalHeader().restoreState(header_state)
         except Exception as e:
-            print(f"Error loading inventory state: {e}")
+            logger.warning(f"Error loading inventory state: {e}")
 
     def _save_hero_splitter_state(self) -> None:
         """Save hero/equipment splitter position."""
@@ -29313,7 +29313,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 settings.setValue("hero_splitter_state", self.char_equip_splitter.saveState())
                 settings.setValue("hero_splitter_sizes", self.char_equip_splitter.sizes())
         except Exception as e:
-            print(f"Error saving hero splitter state: {e}")
+            logger.warning(f"Error saving hero splitter state: {e}")
 
     def _load_hero_splitter_state(self) -> None:
         """Load hero/equipment splitter position."""
@@ -29326,7 +29326,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 # Default: give hero ~40% and equipment ~60%
                 self.char_equip_splitter.setSizes([180, 270])
         except Exception as e:
-            print(f"Error loading hero splitter state: {e}")
+            logger.warning(f"Error loading hero splitter state: {e}")
             # Fallback to default sizes
             self.char_equip_splitter.setSizes([180, 270])
 
@@ -29344,7 +29344,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     self.hero_section_splitter.sizes(),
                 )
         except Exception as e:
-            print(f"Error saving hero vertical splitter state: {e}")
+            logger.warning(f"Error saving hero vertical splitter state: {e}")
 
     def _load_hero_vertical_splitter_state(self) -> None:
         """Load vertical hero/details splitter position."""
@@ -29357,7 +29357,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 # Default: larger hero viewport while keeping details visible.
                 self.hero_section_splitter.setSizes([360, 520])
         except Exception as e:
-            print(f"Error loading hero vertical splitter state: {e}")
+            logger.warning(f"Error loading hero vertical splitter state: {e}")
             if hasattr(self, "hero_section_splitter"):
                 self.hero_section_splitter.setSizes([360, 520])
 
@@ -29777,7 +29777,7 @@ class SellItemsDialog(StyledDialog):
             layout.addWidget(perk_card)
             
         except Exception as e:
-            print(f"[SellItemsDialog] Error adding perk display: {e}")
+            logger.warning(f"[SellItemsDialog] Error adding perk display: {e}")
 
     def _calculate_coin_value(self, item: dict, sell_perks: dict = None) -> int:
         """Calculate coin value: 1 base + sum of all % bonuses in lucky options + entity bonuses.
@@ -37791,9 +37791,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             logger.info(f"Successfully switched to user profile: {new_username}")
             
         except Exception as e:
-            logger.error(f"Error reloading user: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.exception(f"Error reloading user: {e}")
             show_error(self, "Error", f"Failed to reload user profile: {e}\n\nPlease restart the application.")
 
     def _update_admin_label(self) -> None:
@@ -39466,7 +39464,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             )
             self.browser_monitor.start()
         except Exception as e:
-            print(f"Warning: Could not start browser monitor: {e}")
+            logger.warning(f"Warning: Could not start browser monitor: {e}")
     
     def _stop_browser_monitor(self) -> None:
         """Stop the browser monitor."""

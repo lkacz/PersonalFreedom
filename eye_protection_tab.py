@@ -168,9 +168,7 @@ class GuidanceManager(QtCore.QObject):
             PIPER_WORKING = True
             
         except Exception as e:
-            logger.error(f"[GuidanceManager] Failed to load Piper voice: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.exception(f"[GuidanceManager] Failed to load Piper voice: {e}")
             self.piper_voice = None
             PIPER_WORKING = False
     

@@ -25,12 +25,14 @@ Professional installer with Start menu, shortcuts, autostart option.
 ## 🛠️ Prerequisites
 
 ### For Building Executables:
-- Python 3.10+ with these packages installed:
+- Python 3.10+ with the runtime and build dependencies installed:
   ```bash
+  pip install -r requirements.txt
   pip install pyinstaller
-  pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-  pip install transformers sentence-transformers scikit-learn
   ```
+  > Note: The heavy ML libraries (torch, transformers, sentence-transformers)
+  > were removed in v5.0.0 — the app now uses lightweight pattern analysis and
+  > these are explicitly excluded from the PyInstaller bundle. Do not install them.
 
 ### For Building Installer (Optional):
 - [Inno Setup 6.0+](https://jrsoftware.org/isinfo.php) (free)
@@ -44,7 +46,7 @@ build_all.bat
 
 This creates:
 1. `dist\PersonalLiberty_Package\` - Portable version
-2. `installer_output\PersonalLiberty_Setup_v2.1.exe` - Windows installer
+2. `installer_output\PersonalLiberty_Setup_v6.0.43.exe` - Windows installer
 
 ### Option B: Build Just the Executables
 ```bash

@@ -182,6 +182,69 @@ class TestBlockUnblockRoundTrip(unittest.TestCase):
             self.BASE_HOSTS.strip() + "\n",
         )
 
+    def test_session_state_written_before_hosts_mutation(self):
+        """Crash-recovery invariant: the session-state file must be written
+        BEFORE the hosts file is mutated, so a crash during the write always
+        leaves a recoverable state file. Verified by call ordering."""
+        calls = []
+        real_write = self.core._write_hosts_file
+        real_save = self.core.save_session_state
+
+        def tracked_write(content):
+            calls.append("write_hosts")
+            return real_write(content)
+
+        def tracked_save(duration):
+            calls.append("save_state")
+            return real_save(duration)
+
+        with patch.object(self.core, '_write_hosts_file', side_effect=tracked_write), \
+             patch.object(self.core, 'save_session_state', side_effect=tracked_save):
+            success, _ = self.core.block_sites(duration_seconds=60)
+
+        self.assertTrue(success)
+        self.assertEqual(calls, ["save_state", "write_hosts"],
+                         "session state must be saved before the hosts file is written")
+        # After a successful block, both blocks and the recovery file exist
+        self.assertIn(core_logic.MARKER_START, self.hosts_file.read_text(encoding="utf-8"))
+        self.assertTrue(self.core.session_state_path.exists())
+
+    def test_failed_hosts_write_leaves_no_phantom_session(self):
+        """If the hosts write fails, block_sites must roll back the recovery
+        state so we don't leave a session-state file with no actual blocks."""
+        with patch.object(self.core, '_write_hosts_file',
+                          side_effect=PermissionError("denied")):
+            success, message = self.core.block_sites(duration_seconds=60)
+
+        self.assertFalse(success)
+        self.assertFalse(self.core.is_blocking)
+        self.assertIsNone(self.core.session_id)
+        self.assertFalse(self.core.session_state_path.exists(),
+                         "phantom session-state file left after failed hosts write")
+        # Hosts file must be untouched
+        self.assertNotIn(core_logic.MARKER_START, self.hosts_file.read_text(encoding="utf-8"))
+
+    def test_orphaned_blocks_recoverable_after_crash_during_write(self):
+        """End-to-end: with the new ordering, a crash right after the hosts
+        write (state already saved) is detectable and cleanable by recovery."""
+        # Simulate: state saved, blocks written, then process 'crashed' (state
+        # file persists, is_blocking lost). A fresh core must recover.
+        self.core.block_sites(duration_seconds=60)
+        self.assertTrue(self.core.session_state_path.exists())
+        self.assertIn(core_logic.MARKER_START, self.hosts_file.read_text(encoding="utf-8"))
+
+        # Fresh instance simulating next launch after a crash
+        recovered = BlockerCore()
+        recovered.bypass_logger = MagicMock()
+        # Force the recorded pid to look dead so it's treated as orphaned
+        with patch.object(recovered, '_is_process_running', return_value=False):
+            orphan = recovered.check_orphaned_session()
+            self.assertIsNotNone(orphan, "orphaned blocks not detected by recovery")
+            success, _ = recovered.recover_from_crash()
+        self.assertTrue(success)
+        self.assertNotIn(core_logic.MARKER_START, self.hosts_file.read_text(encoding="utf-8"))
+        self.assertFalse(recovered.session_state_path.exists())
+
 
 if __name__ == '__main__':
     unittest.main()
