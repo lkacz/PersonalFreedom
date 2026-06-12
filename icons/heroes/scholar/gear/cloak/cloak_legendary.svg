@@ -1,11 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sCloak4Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfa75f"/>
+      <stop offset="45%" stop-color="#5f4f35"/>
+      <stop offset="100%" stop-color="#443821"/>
+    </linearGradient>
+    <linearGradient id="sCloak4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5f4f35"/>
+      <stop offset="100%" stop-color="#2f2715"/>
+    </linearGradient>
+    <radialGradient id="sCloak4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
-  <g id="cloak_legendary" opacity="0.9">
-    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#1f2f49" opacity="0.5"/>
-    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#344d75" opacity="0.46"/>
-    <path d="M70 150 L62 191 L74 191 Z" fill="#1b2c45" opacity="0.7"/>
-    <path d="M108 150 L120 189 L106 190 Z" fill="#1b2c45" opacity="0.7"/>
-    <path d="M72 94 L68 182 M108 94 L112 182" stroke="#9cb7dd" stroke-width="0.8" opacity="0.45"/><path d="M68 83 Q90 96 112 83" stroke="#FF9800" stroke-width="1" fill="none" opacity="0.82"/><rect x="74" y="106" width="32" height="1.6" rx="0.8" fill="#FF9800" opacity="0.74"/><rect x="74" y="124" width="32" height="1.6" rx="0.8" fill="#FF9800" opacity="0.74"/><rect x="74" y="142" width="32" height="1.6" rx="0.8" fill="#FF9800" opacity="0.74"/><path d="M66 112 Q90 96 114 112" stroke="#FF9800" stroke-width="1.35" fill="none" opacity="0.85"/><path d="M66 150 Q90 136 114 150" stroke="#FF9800" stroke-width="1.1" fill="none" opacity="0.68"/>
+  <g id="cloak_legendary" opacity="0.96">
+    <path d="M64 75 Q90 70 116 75 L124 92 L120 188 Q105 183 90 183 Q75 183 60 188 L56 92 Z"
+          fill="url(#sCloak4Cloth)" stroke="#2f2715" stroke-width="1" opacity="0.6"/>
+    <path d="M66 92 Q64 138 63 182 M114 92 Q116 138 117 182" stroke="#2f2715" stroke-width="0.75" fill="none" opacity="0.55"/>
+    <path d="M72 76 L78 74.8 L80 88 L73 90 Z M108 76 L102 74.8 L100 88 L107 90 Z" fill="url(#sCloak4Deep)" opacity="0.85"/>
+    <path d="M70 92 Q70 130 69 178 M110 92 Q110 130 111 178" stroke="#443821" stroke-width="0.7" fill="none" opacity="0.5"/>
+    <path d="M70 150 L61 189 L74 189 Z" fill="url(#sCloak4Deep)" opacity="0.55"/>
+    <path d="M110 150 L119 188 L106 189 Z" fill="url(#sCloak4Deep)" opacity="0.55"/>
+    <path d="M79 76 Q90 73.4 101 76 L100 80.6 Q90 78.4 80 80.6 Z" fill="url(#sCloak4Deep)" stroke="#2f2715" stroke-width="0.7"/>
+    <path d="M63 88 Q61 138 62.5 184 M117 88 Q119 138 117.5 184" stroke="#ffc066" stroke-width="1.4" fill="none" opacity="0.8"/><path d="M74 84 Q90 92 106 84" stroke="#ffc066" stroke-width="0.9" fill="none" opacity="0.9"/><circle cx="90" cy="88.6" r="1.4" fill="#ffc066"/><path d="M62.0 174.5 L62.0 176.9 M62.0 175.7 L63.8 174.5 M66.4 174.5 L68.2 176.9 M68.2 174.5 L66.4 176.9 M70.8 176.9 L70.8 174.5 L72.6 174.5" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.7" stroke-linecap="round"/><path d="M105.0 174.5 L105.0 176.9 M105.0 175.7 L106.8 174.5 M109.4 174.5 L111.2 176.9 M111.2 174.5 L109.4 176.9 M113.8 176.9 L113.8 174.5 L115.6 174.5" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.7" stroke-linecap="round"/><path d="M62.5 126 Q66.5 124 70.5 126 L70.5 133 Q66.5 131 62.5 133 Z M70.5 126 Q74.5 124 78.5 126 L78.5 133 Q74.5 131 70.5 133 Z" fill="none" stroke="#FF9800" stroke-width="0.8" opacity="0.85"/><path d="M60 100 L60 180" stroke="#FF9800" stroke-width="0.8" stroke-linecap="round" opacity="0.45"><animate attributeName="opacity" values="0.45;0.7;0.2;0.45" dur="3.6s" repeatCount="indefinite"/></path><path d="M120 100 L120 180" stroke="#FF9800" stroke-width="0.8" stroke-linecap="round" opacity="0.45"><animate attributeName="opacity" values="0.45;0.2;0.7;0.45" dur="3.6s" repeatCount="indefinite"/></path><circle cx="66" cy="158" r="0.65" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -10" dur="3.5s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3.5s" begin="0s" repeatCount="indefinite"/></circle><circle cx="115" cy="150" r="0.6" fill="#FF9800" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -9" dur="3s" begin="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3s" begin="1.4s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

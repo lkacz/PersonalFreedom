@@ -1,12 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dVest1Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7b8cb2"/>
+      <stop offset="45%" stop-color="#46557a"/>
+      <stop offset="100%" stop-color="#323d59"/>
+    </linearGradient>
+    <linearGradient id="dVest1Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#46557a"/>
+      <stop offset="100%" stop-color="#222b42"/>
+    </linearGradient>
+  </defs>
 
   <g id="chestplate_uncommon">
-    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z" fill="#354d73" stroke="#182942" stroke-width="1.1"/>
-    <path d="M76 84 L104 84 L105 143 L75 143 Z" fill="#4f6794" opacity="0.9"/>
-    <path d="M76 84 L83 94 L80 143 L74 143 Z" fill="#314766" opacity="0.74"/>
-    <path d="M104 84 L97 94 L100 143 L106 143 Z" fill="#314766" opacity="0.74"/>
-    <path d="M90 84 L90 143" stroke="#243654" stroke-width="1"/>
-    <path d="M74 92 L106 92 M74 103 L106 103 M74 114 L106 114" stroke="#7991bc" stroke-width="0.85" opacity="0.72"/>
+    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z"
+          fill="url(#dVest1Weave)" stroke="#222b42" stroke-width="1.05"/>
+    <path d="M76 82 L90 90 L90 143 L74 143 Z" fill="url(#dVest1Deep)" opacity="0.85"/>
+    <path d="M104 82 L90 90 L90 143 L106 143 Z" fill="url(#dVest1Deep)" opacity="0.7"/>
+    <path d="M76 82 L90 90 M104 82 L90 90" stroke="#222b42" stroke-width="0.8" opacity="0.85"/>
+    <path d="M73 86 Q70 110 71 142 M107 86 Q110 110 109 142" stroke="#323d59" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <path d="M78 84 Q84 81 89 85" stroke="#7b8cb2" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <circle cx="90" cy="97" r="1.5" fill="#323d59" stroke="#9fb4d8" stroke-width="0.5"/><path d="M90 106.5 A1.5 1.5 0 0 1 90 109.5 Z" fill="#9fb4d8"/><circle cx="90" cy="108" r="1.5" fill="none" stroke="#9fb4d8" stroke-width="0.5"/><circle cx="90" cy="119" r="1.5" fill="#9fb4d8"/><path d="M68 124 Q90 132 112 124 L112 130.5 Q90 138.5 68 130.5 Z" fill="url(#dVest1Deep)" stroke="#222b42" stroke-width="0.8"/><path d="M70 126.5 Q90 134 110 126.5" stroke="#9fb4d8" stroke-width="0.8" fill="none" opacity="0.85"/>
   </g>
 
 </svg>

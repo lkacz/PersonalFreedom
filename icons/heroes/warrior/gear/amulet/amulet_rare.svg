@@ -1,11 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wAmu2Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fb2dc"/>
+      <stop offset="45%" stop-color="#4a5d78"/>
+      <stop offset="100%" stop-color="#32425a"/>
+    </linearGradient>
+    <linearGradient id="wAmu2Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a5d78"/>
+      <stop offset="100%" stop-color="#22304a"/>
+    </linearGradient>
+  </defs>
 
   <g id="amulet_rare">
-    <path d="M86 90 Q90 86 94 90" stroke="#929db0" stroke-width="1.0" fill="none"/>
-    <circle cx="90" cy="100" r="5.1" fill="#465972" stroke="#25384f" stroke-width="1"/>
-    <circle cx="90" cy="100" r="2" fill="#2196F3" opacity="0.95"/>
-    <circle cx="90" cy="100" r="6.6" fill="none" stroke="#2196F3" stroke-width="1.02" opacity="0.85"/><path d="M90 95.3 L92.3 99.6 L90 103.9 L87.7 99.6 Z" fill="#2196F3" opacity="0.9"/><path d="M84.5 100 L95.5 100" stroke="#2196F3" stroke-width="0.86" opacity="0.8"/>
-    
+    <path d="M83 88.5 Q90 84.5 97 88.5" stroke="#8fb2dc" stroke-width="1.1" fill="none" opacity="0.95"/>
+    <path d="M85.5 89.7 Q90 87 94.5 89.7" stroke="#22304a" stroke-width="0.6" fill="none" opacity="0.7"/>
+    <path d="M90 92.8 L95.8 96.4 L95.8 103.6 L90 107.2 L84.2 103.6 L84.2 96.4 Z"
+          fill="url(#wAmu2Plate)" stroke="#22304a" stroke-width="1"/>
+    <path d="M90 95.6 L93.4 97.8 L93.4 102.2 L90 104.4 L86.6 102.2 L86.6 97.8 Z" fill="url(#wAmu2Deep)"/>
+    <path d="M90 97.2 L92 100 L90 102.8 L88 100 Z" fill="#2196F3" opacity="0.98"/>
+    <path d="M89.2 97.9 L90 99 L89 99.8 Z" fill="#90caf9" opacity="0.9"/>
+    <path d="M90 94.2 L94.6 97 L94.6 103 L90 105.8 L85.4 103 L85.4 97 Z" fill="none" stroke="#64a8e8" stroke-width="0.9" opacity="0.9"/><circle cx="90" cy="100" r="9.6" fill="none" stroke="#2196F3" stroke-width="0.7" opacity="0.5"><animateTransform attributeName="transform" type="rotate" values="0 90 100;360 90 100" dur="9s" repeatCount="indefinite"/></circle><path d="M90 90.4 L91 92.4 L90 94 L89 92.4 Z" fill="#90caf9" opacity="0.9"/>
   </g>
 
 </svg>

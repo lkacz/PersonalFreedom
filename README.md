@@ -47,7 +47,7 @@ Unlike basic website blockers, Personal Liberty combines effective blocking with
 
 ### Prerequisites
 - Windows 10/11
-- Python 3.8 or higher
+- Python 3.10 or higher
 
 ### Setup
 
@@ -332,6 +332,18 @@ Some browsers cache DNS. If a site is still accessible:
 - Clear browser cache
 - Restart browser
 - The app auto-runs `ipconfig /flushdns` but browsers may need restart
+
+**Edge works, then breaks again after blocking?**
+Microsoft Edge can keep browser-local network state even after the Windows
+hosts file is restored. Close Edge completely, then run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\cleanup_hosts.ps1 -ClearEdgeNetworkState
+```
+
+If Edge startup boost keeps background processes open, add `-ForceCloseEdge`.
+The script moves only Edge network-state files to a temp backup; it does not
+delete cookies, history, passwords, or downloads.
 
 ⚠️ **VPN/Proxy Warning**
 If using VPN or proxy, some sites might bypass hosts file blocking. Consider blocking at router level for complete control.

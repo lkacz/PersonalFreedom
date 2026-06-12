@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 import json
 import random
@@ -3878,6 +3878,7 @@ class TimerTab(QtWidgets.QWidget):
 
     def _stop_session(self) -> None:
         # Check password for Strict Mode
+        pwd = None
         if self.blocker.mode == BlockMode.STRICT and self.blocker.password_hash:
             pwd, ok = QtWidgets.QInputDialog.getText(
                 self, "Password Required", "Enter password to stop Strict Mode:",
@@ -3913,8 +3914,16 @@ class TimerTab(QtWidgets.QWidget):
         if hasattr(main_window, '_update_tray_icon'):
             main_window._update_tray_icon(blocking=False)
 
-        # Unblock sites
-        self.blocker.unblock_sites()
+        # Unblock sites - pass the already-verified password through so the
+        # core-level strict-mode check succeeds (no password = silent failure
+        # that leaves hosts entries behind while the UI shows "Ready to focus")
+        success, message = self.blocker.unblock_sites(password=pwd)
+        if not success:
+            show_warning(
+                self, "Unblock Failed",
+                f"Sites could not be unblocked: {message}\n\n"
+                "Use Settings → Emergency Cleanup to remove remaining blocks."
+            )
 
         # Only record stats if ran > 60s
         if elapsed > 60:
@@ -5522,8 +5531,10 @@ class TimerTab(QtWidgets.QWidget):
         if hasattr(main_window, '_update_tray_icon'):
             main_window._update_tray_icon(blocking=False)
 
-        # Unblock sites
-        self.blocker.unblock_sites()
+        # Unblock sites - force=True matches this method's contract ("without
+        # password check"); otherwise strict-mode sessions leave hosts blocks
+        # behind on app exit until next-startup crash recovery
+        self.blocker.unblock_sites(force=True)
 
         # Record stats if ran > 60s
         if elapsed > 60:
@@ -11531,8 +11542,8 @@ class WeightTab(QtWidgets.QWidget):
             game_state = getattr(main_window, 'game_state', None)
             if game_state:
                 game_state.notify_weight_entry_changed()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Weight entry change notification failed: {e}")
         
         self._refresh_display()
     
@@ -14308,8 +14319,8 @@ class ActivityTab(QtWidgets.QWidget):
             game_state = getattr(main_window, 'game_state', None)
             if game_state:
                 game_state.notify_activity_entry_changed()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Activity entry change notification failed: {e}")
 
         # Update main timeline widget if parent window has it
         if self.parent() and hasattr(self.parent(), 'timeline_widget'):
@@ -33166,7 +33177,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     try:
                         eh, em = map(int, entry_time_str.split(':'))
                         start_hour = eh + em / 60.0
-                    except:
+                    except (ValueError, AttributeError):
                         start_hour = 12.0  # Default noon
                     
                     end_hour = min(start_hour + duration / 60.0, 24.0)
@@ -33206,7 +33217,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     try:
                         wh, wm = map(int, entry_time_str.split(':'))
                         log_hour = wh + wm / 60.0
-                    except:
+                    except (ValueError, AttributeError):
                         log_hour = 8.0  # Default morning
                     
                     tooltip = f"⚖️ Weight Log\n"
@@ -38003,10 +38014,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             try:
                 from entitidex.celebration_audio import CelebrationAudioManager
                 audio = CelebrationAudioManager.get_instance()
-                # Use the default celebration sound as notification chime
-                audio.play("default")
-            except Exception:
-                pass  # Sound playback optional
+                # Use a soft cue so health reminders do not jolt other audio.
+                audio.play("reminder")
+            except Exception as e:
+                logger.debug(f"Reminder sound unavailable (optional): {e}")
         
         # Speak with TTS if selected
         if pref in ("Voice", "Sound + Voice"):
@@ -38170,8 +38181,27 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             )
             if result == QtWidgets.QMessageBox.Yes:
                 self.blocker.mode = BlockMode.SCHEDULED
-                self.blocker.block_sites(duration_seconds=8 * 60 * 60)
+                success, _ = self.blocker.block_sites(duration_seconds=8 * 60 * 60)
+                if success:
+                    self._update_tray_icon(blocking=True)
                 self.timer_tab._update_timer_display()
+        elif (self.blocker.is_blocking
+              and self.blocker.mode == BlockMode.SCHEDULED
+              and not self.timer_tab.timer_running
+              and not self.blocker.is_scheduled_block_time()):
+            # Schedule window ended - revert the block so hosts entries don't
+            # outlive the schedule (no countdown timer runs for scheduled mode)
+            success, _ = self.blocker.unblock_sites(force=True)
+            if success:
+                self._update_tray_icon(blocking=False)
+                self.timer_tab._update_timer_display()
+                if self.tray_icon:
+                    self.tray_icon.showMessage(
+                        "Scheduled Block Ended",
+                        "The scheduled blocking period is over. Sites are unblocked.",
+                        QtWidgets.QSystemTrayIcon.Information,
+                        5000
+                    )
 
         # Check again in 60 seconds
         QtCore.QTimer.singleShot(60000, self._check_scheduled_blocking)
@@ -39141,6 +39171,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Force stop any running session without prompts
             if self.timer_tab.timer_running:
                 self.timer_tab._force_stop_session()
+            elif self.blocker.is_blocking:
+                # Blocking without a countdown (scheduled mode) - revert on exit
+                self.blocker.unblock_sites(force=True)
             self._flush_persistent_state_on_exit()
             event.accept()
             QtWidgets.QApplication.instance().quit()
@@ -39185,6 +39218,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             else:
                 event.ignore()
         else:
+            if self.blocker.is_blocking:
+                # Blocking without a countdown (scheduled mode) - revert on exit
+                self.blocker.unblock_sites(force=True)
             self._flush_persistent_state_on_exit()
             event.accept()
             QtWidgets.QApplication.instance().quit()
@@ -39714,10 +39750,12 @@ def kill_existing_instances():
     try:
         import subprocess
         current_pid = os.getpid()
-        
-        # Use taskkill to terminate PersonalLiberty.exe processes
+
+        # Use taskkill to terminate PersonalLiberty.exe processes,
+        # excluding our own PID (the frozen executable shares the image name)
         result = subprocess.run(
-            ["taskkill", "/F", "/IM", "PersonalLiberty.exe"],
+            ["taskkill", "/F", "/IM", "PersonalLiberty.exe",
+             "/FI", f"PID ne {current_pid}"],
             capture_output=True,
             text=True
         )

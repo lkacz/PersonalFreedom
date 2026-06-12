@@ -1,12 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cGlove3Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a18fc7"/>
+      <stop offset="45%" stop-color="#544a6e"/>
+      <stop offset="100%" stop-color="#3b3450"/>
+    </linearGradient>
+    <linearGradient id="cGlove3Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#544a6e"/>
+      <stop offset="100%" stop-color="#282239"/>
+    </linearGradient>
+    <linearGradient id="cGlove3Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d3aef0"/>
+      <stop offset="100%" stop-color="#3b3450"/>
+    </linearGradient>
+    <radialGradient id="cGlove3Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#9C27B0" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="gauntlets_epic">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#dbe2ec" stroke="#97a3b4" stroke-width="1"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#dbe2ec" stroke="#97a3b4" stroke-width="1"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#f6fbff" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#f6fbff" opacity="0.92"/>
-    <path d="M44.5 138 L55.5 138 M124.5 138 L135.5 138" stroke="#415370" stroke-width="0.9"/>
-    <path d="M40 143 L60 143 M120 143 L140 143" stroke="#7f90ab" stroke-width="0.85" opacity="0.75"/><path d="M44 136 L56 136 M124 136 L136 136" stroke="#9C27B0" stroke-width="0.95" opacity="0.82"/><circle cx="49.5" cy="147.2" r="1.4" fill="#9C27B0"/><circle cx="130.5" cy="147.2" r="1.4" fill="#9C27B0"/>
+    <path d="M38.5 134 L61.5 134 L60.5 145 L39.5 145 Z" fill="url(#cGlove3Case)" stroke="#282239" stroke-width="1"/><path d="M39.5 145 L60.5 145 L59 157 L41 157 Z" fill="url(#cGlove3Deep)" stroke="#282239" stroke-width="0.9"/><path d="M39 141 L61 141" stroke="#a18fc7" stroke-width="0.6" opacity="0.55"/><rect x="39" y="143.6" width="22" height="2.8" rx="1.3" fill="url(#cGlove3Deep)" stroke="#b167d6" stroke-width="0.7"/><circle cx="42.5" cy="145" r="0.8" fill="#b167d6"><animate attributeName="opacity" values="1;0.35;1" dur="2.2s" repeatCount="indefinite"/></circle><rect x="43" y="150" width="3.4" height="4.6" rx="1" fill="url(#cGlove3Case)" stroke="#282239" stroke-width="0.5"/><rect x="48" y="151" width="3.4" height="4.6" rx="1" fill="url(#cGlove3Case)" stroke="#282239" stroke-width="0.5"/><rect x="53" y="150" width="3.4" height="4.6" rx="1" fill="url(#cGlove3Case)" stroke="#282239" stroke-width="0.5"/><path d="M43.0 136.6 L43.0 138.6 M43.0 137.6 L44.8 136.6 M48.0 136.6 L49.8 138.6 M49.8 136.6 L48.0 138.6 M53.0 138.6 L53.0 136.6 L54.8 136.6" stroke="#9C27B0" stroke-width="0.55" fill="none" opacity="0.85" stroke-linecap="round"/><circle cx="50" cy="140.4" r="2" fill="url(#cGlove3Deep)" stroke="#9C27B0" stroke-width="0.8"/><circle cx="50" cy="140.4" r="0.7" fill="#ce93d8"><animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/></circle>
+    <path d="M118.5 134 L141.5 134 L140.5 145 L119.5 145 Z" fill="url(#cGlove3Case)" stroke="#282239" stroke-width="1"/><path d="M119.5 145 L140.5 145 L139 157 L121 157 Z" fill="url(#cGlove3Deep)" stroke="#282239" stroke-width="0.9"/><path d="M119 141 L141 141" stroke="#a18fc7" stroke-width="0.6" opacity="0.55"/><rect x="119" y="143.6" width="22" height="2.8" rx="1.3" fill="url(#cGlove3Deep)" stroke="#b167d6" stroke-width="0.7"/><circle cx="122.5" cy="145" r="0.8" fill="#b167d6"><animate attributeName="opacity" values="1;0.35;1" dur="2.2s" repeatCount="indefinite"/></circle><rect x="123" y="150" width="3.4" height="4.6" rx="1" fill="url(#cGlove3Case)" stroke="#282239" stroke-width="0.5"/><rect x="128" y="151" width="3.4" height="4.6" rx="1" fill="url(#cGlove3Case)" stroke="#282239" stroke-width="0.5"/><rect x="133" y="150" width="3.4" height="4.6" rx="1" fill="url(#cGlove3Case)" stroke="#282239" stroke-width="0.5"/><path d="M123.0 136.6 L123.0 138.6 M123.0 137.6 L124.8 136.6 M128.0 136.6 L129.8 138.6 M129.8 136.6 L128.0 138.6 M133.0 138.6 L133.0 136.6 L134.8 136.6" stroke="#9C27B0" stroke-width="0.55" fill="none" opacity="0.85" stroke-linecap="round"/><circle cx="130" cy="140.4" r="2" fill="url(#cGlove3Deep)" stroke="#9C27B0" stroke-width="0.8"/><circle cx="130" cy="140.4" r="0.7" fill="#ce93d8"><animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

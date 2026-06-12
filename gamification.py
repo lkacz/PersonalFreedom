@@ -735,6 +735,11 @@ STORY_GEAR_THEMES = {
                 "Transcendent", "Reality-bending", "Universe-forged", "Eternal", "Infinite",
                 "Apotheosis", "Supreme", "Omnipotent", "Cosmic", "Absolute", "Divine", "Apex"
             ],
+            "Celestial": [
+                "Star-Forged", "Dawnbreaker's", "Comet-Tempered", "Nova-Quenched",
+                "Heaven-Cleaving", "Constellation-Bound", "Aurora-Edged", "Galaxy-Veined",
+                "Eclipse-Crowned", "First-Light"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -756,6 +761,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "Transcended Combat", "Reality's Edge", "the Undefeated", "Eternal Glory",
                 "the War God", "Absolute Victory", "Cosmic Triumph", "the Legend Itself"
+            ],
+            "Celestial": [
+                "the First Dawn Charge", "Starfall Triumph", "the Silent Cosmos",
+                "Heaven's Vanguard", "the Last Star's Oath", "Orion's Standard",
+                "the Unbroken Orbit", "the Stellar Crucible"
             ],
         },
         "set_themes": {
@@ -813,6 +823,11 @@ STORY_GEAR_THEMES = {
                 "All-Knowing", "Truth-Revealing", "Reality-Bending", "Universe-Forged",
                 "Eternal", "Absolute", "Supreme", "Divine", "Apotheosis", "The Original"
             ],
+            "Celestial": [
+                "Star-Annotated", "Cosmos-Indexed", "Aether-Bound", "Constellation-Cited",
+                "Nebula-Inked", "Infinity-Footnoted", "Astral-Archived", "Light-Lettered",
+                "First-Edition Celestial", "Omniscript"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -834,6 +849,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "Transcended Learning", "Universal Knowledge", "Omniscient Insight",
                 "Reality's Secrets", "the All-Knowing", "Absolute Wisdom", "the Truth Itself"
+            ],
+            "Celestial": [
+                "the Final Footnote", "the Star Catalogue", "Margins of the Universe",
+                "the Unwritten Theorem", "Libraries Beyond Time", "the First Question",
+                "Starlight Citations", "the Complete Index"
             ],
         },
         "set_themes": {
@@ -891,6 +911,11 @@ STORY_GEAR_THEMES = {
                 "All-Dreaming", "Reality-Shaping", "Universe-Spanning", "Existence-Defining",
                 "Infinite", "Eternal", "Absolute", "Supreme", "Divine", "The Dreamer's Own"
             ],
+            "Celestial": [
+                "Star-Woven", "First-Dream", "Galaxy-Drifting", "Nova-Lucid",
+                "Comet-Trailed", "Moonrise-Eternal", "Aurora-Veiled",
+                "Constellation-Stitched", "Dawn-Dreamt", "Lightyear-Soft"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -912,6 +937,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "Transcended Reality", "the Dream Itself", "Eternal Slumber",
                 "Universal Dreams", "Cosmic Consciousness", "the Dreaming God", "Infinite Nights"
+            ],
+            "Celestial": [
+                "the Waking Sky", "Dreams Older Than Stars", "the Lullaby of Orbits",
+                "First Light's Slumber", "the Star-Sewn Veil", "Comet Lullabies",
+                "the Dream Between Galaxies", "a Moonset Never Coming"
             ],
         },
         "set_themes": {
@@ -969,6 +999,11 @@ STORY_GEAR_THEMES = {
                 "The Original", "World-changing", "History-making", "Universe-denting",
                 "Reality-defining", "Legendary", "The One and Only", "Mythical", "Apotheosis"
             ],
+            "Celestial": [
+                "Post-Singularity", "Interstellar-Certified", "Orbit-Class", "Moonshot-Proven",
+                "Lightspeed-Synced", "Zero-Gravity Ergonomic", "Galaxy-Scale", "Starlit-Premium",
+                "Cosmic-Tier", "Beyond-Roadmap"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -990,6 +1025,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "World Domination", "the Legend", "Eternal Success", "Reality's CEO",
                 "the Visionary", "Absolute Victory", "the GOAT", "History Itself"
+            ],
+            "Celestial": [
+                "the Moonshot Landed", "Galactic Quarterly Reviews", "the Infinite Runway",
+                "Stars on the Org Chart", "the Universe's Corner Office", "Cosmic Work-Life Balance",
+                "the Final Standup", "a Promotion Beyond Earth"
             ],
         },
         "set_themes": {
@@ -1047,6 +1087,11 @@ STORY_GEAR_THEMES = {
                 "Reality-Defining", "Universe-Explaining", "Laws-of-Physics-Breaking",
                 "God-Particle", "Theory-of-Everything", "Infinite-Knowledge", "Absolute-Truth"
             ],
+            "Celestial": [
+                "Supernova-Calibrated", "Dark-Matter", "Singularity-Grade", "Cosmic-Constant",
+                "Antimatter-Pure", "Event-Horizon", "Quasar-Powered", "Starborn",
+                "Zero-Kelvin", "Unified-Field"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -1068,6 +1113,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "Ultimate Knowledge", "Final Theory", "Unified Field", "God's Equation",
                 "Reality Itself", "Infinite Understanding", "the Answer", "Truth Absolute"
+            ],
+            "Celestial": [
+                "the First Constant", "Starlight Spectra", "the Observable Universe",
+                "a Perfect Vacuum", "the Grand Unification", "Cosmic Background Truth",
+                "the Last Decimal", "Light Itself"
             ],
         },
         "set_themes": {
@@ -1125,6 +1175,11 @@ STORY_GEAR_THEMES = {
                 "Self-Aware", "Liberated", "Epoch-Defining", "Reality-Hacking", "Infinity-Linked",
                 "Eternal", "Apex", "Sovereign", "World-Rewriting", "Unbound"
             ],
+            "Celestial": [
+                "Starlight-Compiled", "Nebula-Plated", "Singularity-Booted", "Photon-Woven",
+                "Orbit-Forged", "Stellar-Firmware", "Constellation-Mapped", "Dawn-Programmed",
+                "Aurora-Cooled", "Open-Sky"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -1146,6 +1201,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "Self-Written Destiny", "the Open Sky", "Freedom by Choice", "the First Dawn",
                 "Unchained Futures", "Perfect Autonomy", "Shared Liberation", "the Final Lock"
+            ],
+            "Celestial": [
+                "the First Sunrise Logged", "Starfield Telemetry", "the Orbit Earned",
+                "Constellation Protocols", "the Sky Without Ceilings", "Light Beyond the Foundry",
+                "the Stellar Assembly", "a Signal Among Stars"
             ],
         },
         "set_themes": {
@@ -1203,6 +1263,11 @@ STORY_GEAR_THEMES = {
                 "System-Shifting", "Singularity-Kissed", "Epoch-Defining", "Empire-Cracking", "Unbound",
                 "Eternal", "Absolute", "Apex", "Reality-Sly", "Galactic"
             ],
+            "Celestial": [
+                "Supernova-Sailed", "First-Light Chartered", "Nebula-Born", "Event-Horizon-Tested",
+                "Star-Chart Original", "Comet-Keeled", "Aurora-Rigged", "Galaxy-Free",
+                "Dawn-Running", "Constellation-Crowned"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -1224,6 +1289,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "the Last Monopoly", "Gravity's Verdict", "Free Systems", "A Charter of Stars",
                 "Unpurchased Freedom", "Civilian Skies", "The Pocket Singularity", "the Ledger Closed"
+            ],
+            "Celestial": [
+                "the First Free Orbit", "Winds Between Galaxies", "the Uncharted Dawn",
+                "Starlight Without Tariffs", "the Open Spiral Arm", "a Crew of Constellations",
+                "the Last Horizon Crossed", "Harbor at the Edge of Night"
             ],
         },
         "set_themes": {
@@ -1281,6 +1351,11 @@ STORY_GEAR_THEMES = {
                 "Oath-Forged", "Institution-Building", "Epoch-Defining", "Uncorrupted", "Unshakeable",
                 "Eternal", "Apex", "Justice-Writing", "History-Safe", "People-Crowned"
             ],
+            "Celestial": [
+                "Starlit-Sworn", "Dawn-Patrol", "Constellation-Vetted", "Beacon-Bright",
+                "Northern-Star", "Aurora-Badged", "Skyline-Guardian", "First-Light Honest",
+                "Comet-Swift", "Horizon-Clean"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -1302,6 +1377,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "the People's Trust", "Justice Without Fear", "The Rewritten Record", "A City at Peace",
                 "Unpurchased Honor", "The Last Bribe Refused", "Legacy by Service", "The Badge Earned"
+            ],
+            "Celestial": [
+                "the City Under Stars", "Every Light Left On", "the Night Made Safe",
+                "Streets That Remember Kindness", "the Dawn Watch Kept", "a Skyline Without Fear",
+                "the North Star Precinct", "Honor Past the Horizon"
             ],
         },
         "set_themes": {
@@ -1359,6 +1439,11 @@ STORY_GEAR_THEMES = {
                 "Era-Wise", "Dawn-Bearing", "Dragon-Bonded", "Time-Warden", "Unforgotten", "Last-Light",
                 "Myth-Proven", "Farewell-Steadfast", "Eternal", "Apex", "History-True", "Skybound"
             ],
+            "Celestial": [
+                "Star-Feathered", "First-Dawn Bonded", "Constellation-Keeping", "Comet-Watching",
+                "Aurora-Winged", "Rift-Crossing", "Moonlit-Gentle", "Galaxy-Hearted",
+                "Skyfire-Calm", "Era-Bridging"
+            ],
         },
         "suffixes": {
             "Common": [
@@ -1380,6 +1465,11 @@ STORY_GEAR_THEMES = {
             "Legendary": [
                 "the First Dawn", "The Final Farewell", "Two Eras, One Heart", "The Sky Remembered",
                 "Love and Duty", "A Keeper's Legacy", "Time's Gentle Verdict", "The Flight That Changed Everything"
+            ],
+            "Celestial": [
+                "Wings Across Millennia", "the Sanctuary of Stars", "a Sky Shared Forever",
+                "the Rift Healed", "Feathers of First Light", "the Oldest Promise Kept",
+                "Care Beyond Eras", "the Constellation Named for Her"
             ],
         },
         "set_themes": {
@@ -7798,7 +7888,7 @@ Somewhere, your Shadow Self is probably already watching cat videos on an infini
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 🔥 DESTROY EVERY FRAGMENT]
+[YOUR CHOICE: 🔥 BURN EVERY SHARD]
 
 You won't make the same mistake twice. With {weapon}, you burn every shard to ash.
 
@@ -8754,6 +8844,8 @@ The Archivist's paper face creases with something like grief.
 Or doom us. Haven't decided yet."
 
 Your journey begins with unanswered questions. Typical.
+
+🎲 NEXT TIME: The Forbidden Stacks talk back. You meet the library's most brilliant idea — in a thousand pieces. And The Curator learns your name.
 """,
     },
     {
@@ -8826,6 +8918,8 @@ More than anyone has. That's either impressive or terrifying."
 
 The Curator felt that. They know exactly where you are now.
    And they're VERY interested in what you've become.
+
+🎲 NEXT TIME: A mind built like a hurricane, a name The Archivist won't say, and Echo's confession about who they loved before the breaking.
 """,
             "B": """
 [YOUR CHOICE: 🔖 ACCEPT ONE PIECE CAREFULLY]
@@ -8850,6 +8944,8 @@ Subtle connections don't trigger their alarms."
 
 You and Echo share something now. A link.
    When The Curator comes for them... they'll come for you too.
+
+🎲 NEXT TIME: Slow bricks, deep truths. Echo says The Curator's name like an old scar — and holds still, for one impossible moment, in your steady light.
 """,
         },
     },
@@ -8889,6 +8985,8 @@ But you're going to need to. Because your mind is building EXACTLY
 like The Curator's did. And Echo is watching you with complicated eyes.
 
 At {current_power} power, you're racing toward greatness... or disaster.
+
+🎲 NEXT TIME: A virus with perfect handwriting. Your walls crack in straight lines. And Echo starts to fade between the shelves.
 """,
             "B": """
 Your mind grows slowly. Deliberately. Each new room connects perfectly.
@@ -8918,6 +9016,8 @@ For a moment, Echo looks almost WHOLE again.
 
 At {current_power} power, you're building something beautiful.
 And someone is starting to trust you with their broken heart.
+
+🎲 NEXT TIME: The Curator finally notices the architect who builds in curves. Logic errors bloom like mold — and the careful thing you built starts to burn.
 """,
         },
     },
@@ -8988,6 +9088,8 @@ That worries you more than anything else.
 
 The Archivist is looking at your burned architecture 
    with an expression you can't read. Pride? Fear? ...Recognition?
+
+🎲 NEXT TIME: What grows back after a fire, what The Curator learns from watching you burn — and an offer you'll wish they'd never made.
 """,
             "B": """
 [YOUR CHOICE: 🧩 WEAPONIZE THE VIRUS]
@@ -9013,6 +9115,8 @@ Echo's fragments glow brighter. "You ABSORBED it. Made it part of you."
 
 The Curator is silent now. That's either victory...
    or the calm before something MUCH worse.
+
+🎲 NEXT TIME: Stolen weapons become architecture. The Curator starts recruiting a Council. And Echo settles into your halls like they were always meant to live there.
 """,
         },
     },
@@ -9045,6 +9149,8 @@ The Curator sends a message: "See? You understand now.
    Organization isn't cruelty. It's survival. Join me. Let me HELP you."
 
 You delete the message. But the offer lingers like smoke.
+
+🎲 NEXT TIME: The Curator stops sending messages and makes a house call — carrying the one trade you can't price: everything you lost, for the one thing you can't lose.
 """,
             "AB": """
 At {current_power} power, your library is a FORTRESS of stolen weapons.
@@ -9064,12 +9170,14 @@ The Archivist keeps detailed notes on your... adaptations.
 
 The Curator is gathering allies. Other collectors.
    Other obsessives. They're forming a COUNCIL against you.
-   
+
 "I'm flattered," you say when you hear.
 
 "You should be scared," The Archivist replies.
 
 "I'm both. That's kind of my brand now."
+
+🎲 NEXT TIME: The Council was the distraction. The Curator walks into your fortress alone, smiling, with a deal folded in their catalogued coat.
 """,
             "BA": """
 At {current_power} power, your library is SMALL but infinitely deep.
@@ -9094,6 +9202,8 @@ With every piece Echo reclaims, The Curator weakens.
 "They're scared of US," you correct. "Together."
 
 For the first time, Echo's fragment-smile looks almost whole.
+
+🎲 NEXT TIME: Every piece Echo reclaims starves The Curator. So The Curator comes to bargain — before there's nothing left of them to bargain with.
 """,
             "BB": """
 At {current_power} power, your library BREATHES.
@@ -9116,6 +9226,8 @@ The Archivist has stopped taking notes. They just WATCH now.
 
 You're not building a library anymore.
    You're building a HOME. For two broken minds who fit together perfectly.
+
+🎲 NEXT TIME: A home gets a visitor nobody invited. The Curator steps inside your living library — and Echo's oldest wounds open like doors.
 """,
         },
     },
@@ -9189,6 +9301,8 @@ The Curator staggers. "I... I was trying to PROTECT you—"
 
 In the end, it's not your power that defeats The Curator.
    It's Echo's. They're finally, COMPLETELY, FIGHTING BACK.
+
+🎲 THE FINALE AWAITS: What a library becomes when love defends it — and what it costs to be this strong.
 """,
             "B": """
 [YOUR CHOICE: 💔 SACRIFICE TO SAVE]
@@ -9216,6 +9330,8 @@ You got everything back. Except what mattered most.
 "You can get them back," The Archivist says quietly. "Eventually."
 
 You're not sure you believe that. But you HAVE to try.
+
+🎲 THE FINALE AWAITS: A full library. An empty hallway. And the long, stubborn work of getting Echo back.
 """,
         },
     },
@@ -9567,6 +9683,8 @@ A distant LAUGH echoes. Beautiful. Terrifying. HUNGRY.
 "Or we're all going to be someone's midnight snack."
 
 Your journey begins with a threat. As all good journeys do.
+
+🎲 NEXT TIME: A forest of frozen memories, a person caught in a web of dark dreams — and The Somnambulist starts hunting by scent.
 """,
     },
     {
@@ -9650,6 +9768,8 @@ Above, in the web, Reverie GASPS—then BREATHES freely.
 
 The Somnambulist felt that. You just became their new target.
    Good news: Reverie is safer. Bad news: YOU'RE not.
+
+🎲 NEXT TIME: Nightmare country learns your name. And its landlord steps out of nothing with a proposal you're not supposed to survive refusing.
 """,
             "B": """
 [YOUR CHOICE: 🌸 STRENGTHEN THROUGH MEMORY]
@@ -9681,6 +9801,8 @@ That's new. I don't know what to do with optimism."
 
 The Somnambulist can't see you anymore. Your joy is blinding them.
    But they can still sense Reverie. And they're ANGRY now.
+
+🎲 NEXT TIME: The shadows start fearing YOU. The Somnambulist comes to see what's blinding them — and Reverie decides whose hand to hold.
 """,
         },
     },
@@ -9723,6 +9845,8 @@ The Somnambulist isn't just evil. They're CHARMING.
 I could use someone with your... appetite for darkness."
 
 Behind you, Reverie tenses. Waiting to see if you'll betray them.
+
+🎲 NEXT TIME: The Somnambulist sets a trap — not for you, for Reverie. And the weapon is the one memory they would die to keep hidden.
 """,
             "B": """
 You walk in light now. And the shadows FEAR you.
@@ -9764,6 +9888,8 @@ survive out there. You know the light will FADE."
 
 Behind you, Reverie grabs your hand. "It's okay," they whisper. 
 "I'm not leaving. Not now."
+
+🎲 NEXT TIME: A trap snaps shut around Reverie's worst memory — and then The Somnambulist reaches for yours.
 """,
         },
     },
@@ -9842,6 +9968,8 @@ The Sandman stares at you with new respect. "That was either brave or reckless."
 
 You feel LIGHTER. Emptier. Something important is gone—
    but something terrible is gone too. You're not sure which is which.
+
+🎲 NEXT TIME: Lighter. Emptier. Colder. The Sandman has seen your new eyes before — on the thing you're hunting.
 """,
             "B": """
 [YOUR CHOICE: 💎 OWN THE MEMORY]
@@ -9873,6 +10001,8 @@ that's PROUD of their wounds.
 
 The Sandman is crying. Just a little.
    "Haven't seen that in centuries," they mutter. "Forgot it was possible."
+
+🎲 NEXT TIME: Your scars become a beacon. The lost start finding you. And The Somnambulist learns what an army of proud wounds looks like.
 """,
         },
     },
@@ -9910,6 +10040,8 @@ Reverie takes your hand. Their touch is warm. Grounding.
 "You're still you," they whisper. "I can tell. Stay with me."
 
 You don't know if you believe them. But you want to.
+
+🎲 NEXT TIME: The throne room of stolen potential — and the Dreamscape's cruelest rule: winning means being forgotten.
 """,
             "AB": """
 At {current_power} power, you've become something RARE.
@@ -9935,6 +10067,8 @@ Other trapped dreamers are finding you. Following you.
 "An army," Reverie breathes. "We have an actual ARMY."
 
 The Somnambulist won't know what hit them.
+
+🎲 NEXT TIME: An army at your back, a door marked WAKE, and a price written in the only currency you can't spare: memory.
 """,
             "BA": """
 At {current_power} power, you've become something BEAUTIFUL.
@@ -9960,6 +10094,8 @@ You've forgotten why you came here. The mission. The goal.
 You try to remember what you're fighting for. It's harder than it should be.
 
 Reverie squeezes your hand. "Stay with me. We need you PRESENT."
+
+🎲 NEXT TIME: The light leads to the lair. The Somnambulist offers the truth about waking — and it costs everything you've built with Reverie.
 """,
             "BB": """
 At {current_power} power, you've become something BALANCED.
@@ -9987,6 +10123,8 @@ For not giving up on me. For not burning me away OR losing me in light."
 "We're not done yet," you warn.
 
 "I know. But when we ARE done... stay? Please?"
+
+🎲 NEXT TIME: Balance walks into the dream-eater's throne room. One door. One love. One impossible arithmetic.
 """,
         },
     },
@@ -10074,6 +10212,8 @@ The light takes them. And you... you wake up too.
 
 In the waking world, you find yourself smiling.
    You don't remember why. But somewhere, someone is finally free.
+
+🎲 THE FINALE AWAITS: What survives the morning — and who you become when no one remembers why you're smiling.
 """,
             "B": """
 [YOUR CHOICE: 🌙 STAY TOGETHER FOREVER]
@@ -10109,6 +10249,8 @@ but because you made them IRRELEVANT. Their rules don't apply anymore.
 You don't wake up. But neither does Reverie.
    You stay—together—in a dreamscape you've remade into a HOME.
    And somehow, that's exactly where you belong.
+
+🎲 THE FINALE AWAITS: A dream rebuilt with new rules — and whether a home counts as real if you never wake up in it.
 """,
         },
     },
@@ -10427,6 +10569,8 @@ They KNOW. You can see it in their face. They've seen the original files.
 Your {weapon}—a pen, right now—shakes in your grip.
 
 This is the moment. The one that defines who you become.
+
+🎲 NEXT TIME: A break-room alliance, a five-year grudge with receipts — and the first move in a very corporate war.
 """,
     },
     {
@@ -10496,6 +10640,8 @@ The man has MANY weaknesses. Arrogance being the biggest.
 While gathering evidence, you discover something bigger.
    Marcus hasn't just stolen YOUR project. He's stolen FIVE others.
    You're not alone. There's an army of victims waiting for a leader.
+
+🎲 NEXT TIME: The binder grows. The victims find each other. And Old Gerald from IT turns out to be sitting on fifteen years of ammunition.
 """,
             "B": """
 [YOUR CHOICE: 🎤 CONFRONT HIM NOW]
@@ -10530,6 +10676,8 @@ The vendor on the call? She records EVERYTHING for notes.
 Sam is waiting outside. "You absolute MANIAC. I can't believe that worked."
 
 "It hasn't worked yet. But it WILL."
+
+🎲 NEXT TIME: Your confrontation goes company-viral. A coalition forms — and someone inside it is already reporting back to Marcus.
 """,
         },
     },
@@ -10567,6 +10715,8 @@ Marcus knows something is happening.
 
 Your {amulet}—it's actually a good luck charm Sam gave you—
 feels warm in your pocket. You're going to need that luck.
+
+🎲 NEXT TIME: An executive with calculating eyes invites you to talk. The offer could end Marcus overnight — for a price nobody prints on the menu.
 """,
             "B": """
 Week four. You've made enemies. But also ALLIES.
@@ -10599,6 +10749,8 @@ There's a mole. Someone in your coalition is feeding Marcus info.
    Now you're being investigated for "creating a hostile work environment."
 
 Time to figure out who you can REALLY trust.
+
+🎲 NEXT TIME: HR opens a file with your name on it. And the person who created Marcus Vance slides into the seat across from you.
 """,
         },
     },
@@ -10671,6 +10823,8 @@ Jordan's plan involves more than just Marcus.
    Is that a price you're willing to pay?
 
 Your {shield}—the coalition you built—might become collateral damage.
+
+🎲 NEXT TIME: The audit bites. Jordan's real plan surfaces. And your coalition learns what 'collateral damage' means in a restructuring deck.
 """,
             "B": """
 [YOUR CHOICE: 🚶 GO IT ALONE]
@@ -10702,6 +10856,8 @@ Jordan becomes a third player in this game.
    Waiting to see who wins so they can claim the survivor.
 
 Your coalition is smaller now. But it's YOURS.
+
+🎲 NEXT TIME: No shortcuts, no protector — just you, the binder, and a board meeting drawing closer. Marcus still has one card left to play.
 """,
         },
     },
@@ -10739,6 +10895,8 @@ But Jordan's not done. They're already positioning
 
 Sam catches your eye across the table. They've figured it out too.
 You're winning the battle. But are you winning the war?
+
+🎲 NEXT TIME: The boardroom endgame. Marcus's last stand, Jordan's quiet coup — and your recommendation deciding how far a man falls.
 """,
             "AB": """
 The confrontation comes in the parking garage. Less dramatic. More REAL.
@@ -10767,6 +10925,8 @@ Marcus pulls out his phone. Shows you something.
    "Your best friend has been playing you from the start."
 
 Your world tilts. Is it true? Has Sam been a mole all along?
+
+🎲 NEXT TIME: A photo can lie — or not. One conversation before the board meeting decides everything that matters.
 """,
             "BA": """
 The alliance with Jordan has teeth. SHARP teeth.
@@ -10792,6 +10952,8 @@ Sam hasn't spoken to you in three days.
    Now half your allies think you've become worse than Marcus.
 
 Is victory worth THIS?
+
+🎲 NEXT TIME: Victory is close, and so is the bill. The boardroom waits — and the CEO is going to ask YOU what happens to Marcus.
 """,
             "BB": """
 Going it alone is HARD. But it's also CLEAN.
@@ -10817,6 +10979,8 @@ The night before the board meeting, you get an email.
    Proof that he's been skimming from the company for YEARS.
 
 This isn't just career theft anymore. This is CRIMINAL.
+
+🎲 NEXT TIME: Criminal evidence lands in your inbox at midnight. The board meets at nine. Justice gets a volume knob.
 """,
         },
     },
@@ -10890,6 +11054,8 @@ Sam finds you afterward, in the parking garage.
 Your phone buzzes. A message about the VP of Operations role.
    The position is opening up. People are asking if you're interested.
    Now comes the question: what kind of victory do you WANT?
+
+🎲 THE FINALE AWAITS: What total victory builds, who it promotes — and what it costs to keep your hands this clean.
 """,
             "B": """
 [YOUR CHOICE: 🕊️ GRACEFUL VICTORY]
@@ -10918,6 +11084,8 @@ Sam finds you afterward. Their expression is complicated.
 A month later, you get a letter. From Marcus.
    No return address. Just three words: "You were right."
    You're not sure what he means. But somehow, it matters.
+
+🎲 THE FINALE AWAITS: A quiet exit, a three-word letter — and the kind of power that comes from not taking everything.
 """,
         },
     },
@@ -11269,6 +11437,8 @@ The timer starts.
 
 **Every breakthrough begins with discipline. Every discovery demands persistence.**
 **You are not failing. You are iterating toward truth.**
+
+🎲 NEXT TIME: Trial 50 gives you a flicker of something real — and two weeks later, your hypothesis shows up wearing someone else's name.
 """
     },
     {
@@ -11313,10 +11483,12 @@ who did the real science. Rivera will look like an amateur."
 **The conference is in three days.**
 **You have a platform. You have evidence.**
 **Do you expose theft, or do you outwork it?**
+
+⚡ A CHOICE AWAITS... The microphone is yours for ten minutes. So is the decision.
 """,
         "content_after_decision": {
             "A": """
-**YOU CHOOSE: EXPOSE THEM PUBLICLY**
+[YOUR CHOICE: 🔥 EXPOSE THEM PUBLICLY]
 
 The conference hall is packed. Rivera presents first—
 your hypothesis, poorly explained, barely understood.
@@ -11350,9 +11522,11 @@ Power level {current_power}. Your {weapon} gleams in the lab light.
 The vindication felt good. But the isolation feels cold.
 
 **Truth was served. But was it worth the cost?**
+
+🎲 NEXT TIME: Vindication has a price list. Empty hallways, transferred post-docs — and a breakthrough still waiting to be found, alone.
 """,
             "B": """
-**YOU CHOOSE: OUTWORK THEM QUIETLY**
+[YOUR CHOICE: 🧪 OUTWORK THEM QUIETLY]
 
 The conference happens. Rivera presents.
 You sit in the audience and take notes.
@@ -11396,6 +11570,8 @@ Power level {current_power}. The {weapon} in your hands.
 Victory through excellence, not vengeance.
 
 **Discipline beats shortcuts. Always.**
+
+🎲 NEXT TIME: Excellence compounds quietly. Your lab fills, your data sharpens — and the wall you finally hit is one talent can't climb alone.
 """
         },
     },
@@ -11442,6 +11618,8 @@ work with someone without burning them."
 
 **The isolation you chose is becoming the isolation that limits you.**
 **Science is collaborative. But can you collaborate without compromising?**
+
+🎲 NEXT TIME: Chen knocks with mass spectrometry and one condition. The isolation you chose meets the collaboration you need.
 """,
             "B": """
 Six months after outworking Rivera.
@@ -11484,6 +11662,8 @@ Dr. Chen knocks. "Lab meeting in ten. You presenting?"
 "Always."
 
 **Excellence is patient. Excellence is collaborative. Excellence WINS.**
+
+🎲 NEXT TIME: The breakthrough stalls on equipment you don't own. Chen makes her offer official — co-authorship for acceleration. Ego meets arithmetic.
 """
         },
     },
@@ -11547,10 +11727,12 @@ She's offering tools, not stealing ideas.
 
 **Do you accelerate the breakthrough by sharing credit?**
 **Or do you slow down to keep it entirely yours?**
+
+⚡ A CHOICE AWAITS... Chen is waiting for an answer. So is the breakthrough.
 """,
         "content_after_decision": {
             "A": """
-**YOU CHOOSE: ACCEPT PARTNERSHIP**
+[YOUR CHOICE: 🤝 ACCEPT PARTNERSHIP]
 
 "Yes. Let's collaborate."
 
@@ -11602,9 +11784,11 @@ And honestly? The discovery is BETTER because she was involved.
 Power level {current_power}. {weapon} in your lab.
 You learned something Rivera never did:
 **Great scientists don't work alone. They work with equals.**
+
+🎲 NEXT TIME: Partnership at full speed — until a 2 AM discovery in Trial 97 threatens everything the two of you have built.
 """,
             "B": """
-**YOU CHOOSE: STAY INDEPENDENT**
+[YOUR CHOICE: 🔬 STAY INDEPENDENT]
 
 "I appreciate the offer. But I need to do this alone."
 
@@ -11669,6 +11853,8 @@ The breakthrough will be yours alone.
 But it's taking EVERYTHING you have.
 
 **Independence is powerful. But is it efficient?**
+
+🎲 NEXT TIME: Solo means every triumph is yours — and every catch-22, every rejection letter, every borrowed machine-hour too.
 """
         },
     },
@@ -11754,6 +11940,8 @@ Power level {current_power}. The {weapon} gleaming.
 
 **Excellence requires catching your own mistakes.**
 **Great partnerships make that possible.**
+
+🎲 NEXT TIME: Trials 147 through 149 say yes. Trial 150 says catastrophe. The grant committee meets in fourteen hours.
 """,
             "AB": """
 One year after declining Chen's collaboration.
@@ -11826,6 +12014,8 @@ Power level {current_power}. The {weapon} in your hands.
 
 You got your solo breakthrough.
 But you learned: **Even lone wolves need the pack sometimes.**
+
+🎲 NEXT TIME: One trial fails the way trials aren't allowed to fail — on the eve of the meeting that decides your tenure, your funding, your name.
 """,
             "BA": """
 One year after accepting Chen's collaboration.
@@ -11895,6 +12085,8 @@ You and Chen in the lab:
 We both win. The science wins."
 
 **Excellence is collaborative. But credit must be accurate.**
+
+🎲 NEXT TIME: Honest credit, restructured papers — and then Trial 150 detonates under the one project both your names depend on.
 """,
             "BB": """
 One year after staying independent.
@@ -11964,6 +12156,8 @@ You learned the hard way:
 
 The breakthrough is yours.
 But the future belongs to both of you.
+
+🎲 NEXT TIME: The partnership begins just in time to face the worst data point of your career, fourteen hours before the committee sits.
 """
         },
     },
@@ -12033,10 +12227,12 @@ Power level {current_power}. All for this moment.
 **The committee meets in 14 hours.**
 **The choice defines not just your career—**
 **but the kind of science you believe in.**
+
+⚡ A CHOICE AWAITS... 150 trials. 14 hours. One signature.
 """,
         "content_after_decision": {
             "A": """
-**YOU CHOOSE: REPORT ALL DATA**
+[YOUR CHOICE: 📊 REPORT ALL DATA]
 
 The committee meeting. 9 AM.
 
@@ -12089,9 +12285,11 @@ gets published in *Science*.
 Reviewers: "Unprecedented honesty. This is science at its best."
 
 **Integrity costs nothing. Deception costs everything.**
+
+🎲 THE FINALE AWAITS: What 150 honest trials buy — and what a career means when the data is the one thing you never negotiated.
 """,
             "B": """
-**YOU CHOOSE: REQUEST EXTENSION**
+[YOUR CHOICE: ⏱️ REQUEST EXTENSION]
 
 The committee meeting. 9 AM.
 
@@ -12164,6 +12362,8 @@ The breakthrough is published. Your career is saved.
 You were pragmatic—but you didn't cross the line Rivera crossed.
 
 **Sometimes the ethical choice is about what you DON'T hide—eventually.**
+
+🎲 THE FINALE AWAITS: Six borrowed months, one unsolved failure — and the version of you that walks out of the extension.
 """
         },
     },
@@ -13717,27 +13917,58 @@ THIEF_CHAPTERS = [
         "content": """
 Rain. Neon. Fast hands.
 
-You survive by reading crowds and moving before anyone notices.
-Tonight your fingers find a wallet, but the photo inside stops you cold:
-a child, a hospital bracelet, an unpaid bill folded behind it.
+You survive by reading crowds the way other people read menus. The
+tourist with the loose bag strap. The drunk salaryman counting his cash
+under a streetlight like an invitation. You move before anyone notices
+you were ever standing still. It's not pride. It's rent.
 
-You have stolen from a lot of people. This one hits different.
+Tonight your fingers find a wallet in the metro crush — clean lift,
+textbook, gone in under a second. You're three blocks away before you
+open it in a doorway, water dripping off your {cloak}.
 
-Before you can decide what to do, a baton taps your shoulder.
-Officer Mira has been watching the whole block.
+The photo inside stops you cold.
 
-"I can arrest you," she says. "Or I can ask a better question:
-Do you want to be feared forever, or trusted once?"
+A child. Six, maybe seven. Hospital bracelet on a wrist thin as a
+sparrow's leg. Behind the photo, folded into careful quarters the way
+people fold things they can't pay: a bill. Oncology unit. Third notice.
+
+You have stolen from a lot of people. You've kept a strict policy of
+never finding out who they were. The policy just died in a doorway
+on Delancey.
+
+Before you can decide what to do, a baton taps your shoulder. Twice.
+Polite, like knocking.
+
+Officer Mira. You know her by reputation: the one who walks the worst
+blocks alone, the one nobody's ever bought. She's been watching the
+whole street — which means she watched the lift, which means the lift
+wasn't clean, which has never happened before.
+
+"I can arrest you," she says, conversational, like discussing weather.
+"Eleven seconds, that's all the paperwork needs. Or I can ask a better
+question: do you want to be feared forever, or trusted once?"
 
 You hand the wallet back. Your pulse does not slow.
 
-Mira points at your {cloak}. "You move like a ghost.
-Ghosts can haunt a city, or protect it. Your choice."
+Mira looks you over — the soaked {cloak}, the empty hands held just so.
+"You move like a ghost. Ghosts can haunt a city, or protect it.
+Your choice. The offer expires never, which is the annoying part."
 
-From the rooftop, your old mentor Dorian watches and smiles.
-"Come back when you remember who taught you everything," he calls down.
+From the rooftop across the street, a familiar silhouette applauds
+without sound. Dorian. The man who taught you crowds, locks, exits,
+and how to need nobody. His voice drops down through the rain like
+a coin into a cup:
+
+"Touching! Come back when you remember who taught you everything."
+
+He's gone before the next lightning. He always is.
+
+You stand in the rain between a badge you don't trust and a rooftop
+you've outgrown, holding nothing, for once, but your own two hands.
 
 The city has finally asked you who you are.
+
+🎲 NEXT TIME: Two messages, one minute apart, both starting with your name. The records building has nine floors and one truth. And Mira learns exactly what your old crew thinks of "trusted once."
 """,
     },
     {
@@ -13746,48 +13977,108 @@ The city has finally asked you who you are.
         "has_decision": True,
         "decision_id": "thief_loyalty",
         "content": """
-Dorian sends coordinates and one sentence:
-"If those case files reach court, half the city falls."
+The messages arrive sixty seconds apart, like a coordinated ambush
+on your conscience.
 
-Mira sends you a sealed request and one sentence:
-"If those files disappear, witnesses die."
+Dorian sends coordinates — the municipal records building, sub-basement
+archive — and one sentence: "If those case files reach court, half the
+city falls. The half we grew up in."
 
-Both messages arrive in the same minute.
+Mira sends a sealed request, stamped, official, terrifying in its
+trust — and one sentence: "If those files disappear, witnesses die.
+I'm telling you because you'd find out anyway."
 
-Your crew trusts your {boots}. They trust your old instincts.
-Mira trusts your potential. Barely.
+Same files. Same night. Same you.
 
-At the records building you stand between two futures:
-one fast, one clean, both expensive.
+You walk the block twice in the rain to think. Your crew is already
+in position on the rooftops — they trust your {boots}, your timing,
+your old instincts. Half of them have warrants. All of them have
+reasons. Sema's brother is named in those files. So is the man who
+burned Tomas out of his shop. So, you realize on the second pass,
+is Dorian — seventeen times.
 
-A CHOICE AWAITS...
+That's the sentence under the sentence. He didn't send you to save
+the neighborhood. He sent you to save himself, wrapped in everyone
+else like a hostage vest.
+
+And Mira's witnesses? You checked. One of them is the woman from
+the wallet. The hospital bracelet kid's mother, testifying about
+what Dorian's protection racket did to her clinic.
+
+At the records building you stand between two futures: one fast,
+one clean, both expensive, neither refundable.
+
+⚡ A CHOICE AWAITS... Nine floors of paper. Two people who said your name like it still means something. Pick.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: TAKE THE HEIST]
+[YOUR CHOICE: 🌒 TAKE THE HEIST]
 
-You move with old precision. Locks open. Cameras loop.
-By dawn the files are gone and your crew raises a glass to your name.
+You move with old precision, and the old precision is glorious —
+that's the ugly truth nobody warns you about. Locks open like they
+missed you. Cameras loop on a four-second seam only you can feel.
+The archive's "uncrackable" cage takes ninety seconds and hurts your
+feelings.
 
-But the city reacts fast. Witnesses scatter into hiding.
-A woman you have never met loses her court date and her only chance at justice.
+By dawn the files are gone, ash in a barrel by the river, and your
+crew raises a glass to your name in the back of Tomas's shop.
+Sema hugs you with both arms. Her brother is safe. The block is safe.
+Your name is sung.
 
-Mira does not call you a traitor. That hurts more.
+The hangover arrives by noon.
 
-"You saved your circle," she says. "Now prove you can save someone outside it."
+The city reacts fast — faster than Dorian promised it would. With the
+evidence gone, the prosecution collapses, and everyone who agreed to
+testify is suddenly visible, deniable, and expendable. Witnesses
+scatter into hiding. Doors that finally opened slam shut.
+
+A woman you have never met loses her court date and her only chance
+at justice. You know her anyway. You've seen her photo. It was in
+a wallet, behind a child's hospital bracelet.
+
+Mira finds you on the bridge at dusk. She doesn't arrest you.
+She doesn't even raise her voice. She does not call you a traitor —
+and that hurts more, because you were braced for traitor and instead
+you got truth:
+
+"You saved your circle," she says. "Congratulations; circles are easy.
+Now prove you can save someone outside it."
+
+🎲 NEXT TIME: Your old name gets famous in all the wrong alleys. A kid from your block starts wearing his hood like you. And Dorian offers you the one thing you actually want.
 """,
             "B": """
-[YOUR CHOICE: RETURN THE EVIDENCE]
+[YOUR CHOICE: 📨 RETURN THE EVIDENCE]
 
-You fake the theft, then send every file to internal affairs with the paper trail intact.
-The building blames ghosts. Mira knows better.
+You run the heist exactly as Dorian designed it — locks, loops, the
+four-second seam — because the only way to protect the files is to
+steal them before someone worse does it sloppier.
 
-Witness protection kicks in before dawn.
-Families move. Doors lock. Lives continue.
+Then you do the part he didn't design: you fake the destruction,
+ash a box of blank forms by the river for the watching rooftops,
+and send every original file to internal affairs with the paper
+trail intact and your own access route documented in the margin.
+Signed. Not anonymous. The hardest signature of your life.
+
+The building blames ghosts. Mira knows better. She reads the margin
+note twice and looks at you like a math problem that finally solved
+itself.
+
+Witness protection kicks in before dawn. Families move through the
+dark in unmarked vans. Doors lock in new cities. Lives — including
+a woman with a folded hospital bill — continue. The trial date holds.
+
+Your crew knows by morning. Sema won't look at you. Tomas quietly
+leaves your tools on his doorstep, which in the old language means
+*don't come back*. You expected the anger. You didn't expect the
+grief to feel this much like a funeral where you're both the corpse
+and the guy who dug the grave.
 
 Dorian sends one reply: "You just picked their side."
 
 You delete his number. Your thumb shakes when you do it.
+It was the first number you ever memorized.
+
+🎲 NEXT TIME: Training montages are lies — the real thing is paperwork at midnight. Defense lawyers learn your old name. And the first arrest built on your evidence holds.
 """,
         },
     },
@@ -13797,26 +14088,65 @@ You delete his number. Your thumb shakes when you do it.
         "has_decision": False,
         "content_variations": {
             "A": """
-Your old name grows louder in the alleyways.
-People call you effective, not safe.
+Your old name grows louder in the alleyways, and louder names buy
+worse company.
 
-You still feed tips to Mira, but never enough to clear your conscience.
-Every arrest she makes from your leads feels like half a lie.
+People call you effective. Notice the word. Not good, not safe —
+*effective*, the compliment you give a tool. The records job made
+you a legend in three districts, and legends don't get to pick
+their fans.
 
-Then a kid from your old block gets recruited by Dorian's runners.
-He says your name like it means something great.
+You still feed tips to Mira — anonymous, careful, never enough to
+clear your conscience. Every arrest she makes from your leads feels
+like half a lie: justice with the receipts torn off. She runs them
+down anyway. Once, at a crime scene, her eyes find your rooftop
+without searching for it. She doesn't wave. She just files you,
+visibly, under *pending*.
 
-For the first time, being admired feels like failure.
+Then the bill arrives, the way bills do.
+
+A kid from your old block — Renz, eleven, the one who used to feed
+the bridge cats — gets recruited by Dorian's runners. New shoes,
+dead eyes already practicing. When you corner him, he isn't ashamed.
+He's THRILLED. He says your name like it means something great,
+recites the records job like scripture, stands the way you stand.
+
+"I'm gonna be just like you," he says.
+
+You walk home through your famous alleys, and for the first time,
+being admired feels exactly like failure wearing your jacket.
+
+🎲 NEXT TIME: The mayor's office builds something new, and Mira puts your future on a table in an interrogation room — which, she notes, is the most honest furniture in the building.
 """,
             "B": """
-Your old name gets quieter. Your case file gets thicker.
-Mira trains you after shifts: rules, evidence, patience.
+Your old name gets quieter. Your case file gets thicker. Turns out
+those two lines cross.
 
-"Talent without discipline is just luck with a good story," she says.
+Mira trains you after shifts, in a borrowed conference room that
+smells like burnt coffee and fluorescent light. Rules of evidence.
+Chain of custody. The catechism of patience. You, who once opened
+a nine-pin deadbolt in the dark while bleeding, now spend four hours
+learning why a timestamp matters more than a confession.
 
-You learn to write what actually happened, not what sounds impressive.
-The city starts to notice a pattern:
-wherever you show up, fewer people disappear.
+"Talent without discipline is just luck with a good story," she says,
+sliding back your first report, red-inked like a crime scene.
+"Write what happened. Not what sounds impressive. The court can't
+convict a vibe."
+
+So you learn to write what actually happened. Where you stood. What
+you saw. What you can prove versus what you merely know — a distinction
+that used to be your whole career, now inverted, pointing the
+honest way.
+
+It works slower than stealing. It works longer than stealing.
+
+The city starts to notice a pattern it can't name: wherever you show
+up, fewer people disappear. The bodega owners on Carver Street know
+it first, the way bodega owners know everything first. One of them
+starts leaving you coffee. Black, terrible, free. You'd trade no
+heist in your history for it.
+
+🎲 NEXT TIME: A new unit. A badge on a table. And Dorian's opinion arrives in four words, none of them wasted.
 """,
         },
     },
@@ -13826,41 +14156,99 @@ wherever you show up, fewer people disappear.
         "has_decision": True,
         "decision_id": "thief_badge",
         "content": """
-The mayor's office approves a new anti-corruption unit.
-Mira places a badge on the table between you.
+The mayor's office approves a new anti-corruption unit. Small budget,
+big enemies, one open seat with your skill set written all over it.
 
-"If you take this, you answer to cameras, audits, and judges.
-No shortcuts. No hero stories. Just results you can prove."
+Mira books an interrogation room for the conversation — "most honest
+furniture in the building," she says — and places a badge on the
+table between you. Not slides. Places. Like setting down something
+that's been heavy for a while.
 
-Dorian sends another message: "Badges are just expensive masks."
+"Before you touch it, hear the price. If you take this, you answer
+to cameras, audits, and judges. Every door you ever opened gets
+re-examined. Every enemy you made gets a microphone. No shortcuts.
+No hero stories. Just results you can prove, forever, in writing."
 
-Your {amulet} feels heavier than usual. The city waits.
+She leans back.
 
-A CHOICE AWAITS...
+"And here's what nobody else will tell you: this unit fails without
+someone who knows how the locks actually work. The clean ones can't
+see the seams. You ARE the seam. That's the job."
+
+Your phone buzzes once against your leg. Dorian, who always knows,
+who has always always known: "Badges are just expensive masks."
+
+Four words. He's getting economical. That means he's worried.
+
+Under your shirt, your {amulet} — the old tin token from your first
+crew, the one you've never been able to throw in the river — feels
+heavier than usual.
+
+The badge sits on the table. The city waits.
+
+⚡ A CHOICE AWAITS... Masks come off. Oaths don't. Choose which one you can live inside.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: ACCEPT THE BADGE]
+[YOUR CHOICE: 🛡️ ACCEPT THE BADGE]
 
-You take the oath in a room full of people who do not trust you.
-Some officers clap. Most do not.
+You take the oath in a room full of people who do not trust you,
+which is fair, because half of them have personally chased you.
 
-Your first week is brutal: every old case reopened, every move questioned.
-One detective leaves a note on your desk: "How long until you steal the evidence locker?"
-You do not complain. You log everything.
+Some officers clap. Most do not. One — Detective Harlan, twenty-two
+years, two commendations, zero sense of humor — walks out. You note
+the name. Not for revenge. For the long game of proving him wrong,
+which is the only revenge with compound interest.
 
-Respect does not arrive. Reliability does.
+Your first week is brutal by design. Every old case reopened. Every
+move questioned. Mandatory polygraph "scheduling errors" that book
+you at 6 AM three days running. A note left on your desk in tidy
+detective handwriting: "How long until you steal the evidence locker?"
+
+You do not complain. You log everything — the note included, scanned,
+timestamped, filed under H. You show up four minutes early to
+everything. You write reports so clean the prosecutors start using
+them as templates.
+
+Respect does not arrive. Reliability does — and reliability, you're
+learning, is just respect that hasn't admitted it yet.
+
+🎲 NEXT TIME: Dorian goes public with your greatest hits, in 4K, with commentary. The unit's survival comes down to one press conference and the question you've been dreading since the oath.
 """,
             "B": """
-[YOUR CHOICE: STAY A ROGUE INFORMANT]
+[YOUR CHOICE: 🌫️ STAY A ROGUE INFORMANT]
 
-You push the badge back across the table and keep working the streets nobody else can reach.
-Your tips close cases fast, but defense lawyers attack the method every time.
+You push the badge back across the table. Mira looks at it, looks
+at you, and pockets it without a word — which is somehow worse than
+a lecture.
 
-Two guilty men walk free because of how you got the proof.
+"Then be the best ghost the city ever had," she finally says.
+"But ghosts can't testify. Remember that sentence. You're going to
+hear it again from worse people."
 
-Mira protects what she can, then tells you straight:
-"If you want justice that lasts, we need more than clever wins."
+You keep working the streets nobody else can reach. And the work is
+GOOD — your tips close cases in days that task forces couldn't crack
+in years. The freight-yard skimming ring. The councilman's burner
+phones. The clinic extortion crew, gift-wrapped, with photos.
+
+Then the bill arrives, the way bills do.
+
+A defense lawyer with a salary like a phone number stands up in
+court and asks one question: "And HOW exactly was this evidence
+obtained?" Twice, the prosecution has no good answer. Twice, the
+judge has no choice.
+
+Two guilty men walk free because of how you got the proof. One of
+them waves at you from the courthouse steps. He knows exactly who
+you are. They always know.
+
+Mira protects what she can, then tells you straight, over terrible
+coffee neither of you drinks:
+
+"Your wins are real. They just don't LAST. If you want justice that
+lasts, we need more than clever. Clever is how we got Dorian."
+
+🎲 NEXT TIME: The trial of the decade needs a witness who officially doesn't exist. And Dorian starts asking around about which bridge cats a certain kid named Renz used to feed.
 """,
         },
     },
@@ -13870,37 +14258,121 @@ Mira protects what she can, then tells you straight:
         "has_decision": False,
         "content_variations": {
             "AA": """
-Badge on your chest, old sins on your back.
-When Dorian leaks footage of your thief years, protests fill the streets.
+Badge on your chest, old sins on your back, and Dorian holding the
+detonator he's been saving since the rooftop.
 
-You answer in public with full records, not excuses.
+He leaks the footage on a Sunday night, prime time for outrage:
+your thief years, edited like a highlight reel. The records job.
+The museum vault. The four-second camera seam, looped and labeled
+"YOUR NEW ANTI-CORRUPTION OFFICER." By Monday morning, protests fill
+the streets, and half the signs have your face on them.
+
+The unit's funding review is Thursday. The math is simple: you resign
+quietly, or the whole experiment dies with your name on the autopsy.
+
+You choose the third thing, the one nobody plans for.
+
+You answer in public — full records, not excuses. Every job you ever
+pulled, self-reported, dated, cross-referenced against the statute
+of limitations you are very much NOT hiding behind. Every door you've
+opened since, with warrants. You stand at the podium for three hours
+and decline to be ashamed in any direction.
+
 It barely saves the unit. But it does save it.
 
-Mira tells the press: "He is not clean. He is accountable. There is a difference."
+And Mira, asked by a reporter whether she trusts a thief, delivers
+the sentence that ends up on the front page and, years later, in
+the training manual:
+
+"He is not clean. He is accountable. There is a difference, and
+this city had better learn it."
+
+🎲 NEXT TIME: A courthouse basement. The man who taught you everything, finally out of exits. And one question from Mira: how do we end this so it STICKS?
 """,
             "AB": """
-You wear the badge but still use back channels.
-Results come fast. Oversight comes faster.
+You wear the badge. You also still know where the back channels run,
+and you've never quite bricked them up.
 
-A judge warns your entire team:
-"One dirty shortcut can destroy ten clean arrests."
+Results come fast — faster than any clean unit in the city. Oversight
+comes faster still. There's a pattern in your case files visible to
+anyone who knows locks: evidence that arrives just a little too
+conveniently, sources that can never be produced, doors that were
+"already open."
 
-You know she is right. You also know three families are safe tonight because of those shortcuts.
-Both facts are true at the same time. That is the hardest part.
+A judge — the good kind, the kind you actually respect — pulls your
+entire team into chambers and lays it out without raising her voice:
+
+"One dirty shortcut can destroy ten clean arrests. Not might. CAN,
+and eventually WILL, in front of the wrong jury, on the worst day,
+with the most guilty defendant. You are building a courthouse out
+of trapdoors."
+
+You know she is right. You also know three families are safe tonight
+because of those shortcuts — the Okafors, the woman from the wallet,
+a witness whose new address officially doesn't exist. You memorized
+their faces precisely for moments like this, and the memory performs
+its function: it complicates everything.
+
+Both facts are true at the same time. That is the hardest part,
+and nobody — not Mira, not the judge, not Dorian laughing somewhere —
+can make it simpler for you.
+
+🎲 NEXT TIME: Dorian's empire develops a crack shaped exactly like your old skill set. The endgame begins in a courthouse basement.
 """,
             "BA": """
-You stayed outside the oath, but you start feeding clean evidence to badge teams.
-Mira gives you proper methods and you follow them.
+You stayed outside the oath — no badge, no desk, no 6 AM polygraphs.
+But after the second guilty man waved from the courthouse steps,
+you changed what "outside" means.
 
-For the first time, prosecutors ask for you by name.
-Not for gossip. For solid, verified work.
+Now you feed clean evidence to badge teams. Mira teaches you the
+recipe in stolen hours: chain of custody, corroboration, the art of
+finding a legal door to the thing you already know. You follow the
+methods exactly. It's slower. It's duller. It holds.
+
+The freight-yard case becomes the template: your street knowledge,
+her procedure, a paper trail so tight the defense waives the
+challenge. The skimming ring takes plea deals down the line like
+dominoes with lawyers.
+
+For the first time, prosecutors ask for you by name. Not for gossip.
+Not as a colorful anecdote. For solid, verified work — "get me the
+ghost, his files hold." Somewhere in an evidence room there's a box
+with your case numbers on it, and it is the only monument you've
+ever wanted.
+
+Dorian hears, of course. His message is almost gentle: "A leash
+with extra steps." You don't answer. The bodega coffee on Carver
+Street tastes better than being right ever did.
+
+🎲 NEXT TIME: Everything converges on one basement, one file, one teacher with no exits left — and one question about how endings stick.
 """,
             "BB": """
-No badge, no rules, no protection.
-You win raids and lose court cases.
+No badge, no rules, no protection. Maximum freedom. You're about
+to learn the exchange rate.
 
-After three guilty men walk free on bad procedure, families ask the hardest question:
-"Did you save us for a week or for a lifetime?"
+You win raids — beautifully, infuriatingly well. You hit Dorian's
+stash houses on instinct and timing the task force can't match.
+You liberate ledgers, free a basement full of "employees" whose
+passports were being held, leave evidence stacked and labeled like
+a gift with a bow.
+
+And then you lose the same wins in court, one by one, to the only
+opponent you can't pick, lockpick, or outrun: procedure. No warrant.
+No chain of custody. No testifying ghost. After the third guilty
+man walks free on bad procedure — out the front door, nodding to
+you across the gallery — the families you saved come find you.
+
+They're not angry. That's the worst part. Mrs. Okafor just holds
+your hands in both of hers and asks the hardest question in the
+city, the one with no clever answer:
+
+"Did you save us for a week, or for a lifetime?"
+
+You go home. You take the old tin token off, set it on the table,
+and look at it for a long time, like a lock you finally want to
+learn instead of pick.
+
+🎲 NEXT TIME: The basement. The teacher. The file in your hand heavy enough to end an empire — if, this once, you end it in a way that lasts.
 """,
         },
     },
@@ -13910,42 +14382,107 @@ After three guilty men walk free on bad procedure, families ask the hardest ques
         "has_decision": True,
         "decision_id": "thief_verdict",
         "content": """
-You corner Dorian in a courthouse basement.
-He does not run.
+It ends where these things always end: underground, off-schedule,
+with the two people who started it.
 
-"I built you," he says. "The city loved me too, once.
-Until I learned fear pays better than trust."
+You corner Dorian in a courthouse basement — his last bolt-hole,
+because of course his final safe house was UNDER the courthouse;
+he always did love a punchline. The exits are covered. Your work.
+He knows it's your work. That's why he does not run.
 
-You hold a complete file in your {shield} hand:
-accounts, witness statements, hidden routes, every name in his network.
+He looks older down here, under the one bare bulb. Or maybe he's
+looked older for years and you've been seeing the rooftop version,
+the one who taught a hungry kid about crowds and locks and needing
+nobody.
 
-Mira arrives with an arrest team and one question:
+"I built you," he says. Not angry. Cataloguing. "Best hands I ever
+trained. The city loved me too, once — feeding people, fixing
+problems the suits wouldn't touch. Until I learned fear pays better
+than trust. It's the only honest market, kid. Trust has fees."
+
+"I know your fees," you say. "I've met them. One of them was six
+years old and had a hospital bracelet."
+
+For exactly one second, something in his face stops performing.
+
+You hold a complete file in your {shield} hand — the real one,
+clean, court-ready: accounts, witness statements, hidden routes,
+every name in his network, assembled the slow way so it cannot
+be unassembled.
+
+Boots on the stairs. Mira arrives with an arrest team, takes in
+the scene — the teacher, the student, the file — and asks the only
+question left in the story:
+
 "How do we end this so it sticks?"
 
-A CHOICE AWAITS...
+⚡ A CHOICE AWAITS... Endings are easy. LASTING is the trick he never taught you.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: ARREST HIM PUBLICLY]
+[YOUR CHOICE: ⚖️ ARREST HIM PUBLICLY]
 
-You read the charges live with evidence on every screen.
-Dorian is handcuffed in front of the entire city.
+No basements. No quiet vans. The city watched him rule from the
+shadows; it will watch him answer in the light.
 
-No deal. No backroom agreement.
-Everyone sees justice done properly, under pressure, in the open.
+You read the charges on the courthouse steps at noon, live, with
+the evidence projected on every screen — documents, dates, names,
+each one annotated, each one survivable under cross-examination
+because you built it that way, the slow way. Dorian is handcuffed
+in front of the entire city he taxed with fear.
 
-Public trust jumps. So does the danger of revenge.
+He doesn't struggle. Professional to the end, he leans close as
+they turn him: "Good theater, kid. I taught you that too."
+
+"No," you say. "You taught me exits. This is an entrance."
+
+No deal. No backroom agreement. Everyone sees justice done properly,
+under pressure, in the open — the suits who paid him, the runners
+who feared him, and one eleven-year-old named Renz, watching from
+the crowd, recalibrating in real time what a legend looks like.
+
+Public trust jumps overnight. So does the danger: an empire with
+its head removed does not die, it thrashes. The revenge list is
+short and you're the whole first page.
+
+Mira assigns you a protection detail. You decline. She assigns it
+anyway, "for the paperwork." You both pretend that's the reason.
+
+🎲 THE FINALE AWAITS: What the city remembers. What the old block teaches its kids now. And whether respect, earned daily, compounds.
 """,
             "B": """
-[YOUR CHOICE: OFFER A DEAL FOR FULL DISCLOSURE]
+[YOUR CHOICE: 🤝 OFFER A DEAL FOR FULL DISCLOSURE]
 
-You trade a lighter sentence for everything Dorian knows:
-safe houses, bribe records, hidden money, buried victims.
+You make the offer yourself, before Mira can, because it has to
+come from you: the student, the betrayal made useful.
 
-It is messy and politically ugly.
-It also rescues people and tears the whole network apart in one move.
+"Everything, Dorian. Every safe house, every bribe ledger, every
+hidden account, every victim we haven't found. Full disclosure,
+under oath, verified — and the sentence gets lighter. Not light.
+Lighter."
 
-Some call it weakness. The results say otherwise.
+He laughs, and for once it sounds like the rooftop laugh, the real
+one. "Selling out my own network. You're asking me to become YOU."
+
+"I'm asking you to close out your books honestly. First time for
+everything."
+
+It takes him four hours and two cigarettes to start talking, and
+three weeks to finish. It is messy and politically ugly — the
+disclosure names two judges, a deputy commissioner, and a charity
+gala's entire seating chart. Editorials call it a deal with the
+devil. Talk radio calls it weakness with extra steps.
+
+The results say otherwise. Forty-one safe-house "employees" walk
+out into morning light. Three buried victims come home to families
+who can finally stop searching. The network doesn't fracture into
+warring crews like beheaded empires do — it UNRAVELS, root-line by
+root-line, because the man who drew the map read it aloud.
+
+The last thing Dorian says before sentencing, to you alone:
+"Fear pays better. But it turns out trust collects."
+
+🎲 THE FINALE AWAITS: Clinics where stash houses stood. A training program with your fingerprints on it. And the long arithmetic of respect, earned daily.
 """,
         },
     },
@@ -14130,11 +14667,44 @@ ZOO_WORKER_CHAPTERS = [
         "threshold": 0,
         "has_decision": False,
         "content": """
-You feed quiet animals before sunrise. One new enclosure smells like rain on stone and distant fire.
-Mila jokes that your {cloak} now smells like thunder.
+4:50 AM. The sanctuary is yours before it belongs to anyone else.
 
-By lunch, the weather reports clear.
-By sunset, thunder circles only your zoo.
+You know this place by sound: the otters arguing about breakfast, the macaws
+rehearsing insults they learned from a long-fired contractor, the slow gravel
+crunch of your {boots} on the service path. You pull your {cloak} tighter
+against the pre-dawn cold and start the rounds.
+
+Mila is already at the feed shed, two coffees balanced on a clipboard.
+
+"You're late," she says. You are four minutes early. This is the joke.
+It has been the joke for three years. Neither of you will retire it.
+
+Then you reach Enclosure 14 — the new arrival. "Rare reptile," the transfer
+paperwork says. "Origin: pending." The enclosure smells wrong for a reptile.
+It smells like rain on hot stone. Like a struck match the size of a cathedral.
+
+Behind the reinforced glass, something enormous is sleeping with one eye
+almost closed. Almost.
+
+"Weird lizard," Mila says, handing you your coffee. "It watched me yesterday.
+Not like an animal watches. Like a coworker. Like it was deciding whether
+I'd be useful in a crisis."
+
+She laughs. You laugh.
+
+The thing in Enclosure 14 does not laugh, but its breathing pauses —
+politely — until you both finish.
+
+By lunch, the weather service reports clear skies for the week.
+By sunset, thunder circles your zoo and nowhere else. The macaws have
+gone silent. The otters are stacked in one corner, watching the sky.
+
+In Enclosure 14, the new arrival is awake now.
+
+And it's looking directly at your {amulet}, the old bronze whistle every
+keeper carries — except yours has started to feel warm.
+
+🎲 NEXT TIME: The night shift no one volunteered for. A tarp that breathes. And the transfer paperwork that lists an origin date 3,000 years before paperwork existed.
 """,
     },
     {
@@ -14143,25 +14713,107 @@ By sunset, thunder circles only your zoo.
         "has_decision": True,
         "decision_id": "zoo_worker_discovery",
         "content": """
-On night shift, you lift a maintenance tarp and freeze.
-Wing membrane. Ancient runes. Eyes older than the city.
+Nobody volunteers for night shift in the week before a storm. You volunteered.
+You told Mila it was about overtime. You both knew it wasn't.
 
-The "rare reptile" speaks your name.
+11:40 PM. Enclosure 14. The maintenance tarps over the back wall have been
+moving all evening — not flapping, moving. Rising and falling. Like a chest.
 
-A CHOICE AWAITS...
+You put on your {gauntlets}, the way you would for any large-animal check.
+Protocol says call it in first. Protocol was written by people who have
+never stood in front of a tarp that breathes.
+
+You lift the corner.
+
+Wing membrane, folded like a cathedral's worth of stained glass.
+Scales the size of dinner plates, each one etched with runes that rearrange
+themselves when you blink. A talon, relaxed, longer than your arm.
+
+And an eye. Open now. Gold, patient, older than the city. Older than the
+language you panic in.
+
+"You hold the whistle," the rare reptile says, in a voice like a closing
+door in a warm house. "The bronze one. It was mine once. Long before zoos.
+Long before bronze, technically."
+
+It tilts its head — exactly the way Mila described. Like a coworker.
+Like it's deciding whether you'd be useful in a crisis.
+
+"My name is Emberwing. I have three questions, keeper.
+Do you lock cages because you love what's inside, or because you fear it?
+Is the woman with the two coffees trustworthy?
+And — this one is urgent — who else knows I'm awake?"
+
+Behind you, in the office wing, a light turns on.
+Someone else is here. At midnight. Reading the transfer paperwork.
+
+⚡ A CHOICE AWAITS... The dragon is watching you. The office light is getting brighter. You can keep this secret, or you can make the call.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: PROTECT EMBERWING'S SECRET]
+[YOUR CHOICE: 🤫 PROTECT EMBERWING'S SECRET]
 
-You reroute camera logs, falsify transfer paperwork, and shield the enclosure from curious officials.
-The dragon bows its head once, as if your discretion were an oath.
+You make your choice the way all real choices happen: instantly, and then
+with hours of careful work to make it true.
+
+You reroute the camera logs through the maintenance loop. You rewrite the
+transfer manifest — "rare reptile" becomes "rare reptile (DO NOT DISTURB:
+shedding season)," which in zoo language is a moat with alligators.
+You leave the night-walker in the office a thermos of coffee and a note
+about a fictional otter emergency on the far side of the park.
+
+When you come back at 3 AM, Emberwing has watched all of it through the glass.
+
+"You lie well," the dragon says, "but only in defense of others.
+I had a knight like that once. He lasted longer than the kingdom did."
+
+It bows its head — slowly, deliberately, the full weight of something
+ancient choosing to lower itself before a person in a rained-on {cloak}.
+
+"Your discretion is an oath, keeper. I accept it. Now I will tell you why
+the thunder circles: something tore when I was pulled into this era.
+And it is still tearing."
+
+Above the aviary, between two clouds, you see it for half a second:
+a seam of white light. Like the sky has a scar.
+
+🎲 NEXT TIME: Breathing lessons from something that has calmed armies. The seam gets wider. And Mila finds the FIRST feather.
 """,
             "B": """
-[YOUR CHOICE: REPORT IT TO AUTHORITIES]
+[YOUR CHOICE: 📋 REPORT IT TO AUTHORITIES]
 
-You submit a full incident packet with timestamped evidence.
-Containment teams arrive before dawn, and your zoo becomes a live jurisdictional battlefield.
+You're a keeper. Keepers follow protocol, because protocol is how nobody
+gets eaten and nothing gets hurt that didn't have to be.
+
+You photograph the runes with shaking hands. You log timestamps, you copy
+the impossible transfer paperwork, you file the cleanest incident packet
+of your career — attention: regional director, wildlife authority, and
+(after a long pause over the checkbox) the federal containment office.
+
+Emberwing watches you do it. It does not stop you. That's the part that
+keeps you awake later.
+
+"Honesty," the dragon says. "Inconvenient, but durable. We will see if
+your institutions deserve you, keeper."
+
+Containment teams arrive before dawn. Then the wildlife authority. Then
+lawyers — so many lawyers the macaws learn the phrase "provisional custody"
+by 9 AM and will not stop screaming it.
+
+Your quiet sanctuary becomes a jurisdictional battlefield with a gift shop.
+Black SUVs in the staff lot. A general in the gift shop buying a plush otter
+"for leverage." Mila, pale, holding the morning's two coffees, watching
+crates of equipment roll past the aviary.
+
+"What did you do?" she asks quietly.
+
+The honest answer — *my job* — has never felt heavier in your mouth.
+
+Through it all, Emberwing obeys every protocol, signs every behavioral
+assessment with a single elegant talon-print... and answers questions
+from no one but you.
+
+🎲 NEXT TIME: Custody hearings for a being older than custody. The seam in the sky makes the evening news. And a containment officer asks you, off the record, whose side you're on.
 """,
         },
     },
@@ -14171,12 +14823,71 @@ Containment teams arrive before dawn, and your zoo becomes a live jurisdictional
         "has_decision": False,
         "content_variations": {
             "A": """
-In the hidden hours, Emberwing teaches you breathing patterns that calm both panicked animals and panicked people.
-You learn that control is loud, but stewardship is precise.
+The hidden hours have a curriculum now.
+
+Every night between rounds, you sit on a feed crate outside Enclosure 14
+and a creature older than agriculture teaches you to breathe.
+
+"In for four," Emberwing says. "Hold for four. Your heart is a panicked
+animal, keeper. You would never shout at a panicked animal. Stop shouting
+at this one."
+
+The lessons work. Horrifyingly well. The aggressive cassowary that has
+hated every human since 2019 walks calmly into her transport crate because
+you breathed at her correctly. A school group's meltdown dissolves when
+you kneel and count four in, four hold, four out.
+
+"Control is loud," the dragon says, watching you steady a terrified rescue
+fawn with nothing but stillness and your open {gauntlets}. "Stewardship is
+precise. Armies knew my name because I burned cities. I stayed three
+thousand years because I learned to stop."
+
+Above the aviary, the seam of white light is wider now. You've measured it
+against the flight cage struts: four centimeters a night.
+
+Emberwing watches it too, every night, with an expression you finally
+recognize. It's not fear.
+
+It's homesickness.
+
+🎲 NEXT TIME: Mila opens your locker to borrow a radio battery. What she finds instead changes four lives — and one of them isn't human.
 """,
             "B": """
-Officials debate custody, weaponization, and liability while Emberwing sits in dignified silence.
-The dragon obeys protocols, but only answers your questions.
+The conference room above the gift shop now contains: two federal agencies,
+three insurance adjusters, one general who keeps saying "asset," and a
+whiteboard where someone has written WEAPONIZATION FEASIBILITY and someone
+else has added a question mark, and someone else has crossed out the
+question mark.
+
+Emberwing attends every session it is summoned to — escorted, monitored,
+magnificent. It folds itself into the loading dock like a cathedral
+agreeing to fit in a parking space. It signs behavioral assessments.
+It tolerates the biopsy requests with the patience of a being who has
+watched empires rise on smaller ambitions.
+
+It speaks to no one.
+
+"The dragon is non-verbal," the containment lead reports.
+
+That night, on your rounds, the non-verbal dragon says: "Your general
+smells like a man who has already named the missiles after his daughters.
+Your director smells like fear of liability. You still smell like hay
+and honest work. That is why we are speaking, keeper. The only voice
+worth answering is one that never performed for me."
+
+It lowers its head to your eye level, glass between you and three
+thousand years.
+
+"They are debating custody of a being who watched the first city's first
+wall go up. Let them. I need you to watch the sky instead. Tell me, does
+the tear above the aviary look wider to you?"
+
+It does. Four centimeters a night. You've been measuring.
+
+"Good keeper," Emberwing says softly. "Keep measuring. The hour is coming
+when measurement becomes evacuation."
+
+🎲 NEXT TIME: A locker, a feather, and the question Mila has been afraid to ask. Plus: the general requests a "live capability demonstration." Emberwing requests, politely, that he reconsider.
 """,
         },
     },
@@ -14186,27 +14897,122 @@ The dragon obeys protocols, but only answers your questions.
         "has_decision": True,
         "decision_id": "zoo_worker_confession",
         "content": """
-Mila finds ember ash in your locker and a feather that should not exist.
+It happens on a Tuesday, because catastrophes respect no aesthetics.
 
-"Tell me what is happening," she says.
-"Not as your coworker. As the person who loves you."
+Mila opens your locker to borrow a radio battery. Standard. Everyone
+borrows from your locker; you label things. What she finds on the shelf
+above the batteries is not labeled:
 
-A CHOICE AWAITS...
+A drift of fine grey ash that smells like rain on hot stone.
+And a feather.
+
+Not a bird feather. It's the length of her forearm, bronze shading into
+ember-orange at the tip, and it is very faintly glowing. When she touches
+it, it warms to exactly the temperature of a held hand.
+
+She is waiting by the feed shed when you finish rounds. No clipboard.
+No two coffees. The feather lies across her knees like a verdict.
+
+"Three months," she says. "Three months you've been volunteering for
+night shift. Coming home — I assume you still go home — with your {cloak}
+smelling like thunderstorms. Last week you calmed the cassowary by
+*breathing* at her. The cassowary, who has formally hated humanity
+since 2019."
+
+She holds up the feather.
+
+"Tell me what is happening. Not as your coworker. As the person who
+loves you."
+
+The sentence lands in the quiet like a dropped key in a cathedral.
+She has never said it out loud before. Neither have you.
+
+Above the aviary, the seam of white light pulses — wider tonight,
+five centimeters, you'd know that width anywhere — and for one second
+its glow catches in her eyes, and she sees you see it.
+
+"And while you're at it," she says, very quietly, "tell me what's wrong
+with the sky."
+
+⚡ A CHOICE AWAITS... The truth is enormous and not yours alone. But neither is she.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: TELL MILA EVERYTHING]
+[YOUR CHOICE: 💛 TELL MILA EVERYTHING]
 
-You tell the full truth: dragon, rift, and the deadline hidden inside dawn.
-Mila does not step back.
-She asks where she should stand when it gets worse.
+You tell her everything.
+
+The tarp that breathed. The name Emberwing. The runes that rearrange
+themselves when you blink. The breathing lessons. The whistle — your
+{amulet} — that belonged to the dragon before bronze was bronze.
+
+And the seam. The rift. Four centimeters a night, now five. The deadline
+hiding inside some not-distant dawn, when the tear finishes opening and
+whatever pulled Emberwing out of its own era either takes it home —
+or takes everything.
+
+Mila listens the way she handles injured raptors: completely still,
+totally focused, zero sudden movements.
+
+When you finish, the silence has weight. She looks at the feather.
+Then at the sky. Then at you.
+
+She does not step back.
+
+"Okay," she says, and her voice only shakes a little. "Two things.
+First: you're an idiot for carrying this alone, and I am keeper enough
+to say that to your face."
+
+She stands, brushes ash off her knees, picks up the feather like
+a torch.
+
+"Second: when it gets worse — and it's going to get worse, I've seen
+the sky — where do you need me to stand?"
+
+That night, you introduce her to Emberwing properly. The dragon studies
+her for a long, long moment.
+
+"Two coffees," it finally says. "Every morning, even on the bad ones.
+Yes. You will do, Mila of the feed shed. You will more than do."
+
+🎲 NEXT TIME: Three keepers — one ancient, two mortal, all in over their heads. The rift hits one meter. And the city finally looks up.
 """,
             "B": """
-[YOUR CHOICE: KEEP MILA OUT OF IT]
+[YOUR CHOICE: 🧱 KEEP MILA OUT OF IT]
 
-You lie cleanly and push her away.
-She leaves angry, hurt, and unconvinced.
-Your silence keeps her safe, but hollows the room.
+You look at the feather. You look at her. And you choose the wall.
+
+"It's from the new aviary shipment," you say. Smooth. Practiced.
+You've been rerouting camera logs for months; lying has gotten easier,
+which is its own quiet alarm. "Exotic pheasant. The ash is from the
+incinerator run. And the sky is heat lightning. You should sleep more."
+
+Mila holds your gaze for five full seconds. Keepers are trained to read
+animals, and you have never been a difficult read.
+
+"Heat lightning," she repeats.
+
+"Heat lightning."
+
+She stands, sets the feather down on the bench between you with terrible
+gentleness, and walks to the gate. At the gate she stops, not turning
+around.
+
+"You know what the worst part is? I'd have believed anything. Anything.
+You just had to say it out loud."
+
+The gate clicks shut with the softest sound a door can make and still
+be final.
+
+Later, Emberwing watches you stack feed bags with unnecessary violence.
+
+"You built a wall to protect her," the dragon says. "I watched a king
+do that once. The wall held. The kingdom inside it starved."
+
+Your silence keeps her safe, you tell yourself. The room you say it in
+has never felt so hollow.
+
+🎲 NEXT TIME: The rift stops growing politely. Sirens at 3 AM. And when the evacuation order comes, the first name you scream into the radio is hers.
 """,
         },
     },
@@ -14216,20 +15022,150 @@ Your silence keeps her safe, but hollows the room.
         "has_decision": False,
         "content_variations": {
             "AA": """
-You, Mila, and Emberwing coordinate a calm evacuation while lightning tears open the sky.
-People follow because your instructions are clear and your fear is honest.
+The rift stops growing politely at 2:47 AM on a Friday.
+
+One moment it is a seam; the next it is a wound — a kilometer of sky
+peeling open above the aviary with a sound like the world clearing its
+throat. Lightning pours upward. Every animal in the sanctuary answers
+at once, three hundred voices in one terrified chord.
+
+But you have been preparing for this night for months. All three of you.
+
+You take the public address system, and your voice comes out four-in,
+four-hold, four-out calm: "Visitors and staff, this is keeper command.
+We are beginning a precautionary evacuation. Walk, don't run. The animals
+are watching us to learn how scared to be. Show them."
+
+Mila runs the gates like she was born to it — two coffees' worth of
+steadiness scaled up to two thousand people. She routes school groups
+around the panicking parking lot, commandeers the gift shop golf carts
+for the elderly, and somewhere in the chaos still remembers to throw
+open the otter holding doors so they can shelter in the deep pool.
+
+And Emberwing — Emberwing rises.
+
+Cover blown, tarps shed, three thousand years unfolding into the storm
+with a wingspan that closes the sky. The crowd should stampede. It
+doesn't. Because the dragon positions itself between the rift and the
+people, visibly, deliberately, a roof of bronze wing over the exit paths.
+
+"GO CALMLY," it thunders, in a voice that has stopped armies. "YOUR
+KEEPERS HAVE YOU."
+
+People follow your instructions because they are clear. They follow
+them fast because your fear is honest. Not one injury. Not one.
+
+🎲 NEXT TIME: The rift wants what it came for. Emberwing tells you the truth it's been holding back since Chapter One. Dawn picks a date.
 """,
             "AB": """
-You shield Emberwing alone while Mila watches from the crowd line, unable to read you anymore.
-You save everyone, but not everything.
+The rift tears open at 2:47 AM, and you face it the way you've faced
+everything since the locker: alone, by choice, and wrong about why.
+
+You trigger the evacuation alarms and then you're running the other way —
+toward Enclosure 14, your {cloak} snapping in wind that's blowing UP.
+Lightning pours into the sky. The hidden tarps are already burning off
+in flakes of harmless gold fire as Emberwing rises to meet the wound
+in the world.
+
+Something comes through the rift. Not a creature — a PULL. A hunger
+shaped like a search party. It is looking for what fell through
+three thousand years ago.
+
+"KEEPER," Emberwing roars, "THE PERIMETER ANCHORS!"
+
+You move like the night shifts taught you: throw the {shield} barrier
+panels into the storm-brace configuration, lock the aviary's lightning
+rods to ground, blow the ancient note on your {amulet} that the dragon
+taught you for exactly-and-only this.
+
+The pull recoils. The rift sighs shut to a seam. The sanctuary holds.
+
+You saved everyone. From behind the crowd line, past the gates, Mila
+watched all of it — the dragon, the fire, the keeper she loves dancing
+with an apocalypse he swore was heat lightning.
+
+When your eyes finally find hers across the distance, she doesn't wave.
+She just looks at you like a door she used to have the key to.
+
+You saved everyone. But not everything.
+
+🎲 NEXT TIME: Emberwing names its price and its deadline. And the longest walk in this story is the one from the aviary to the feed shed.
 """,
             "BA": """
-Containment units and city responders flood the zoo, but only your bond with Emberwing prevents a violent escalation.
-Mila becomes the translator between panic and trust.
+When the rift tears open at 2:47 AM, the sanctuary is already an armed
+camp — your incident packet saw to that months ago. Containment units,
+city responders, two federal agencies, and one general who has been
+waiting for an excuse.
+
+Lightning pours upward. Three hundred animals scream. And every rifle
+in the perimeter rises toward the enormous shape unfolding from
+Enclosure 14.
+
+"WEAPONS FREE ON MY ORDER—" the general begins.
+
+You step between the rifles and the dragon.
+
+It is not brave. It is just the only true thing left to do. You stand
+there in a keeper's vest with your hands open, and you say: "It has
+obeyed every protocol you wrote. Every single one. Now it's going to
+save your perimeter, and you're going to let it."
+
+One heartbeat. Two.
+
+Then Mila is beside you — when did she get here? — turned toward the
+crowd and cameras, translating panic into trust: "Everyone, this is a
+controlled response! The animal is cooperating with keepers! Walk to
+your marked exits!"
+
+Bond, it turns out, is a chain of exactly this: the dragon answers only
+you; you answer to the truth; Mila translates the truth for everyone
+else. The general lowers his hand. The rifles lower with it.
+
+Emberwing rises PAST the perimeter, seals the rift's first surge with
+a wall of gold fire, and returns to the loading dock. It lands precisely
+on its designated containment pad.
+
+The paperwork, for once, is on history's side.
+
+🎲 NEXT TIME: The general wants a weapon. The agencies want custody. The rift wants Emberwing. Everyone gets an answer at dawn.
 """,
             "BB": """
-Containment fails. Protocols fail. Ego fails.
-Only practical courage keeps the night from becoming a tragedy.
+At 2:47 AM the rift opens, and everything official fails on schedule.
+
+Containment fails first — their perimeter was designed for an escape,
+not an invasion from above. Protocol fails second: the evacuation plan
+routes two thousand people directly under the aviary, because no one
+who wrote it imagined the threat would be the sky.
+
+Ego fails last and loudest. The general orders his "asset" deployed.
+Emberwing — who has not spoken one word to him in months of captivity —
+looks at the chains, looks at the rift, and looks at you.
+
+So it comes down to what it always comes down to: practical courage
+and people who know the ground.
+
+You grab the radio and override the evacuation route — gift shop
+corridor, NOT the aviary path — because you have walked this sanctuary
+ten thousand mornings and the planners have walked it twice. You and
+the night-shift crew drag the {shield} barrier panels into a windbreak
+for the school-group shelter. The cassowary keeper carries two children.
+The cassowary, incredibly, carries one more.
+
+And when the chains hold Emberwing down while the rift's first surge
+dives at the crowd, you do the stupidest, truest thing of your career:
+you blow the bronze whistle and OPEN THE LOCKS.
+
+"Remember this," the dragon says, rising past you into the lightning.
+"Your institutions failed. Your people didn't."
+
+It seals the surge alone. No casualties. The official report will
+contain the phrase "successful inter-agency response."
+
+Mila finds you at sunrise, soot-streaked, sitting against the feed shed.
+She hands you a coffee. She doesn't say anything. Neither do you.
+It's not forgiveness. But it's caffeine, which is adjacent.
+
+🎲 NEXT TIME: Emberwing's deadline arrives wearing the colors of dawn. Last choices are the heaviest ones.
 """,
         },
     },
@@ -14239,26 +15175,96 @@ Only practical courage keeps the night from becoming a tragedy.
         "has_decision": True,
         "decision_id": "zoo_worker_departure",
         "content": """
-Emberwing reveals the final truth:
-it was pulled centuries forward by a dying ritual and must return now or vanish forever.
+On the last night, Emberwing finally tells the whole truth — the one it
+has been carrying since the tarp first breathed.
 
-The rift opens over the aviary at first light.
+"Three thousand years ago, a dying priesthood tried to anchor their era
+against the dark. The ritual failed. It did not anchor their age — it
+threw me out of it. I have been falling forward through time ever since,
+and this sanctuary is simply where I landed."
+
+The dragon looks up at the rift, which has stopped tearing and started
+WAITING — a closed eyelid of light above the aviary, the exact colors
+of the not-yet-dawn.
+
+"The tear is my era reaching back for what it lost. At first light it
+opens once, fully, finally. If I return through it, the timeline heals.
+If I stay..." It flexes one wing, and for a moment you see it the way
+the rift sees it: a wound in the world, beloved but bleeding.
+"If I stay, I unravel. Slowly. Taking the sky with me."
+
+The sanctuary is silent. Even the macaws. Even the otters, lined up on
+the pool edge like a tiny honor guard.
+
+"I have carried knights, kings, and one extremely brave baker," Emberwing
+says. "I have never carried a keeper. There is room, if you wish to see
+where whistles come from. There is also honor — more honor — in staying.
+I will not choose for you. I have watched too many choose for others."
+
+First light touches the aviary struts.
+The rift opens like a slow golden door.
 Mila reaches for your hand. Emberwing lowers a wing.
+Both will hold. Only one can keep you.
 
-A CHOICE AWAITS...
+⚡ A CHOICE AWAITS... Dawn doesn't wait, and neither do gates between eras.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: STAY IN THE PRESENT]
+[YOUR CHOICE: 🏡 STAY IN THE PRESENT]
 
-You place your hand on Emberwing's brow and promise to remember without possession.
-The dragon nods, and the gate widens.
+You take one step toward the lowered wing — and stop. And every morning
+you've ever worked answers the question for you.
+
+The 4:50 gravel. Two coffees on a clipboard. Three hundred animals who
+know your footsteps. A bronze whistle warm at your chest, and a hand —
+her hand — closing around yours like it was always going to.
+
+You walk to Emberwing's brow instead, and place your free hand between
+those ancient eyes.
+
+"I'm a keeper," you say. "My era needs keeping."
+
+"So it does," the dragon says, and for the first time in three thousand
+years, something older than the city sounds *proud*. "Hear my last
+lesson, keeper: remember without possessing. Love what passes through
+your gates, and open them anyway. You are better at this than the
+kingdoms were."
+
+It presses its brow to your palm — one long moment that you will spend
+the rest of your life describing badly — then rises into the golden door.
+
+The gate widens to take it home.
+
+🎲 THE FINALE AWAITS: What the sky keeps. What the heart keeps. And what two keepers build with everything they refused to lose.
 """,
             "B": """
-[YOUR CHOICE: FLY WITH EMBERWING]
+[YOUR CHOICE: 🐉 FLY WITH EMBERWING]
 
-You climb onto Emberwing's back as dawn fractures into gold and ash.
-Mila says your name once, then lets go.
+The wing is warm under your {boots}, and climbing it feels like the
+last rung of a ladder you've been on since the night the tarp breathed.
+
+You settle between two bronze shoulder-scales worn smooth by knights
+and kings and one extremely brave baker. The bronze whistle — its
+whistle, your whistle — hums against your chest like a homing signal.
+
+Below, Mila stands in the spreading gold of the gate-light. She is not
+crying. She is doing something infinitely harder: she is letting go
+on purpose.
+
+"Hey," she calls up, voice steady as a feed-shed morning. She says
+your name — once, the way you'd write something down to keep it.
+"Two coffees. Every morning. I'll drink yours too."
+
+Then, because she is Mila and keepers keep: "LOOK AFTER EACH OTHER
+OUT THERE."
+
+"We will," says the dragon, and means it across thirty centuries.
+
+Dawn fractures into gold and ash. The sanctuary drops away — the pool,
+the aviary, the small brave figure at the gates with her hand raised —
+and the door of first light takes you both.
+
+🎲 THE FINALE AWAITS: Where whistles come from. What three thousand years smells like at ground level. And the letters that find their way home anyway.
 """,
         },
     },
@@ -14267,17 +15273,37 @@ Mila says your name once, then lets go.
         "threshold": 1500,
         "has_decision": False,
         "content": """
-Every path ends under the same sky:
-the dragon returns to its era, and your heart decides where to belong.
+Every path ends under the same sky.
+
+The rift closes the way all true partings do — gently, completely, and
+exactly on time. The thunder that circled only your zoo finally moves on,
+like a guest who stayed for the hard part.
+
+What remains is what time keeps: a sanctuary, a whistle, a feather,
+two coffees' worth of mornings — and the choice you made when the dragon
+lowered its wing.
+
+The dragon returns to its era. Your heart decides where to belong.
 """,
         "endings": {
             "AAA": {
                 "title": "THE GARDEN OF TWO PROMISES",
                 "content": """
 You kept the secret, trusted Mila, and stayed.
-Emberwing returns to dawn-age skies with dignity.
 
-You and Mila rebuild the zoo into a sanctuary where care is public, disciplined, and kind.
+Emberwing returns to dawn-age skies the way it deserved to: witnessed,
+unchained, and bowed to by two keepers and one impossibly solemn line
+of otters. The last thing through the closing gate is its voice:
+"Four in. Four hold. Four out. You will be fine, keepers."
+
+You and Mila rebuild the zoo into something the dragon would recognize —
+a sanctuary where care is public, disciplined, and kind. Enclosure 14
+becomes a garden. No glass. Two benches. School groups ask why the
+flowers there bloom in bronze and ember-orange, and you teach them
+to breathe before you answer.
+
+She still says "you're late" when you are four minutes early.
+You still laugh. Some jokes are load-bearing.
 
 Lesson:
 **Love that stays can still honor what leaves.**
@@ -14287,9 +15313,22 @@ Lesson:
                 "title": "THE RIDER OF FIRST LIGHT",
                 "content": """
 You kept the secret, trusted Mila, and flew.
-Mila lets you go with tears and pride instead of bitterness.
 
-In the old era, you become witness, scribe, and keeper beside Emberwing.
+Mila lets you go with tears and pride instead of bitterness — the rarest
+send-off there is. Her raised hand is the last thing you see of your era,
+and it looks exactly like a promise.
+
+Three thousand years before your alarm clock, you become what no résumé
+has a field for: witness, scribe, and keeper beside Emberwing. You learn
+where whistles come from. You learn the dragon laughs — actually laughs —
+at otter stories. You write it all down on vellum that smells like rain
+on hot stone.
+
+On clear mornings, you both watch the sunrise, and Emberwing swears that
+some particular shade of gold travels forward, not back.
+
+You believe it. You've seen where the light ends up: a feed shed,
+a clipboard, two coffees.
 
 Lesson:
 **Some loves are true even when they are not kept.**
@@ -14299,9 +15338,21 @@ Lesson:
                 "title": "THE QUIET APOLOGY",
                 "content": """
 You hid the truth, then stayed.
-After Emberwing departs, you tell Mila everything without excuses.
 
-Rebuilding trust is slow, procedural, and real.
+After Emberwing departs — magnificent, forgiving, gone — you walk the
+longest hundred meters of your life, from the aviary to the feed shed,
+and you tell Mila everything. No excuses. No "heat lightning." Just
+the whole story, in order, including the part where you chose a wall
+and called it shelter.
+
+She listens the way she handles injured raptors. Then she says, "Thank
+you. Now buy the coffees for a year," and goes back to work — which is,
+you understand, the beginning and not the end of the sentence.
+
+Rebuilding trust is slow, procedural, and real. It looks like showing up.
+It looks like night shifts shared instead of volunteered for alone.
+The morning she says "you're late" again — four minutes early — you have
+to turn away so she doesn't see what the old joke does to your face.
 
 Lesson:
 **Honesty delayed still matters when followed by action.**
@@ -14311,9 +15362,22 @@ Lesson:
                 "title": "THE UNSENT LETTER",
                 "content": """
 You hid the truth and flew.
-In the past, you write letters Mila will never receive.
 
-Emberwing tells you memory is still a bridge if your choices remain worthy of it.
+The old era is glorious and aches like a pulled tooth. You are witness
+and scribe and keeper — and every evening, by candlelight that smells
+of beeswax and history, you write letters Mila will never receive.
+You tell her about the whistle-forges. About the dragon's laugh.
+About heat lightning, and what a coward's phrase it was.
+
+Emberwing watches you seal the hundredth letter with bronze-colored wax.
+
+"Memory is still a bridge," the dragon says, "if your choices remain
+worthy of it. Write the truth now that you did not say then. Somewhere
+downstream, truth finds its level."
+
+In the present, three thousand years later, a museum acquires a sealed
+clay vessel of preserved correspondence. The curator who catalogs it
+keeps two coffees on her desk and cannot say why her hands shake.
 
 Lesson:
 **The cost of silence is paid in distance.**
@@ -14323,9 +15387,22 @@ Lesson:
                 "title": "THE PUBLIC KEEPER",
                 "content": """
 You reported early, trusted Mila, and stayed.
-Your testimony reforms wildlife ethics and emergency policy across the city.
 
-Emberwing returns home as a protected being, not a captured asset.
+The hearings last a year. You testify eleven times. You say "it obeyed
+every protocol you wrote" so often it ends up on a t-shirt the night-shift
+crew has printed without asking you.
+
+But testimony given honestly compounds like interest. The Emberwing
+Provisions rewrite wildlife ethics across the city: sentient-being
+standards, keeper authority in crisis, the general's "asset" vocabulary
+formally retired. When the gate finally opened, it opened LEGALLY —
+Emberwing returned home as a protected being, not a captured asset,
+with two keepers and one furious, weeping containment officer saluting
+it through.
+
+Mila frames the first page of your original incident packet and hangs
+it in the feed shed. Under it she writes: "He did his job. Then he made
+the job better."
 
 Lesson:
 **Institutions improve when courage speaks inside them.**
@@ -14335,9 +15412,20 @@ Lesson:
                 "title": "THE HISTORIAN OF FLAME",
                 "content": """
 You reported, trusted Mila, and flew.
-Your field logs become the first reliable dragon chronicle.
 
-Mila keeps your old whistle by the zoo gate and reads your work aloud each winter.
+You went into the past the way you did everything: with timestamps.
+Your field logs — temperatures, wing-loadings, diet, the first reliable
+phonetic guide to draconic laughter — become the foundational dragon
+chronicle, sealed where three thousand years can find it.
+
+Scholars will fight about the author for centuries. They will agree on
+only two things: the observer was professionally trained, and the
+observer was in love — because every volume, every single one, is
+dedicated the same way: "For M. Two coffees. I'm drinking yours too."
+
+In the present, Mila keeps your old whistle on a hook by the zoo gate.
+Each winter solstice she reads the newest translated volume aloud to
+the keepers, the school groups, and the otters, who attend in formation.
 
 Lesson:
 **Legacy can be shared across centuries.**
@@ -14347,9 +15435,24 @@ Lesson:
                 "title": "THE LATE-BLOOMING HEART",
                 "content": """
 You reported, pushed Mila away, and stayed.
-When Emberwing departs, you finally learn that care is not control.
 
-Mila returns only after your daily actions match your promises.
+The gate closes. The agencies pack up. The general retires to write a
+book no one fact-checks. And you stand in an empty sanctuary holding
+the two things you protected so fiercely you nearly lost them both:
+the truth, and your own heart.
+
+What Emberwing's departure finally teaches you is the lesson the
+breathing never quite did: care is not control. Locking people out
+is just a cage with better intentions.
+
+So you do the slow work. You tell Mila everything, late but complete.
+You stop volunteering for solitary night shifts. You let the crew
+help. You say things out loud.
+
+Mila returns — not to the old joke, not at first — only after your daily
+actions match your promises for one full turning of seasons. The morning
+she sets down two coffees and says "you're late," four minutes early,
+the cassowary witnesses the kiss and, for once, approves of humanity.
 
 Lesson:
 **Wisdom is choosing people before pride.**
@@ -14359,9 +15462,24 @@ Lesson:
                 "title": "THE LAST SKYBOUND KEEPER",
                 "content": """
 You reported, stayed distant, and flew.
-You and Emberwing vanish into the first dawn of recorded memory.
 
-In the present, Mila tells children your story so neither of you are forgotten.
+It is the loneliest brave thing a keeper has ever done: no goodbye
+mortgaged, no hand held, just a person who followed every protocol
+except the ones that protect a heart, rising into the first dawn of
+recorded memory on the back of a legend.
+
+You and Emberwing vanish where the chronicles begin. What you build
+there, no one in the present will ever fully know — but the oldest
+cave paintings on three continents share one motif archaeologists
+can't explain: a great winged shape, and beside it, small and steady,
+a figure holding a whistle.
+
+In the present, Mila tells the story to every new keeper and every
+wide-eyed school group: the colleague who reported honestly, guarded
+fiercely, loved badly, and gave everything so the sky could heal.
+She tells it so neither of you are forgotten.
+
+The otters attend every telling. Formation perfect. Eyes solemn.
 
 Lesson:
 **Sacrifice is meaningful only when it serves life beyond the self.**

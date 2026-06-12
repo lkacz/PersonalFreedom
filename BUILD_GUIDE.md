@@ -25,7 +25,7 @@ Professional installer with Start menu, shortcuts, autostart option.
 ## 🛠️ Prerequisites
 
 ### For Building Executables:
-- Python 3.8+ with these packages installed:
+- Python 3.10+ with these packages installed:
   ```bash
   pip install pyinstaller
   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121

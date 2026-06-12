@@ -5,11 +5,14 @@ Celebratory dialog with animations, comparisons, and quick actions.
 Uses StyledDialog base for consistent frameless dark design.
 """
 
+import logging
 from datetime import datetime
 from typing import Optional
 from PySide6 import QtWidgets, QtCore, QtGui
 
 from styled_dialog import StyledDialog
+
+logger = logging.getLogger(__name__)
 
 try:
     from gamification import (
@@ -620,33 +623,24 @@ class EnhancedItemDropDialog(StyledDialog):
             layout.addWidget(section)
             
         except Exception as e:
-            print(f"[ItemDropDialog] Error adding entity perk section: {e}")
-    
+            logger.warning(f"Error adding entity perk section: {e}")
+
     def _start_celebration(self):
         """Start celebration animation."""
         rarity = _canonical_rarity_name(self.item.get("rarity", "Common"))
-        
-        # Play special sounds for Epic and above.
-        if rarity == "Celestial":
-            try:
+
+        # Play special sounds for Epic and above (sound playback is optional).
+        try:
+            if rarity in ("Celestial", "Legendary"):
+                # Legendary-tier items get the truly epic fanfare!
                 from lottery_sounds import play_legendary_sound
                 play_legendary_sound()
-            except Exception:
-                pass
-        elif rarity == "Legendary":
-            # Legendary items get the truly epic fanfare!
-            try:
-                from lottery_sounds import play_legendary_sound
-                play_legendary_sound()
-            except Exception:
-                pass
-        elif rarity == "Epic":
-            # Epic items get the standard win sound
-            try:
+            elif rarity == "Epic":
+                # Epic items get the standard win sound
                 from lottery_sounds import play_win_sound
                 play_win_sound()
-            except Exception:
-                pass
+        except Exception as e:
+            logger.debug(f"Celebration sound unavailable: {e}")
     
     def _on_quick_equip(self):
         """Handle quick equip action."""

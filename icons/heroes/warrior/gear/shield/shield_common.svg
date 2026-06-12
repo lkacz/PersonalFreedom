@@ -1,10 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wShield0Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#717e8f"/>
+      <stop offset="45%" stop-color="#4d5563"/>
+      <stop offset="100%" stop-color="#353c49"/>
+    </linearGradient>
+    <linearGradient id="wShield0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4d5563"/>
+      <stop offset="100%" stop-color="#252c38"/>
+    </linearGradient>
+  </defs>
 
   <g id="shield_common">
-    <path d="M34 100 L60 100 L64 106 L64 142 L60 149 L34 149 L30 142 L30 106 Z" fill="#505d71" stroke="#2a394a" stroke-width="0.95"/>
-    <rect x="36.5" y="103.4" width="21" height="42" rx="2" fill="#3a485e" opacity="0.9"/>
-    <path d="M30 106 L64 106" stroke="#9E9E9E" stroke-width="0.92" opacity="0.82"/>
-    
+    <path d="M31 101 L63 101 L66 107 L66 137 L59 148.5 L47 152 L35 148.5 L28 137 L28 107 Z"
+          fill="url(#wShield0Plate)" stroke="#252c38" stroke-width="1.15"/>
+    <path d="M33.5 104.5 L60.5 104.5 L63 109.5 L63 136 L57 146 L47 149 L37 146 L31 136 L31 109.5 Z"
+          fill="url(#wShield0Deep)" opacity="0.95"/>
+    <path d="M47 104 L47 149" stroke="#252c38" stroke-width="1.0" opacity="0.85"/>
+    <path d="M31.5 117.5 L62.5 117.5" stroke="#252c38" stroke-width="0.9" opacity="0.8"/>
+    <circle cx="47" cy="117.5" r="4.6" fill="url(#wShield0Plate)" stroke="#252c38" stroke-width="1"/>
+    <circle cx="47" cy="117.5" r="1.7" fill="#9E9E9E" opacity="0.95"/>
+    <path d="M33 106.5 Q40 103.5 46 103.8" stroke="#717e8f" stroke-width="0.75" fill="none" opacity="0.6"/>
+    <circle cx="35" cy="105.5" r="0.95" fill="#717e8f"/><circle cx="35.25" cy="105.8" r="0.4275" fill="#252c38" opacity="0.55"/><circle cx="59" cy="105.5" r="0.95" fill="#717e8f"/><circle cx="59.25" cy="105.8" r="0.4275" fill="#252c38" opacity="0.55"/><circle cx="33.5" cy="128" r="0.95" fill="#717e8f"/><circle cx="33.75" cy="128.3" r="0.4275" fill="#252c38" opacity="0.55"/><circle cx="60.5" cy="128" r="0.95" fill="#717e8f"/><circle cx="60.75" cy="128.3" r="0.4275" fill="#252c38" opacity="0.55"/><path d="M38 112 L45 118" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M52 134 L57 138" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M40 140 L44 143" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M54 110 L58 116 L55 117 Z" fill="#252c38" opacity="0.8"/>
   </g>
 
 </svg>

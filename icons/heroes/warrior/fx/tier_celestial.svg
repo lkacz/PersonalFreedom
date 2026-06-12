@@ -1,63 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-    <!-- Warrior Tier: "The Ancient Armory" -->
-    <defs>
-        <linearGradient id="forgeHeat" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#450a0a" />
-            <stop offset="80%" stop-color="#7f1d1d" />
-            <stop offset="100%" stop-color="#b91c1c" />
-        </linearGradient>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="wFxCel" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.4"/>
+      <stop offset="55%" stop-color="#00E5FF" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#00E5FF" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
-        <filter id="battleBlur">
-             <feGaussianBlur stdDeviation="3"/>
-        </filter>
-        
-        <filter id="emberBlur">
-             <feGaussianBlur stdDeviation="1"/>
-        </filter>
-    </defs>
-
-    <!-- 1. Background -->
-    <rect width="180" height="220" fill="url(#forgeHeat)" />
-
-    <!-- 2. Blurred Armory/Pillars (Background) -->
-    <g filter="url(#battleBlur)" opacity="0.6">
-        <!-- Stone Pillars -->
-        <path d="M10 0 L30 0 L35 220 L5 220 Z" fill="#292524" />
-        <path d="M150 0 L170 0 L175 220 L145 220 Z" fill="#292524" />
-        
-        <!-- Weapon Rack Silhouettes -->
-        <rect x="40" y="80" width="10" height="100" fill="#1c1917" />
-        <path d="M35 100 L55 100 L55 104 L35 104 Z" fill="#44403c" />
-        
-        <rect x="130" y="80" width="10" height="100" fill="#1c1917" />
-         <!-- Crossed Swords X on wall -->
-        <path d="M60 40 L120 100" stroke="#000" stroke-width="8" opacity="0.4"/>
-        <path d="M120 40 L60 100" stroke="#000" stroke-width="8" opacity="0.4"/>
-    </g>
-
-    <!-- 3. Rising Embers (Blurred) -->
-    <g filter="url(#emberBlur)">
-        <circle cx="50" cy="200" r="2" fill="#fca5a5">
-             <animate attributeName="cy" from="220" to="0" dur="4s" repeatCount="indefinite"/>
-             <animate attributeName="opacity" values="1;0" dur="4s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="100" cy="210" r="3" fill="#fbbf24">
-             <animate attributeName="cy" from="230" to="50" dur="3s" repeatCount="indefinite" begin="0.5s"/>
-             <animate attributeName="opacity" values="1;0" dur="3s" repeatCount="indefinite" begin="0.5s"/>
-        </circle>
-         <circle cx="150" cy="220" r="1.5" fill="#f87171">
-             <animate attributeName="cy" from="220" to="100" dur="5s" repeatCount="indefinite"/>
-             <animate attributeName="opacity" values="1;0" dur="5s" repeatCount="indefinite"/>
-        </circle>
-    </g>
-
-    <!-- 4. Foreground: Victory Banners (Sharp but semi-transparent) -->
-    <g opacity="0.4">
-         <path d="M10 0 L40 0 L40 60 L25 80 L10 60 Z" fill="#7f1d1d" />
-         <path d="M140 0 L170 0 L170 60 L155 80 L140 60 Z" fill="#7f1d1d" />
-    </g>
-    
-    <!-- 5. Battle Dust -->
-    <rect width="180" height="220" fill="url(#forgeHeat)" opacity="0.2" style="mix-blend-mode: overlay" />
+  <g id="fx_celestial">
+    <rect x="56" y="0" width="68" height="220" fill="#00E5FF" opacity="0.05"/>
+    <ellipse cx="90" cy="116" rx="60" ry="92" fill="url(#wFxCel)"/>
+    <ellipse cx="90" cy="203" rx="48" ry="9" fill="#00E5FF" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.55;0.3" dur="3.6s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="90" cy="120" rx="50" ry="76" fill="none" stroke="#00E5FF" stroke-width="0.9" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="4.4s" repeatCount="indefinite"/>
+    </ellipse>
+    <path d="M50 60 L62 42" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M62 42 L80 33" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M80 33 L100 33" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M100 33 L118 42" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M118 42 L130 60" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><circle cx="50" cy="60" r="0.85" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="2.2s" repeatCount="indefinite"/></circle><circle cx="62" cy="42" r="0.85" fill="#b2f4ff" opacity="0.7"/><circle cx="80" cy="33" r="0.85" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="3.0s" repeatCount="indefinite"/></circle><circle cx="100" cy="33" r="0.85" fill="#b2f4ff" opacity="0.7"/><circle cx="118" cy="42" r="0.85" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="3.8000000000000003s" repeatCount="indefinite"/></circle><circle cx="130" cy="60" r="0.85" fill="#b2f4ff" opacity="0.7"/>
+    <path d="M48 150 L58 170" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M58 170 L74 184" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><circle cx="48" cy="150" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="2.2s" repeatCount="indefinite"/></circle><circle cx="58" cy="170" r="0.7" fill="#b2f4ff" opacity="0.7"/><circle cx="74" cy="184" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="3.0s" repeatCount="indefinite"/></circle>
+    <path d="M132 150 L122 170" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M122 170 L106 184" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><circle cx="132" cy="150" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="2.2s" repeatCount="indefinite"/></circle><circle cx="122" cy="170" r="0.7" fill="#b2f4ff" opacity="0.7"/><circle cx="106" cy="184" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="3.0s" repeatCount="indefinite"/></circle>
+    <g><animateTransform attributeName="transform" type="rotate" values="0 90 118;360 90 118" dur="12s" repeatCount="indefinite"/><circle cx="144" cy="118" r="1.3" fill="#b2f4ff" opacity="0.9"/><circle cx="144" cy="118" r="2.7300000000000004" fill="#b2f4ff" opacity="0.25"/></g>
+    <circle cx="66" cy="150" r="0.8" fill="#b2f4ff" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -26" dur="4.6s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="4.6s" begin="0s" repeatCount="indefinite"/></circle>
+    <circle cx="114" cy="158" r="0.8" fill="#b2f4ff" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -24" dur="5.2s" begin="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="5.2s" begin="2s" repeatCount="indefinite"/></circle>
+  </g>
 
 </svg>

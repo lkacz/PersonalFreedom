@@ -3,7 +3,9 @@
 # Run with administrator privileges
 
 param(
-    [switch]$Silent
+    [switch]$Silent,
+    [switch]$ClearEdgeNetworkState,
+    [switch]$ForceCloseEdge
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +13,7 @@ $ErrorActionPreference = "Stop"
 # Markers used by the application
 $MARKER_START = "# === Personal Liberty BLOCK START ==="
 $MARKER_END = "# === Personal Liberty BLOCK END ==="
+$script:EdgeCleanupBlockedByRunningEdge = $false
 
 # Hosts file path
 $hostsPath = Join-Path $env:SystemRoot "System32\drivers\etc\hosts"
@@ -82,6 +85,80 @@ function Clear-DnsCache {
     }
 }
 
+function Clear-EdgeNetworkState {
+    if (-not $ClearEdgeNetworkState) {
+        return $true
+    }
+
+    try {
+        Write-Log "Clearing Microsoft Edge network state..."
+
+        $edgeProcesses = Get-Process -Name "msedge" -ErrorAction SilentlyContinue
+        if ($edgeProcesses) {
+            if ($ForceCloseEdge) {
+                Write-Log "Closing Microsoft Edge..."
+                $edgeProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 2
+            } else {
+                Write-Log "Microsoft Edge is still running."
+                Write-Log "Close Edge and run again, or add -ForceCloseEdge to close it automatically."
+                $script:EdgeCleanupBlockedByRunningEdge = $true
+                return $false
+            }
+        }
+
+        $edgeRoot = Join-Path $env:LOCALAPPDATA "Microsoft\Edge\User Data"
+        if (-not (Test-Path $edgeRoot)) {
+            Write-Log "Edge user data folder not found."
+            return $true
+        }
+
+        $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+        $backupRoot = Join-Path $env:TEMP "PersonalLiberty_EdgeNetworkBackup_$timestamp"
+        $patterns = @(
+            "Network Persistent State",
+            "Network Persistent State*.TMP",
+            "Reporting and NEL",
+            "Reporting and NEL-journal",
+            "SCT Auditing Pending Reports"
+        )
+
+        $movedCount = 0
+        $profiles = Get-ChildItem -LiteralPath $edgeRoot -Directory -ErrorAction SilentlyContinue |
+            Where-Object { Test-Path (Join-Path $_.FullName "Network") }
+
+        foreach ($profile in $profiles) {
+            $networkDir = Join-Path $profile.FullName "Network"
+            $profileBackup = Join-Path $backupRoot $profile.Name
+
+            foreach ($pattern in $patterns) {
+                $files = Get-ChildItem -LiteralPath $networkDir -Filter $pattern -File -Force -ErrorAction SilentlyContinue
+                foreach ($file in $files) {
+                    if (-not (Test-Path $profileBackup)) {
+                        New-Item -ItemType Directory -Path $profileBackup -Force | Out-Null
+                    }
+                    $destination = Join-Path $profileBackup $file.Name
+                    Move-Item -LiteralPath $file.FullName -Destination $destination -Force
+                    $movedCount++
+                }
+            }
+        }
+
+        if ($movedCount -gt 0) {
+            Write-Log "Moved $movedCount Edge network state file(s) to: $backupRoot"
+            Write-Log "Edge will recreate these files on next launch."
+        } else {
+            Write-Log "No Edge network state files needed cleanup."
+        }
+
+        return $true
+    }
+    catch {
+        Write-Log "Warning: Could not clear Edge network state: $_"
+        return $false
+    }
+}
+
 function Remove-StartupShortcut {
     try {
         # Remove startup folder shortcut
@@ -127,11 +204,16 @@ $processesClean = Stop-RunningProcesses
 $hostsClean = Remove-PersonalLibertyBlocks
 $startupClean = Remove-StartupShortcut
 $dnsClean = Clear-DnsCache
+$edgeClean = Clear-EdgeNetworkState
 
 Write-Log ""
-if ($hostsClean) {
+if ($hostsClean -and $edgeClean) {
     Write-Log "Cleanup completed successfully!"
     exit 0
+} elseif ($hostsClean -and $script:EdgeCleanupBlockedByRunningEdge) {
+    Write-Log "Hosts/DNS cleanup completed. Edge network cleanup was skipped because Edge is still running."
+    Write-Log "Close Edge fully and rerun with -ClearEdgeNetworkState, or rerun with -ClearEdgeNetworkState -ForceCloseEdge."
+    exit 2
 } else {
     Write-Log "Cleanup completed with errors. You may need to manually edit the hosts file."
     exit 1

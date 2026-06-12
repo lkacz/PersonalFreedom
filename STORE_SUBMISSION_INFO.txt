@@ -3,8 +3,8 @@ MICROSOFT STORE SUBMISSION INFO - WIN32 APP
 =========================================
 
 App Name:          Personal Liberty
-Current Version:   5.3.12
-Installer File:    installer_output\PersonalLiberty_Setup_v5.3.12.exe
+Current Version:   6.0.43
+Installer File:    installer_output\PersonalLiberty_Setup_v6.0.43.exe
 Installer Type:    EXE
 Silent Install Command: /VERYSILENT /SUPPRESSMSGBOXES
 

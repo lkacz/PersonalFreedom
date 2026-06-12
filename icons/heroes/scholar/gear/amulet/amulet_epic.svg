@@ -1,11 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sWatch3Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9b8fc9"/>
+      <stop offset="45%" stop-color="#4b4674"/>
+      <stop offset="100%" stop-color="#353055"/>
+    </linearGradient>
+    <linearGradient id="sWatch3Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4b4674"/>
+      <stop offset="100%" stop-color="#25213d"/>
+    </linearGradient>
+    <radialGradient id="sWatch3Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#9C27B0" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="amulet_epic">
-    <path d="M86 90 Q90 86 94 90" stroke="#8a9cb5" stroke-width="1.05" fill="none"/>
-    <circle cx="90" cy="100" r="5.1" fill="#263c5c" stroke="#122033" stroke-width="1"/>
-    <circle cx="90" cy="100" r="2" fill="#9C27B0" opacity="0.95"/>
-    <circle cx="90" cy="100" r="6.6" fill="none" stroke="#9C27B0" stroke-width="1.1" opacity="0.85"/><path d="M90 95.3 L92.3 99.6 L90 103.9 L87.7 99.6 Z" fill="#9C27B0" opacity="0.9"/><path d="M84.5 100 L95.5 100" stroke="#9C27B0" stroke-width="0.92" opacity="0.8"/><circle cx="90" cy="100" r="10.2" fill="none" stroke="#9C27B0" stroke-width="0.88" opacity="0.45"><animateTransform attributeName="transform" type="rotate" values="0 90 100;360 90 100" dur="8s" repeatCount="indefinite"/></circle>
-    <circle cx="90" cy="100" r="2.7" fill="#9C27B0" opacity="0.24"><animate attributeName="r" values="2.1;4.4;2.1" dur="2s" repeatCount="indefinite"/></circle>
+    <path d="M82 88 Q86 92.5 90 92.8 Q94 92.5 98 88" stroke="#b167d6" stroke-width="1.1" fill="none" opacity="0.95"/>
+    <circle cx="82" cy="88" r="0.9" fill="#b167d6"/>
+    <circle cx="98" cy="88" r="0.9" fill="#b167d6"/>
+    <rect x="88.9" y="92.4" width="2.2" height="2.2" rx="0.6" fill="#b167d6"/>
+    <circle cx="90" cy="101" r="6.2" fill="url(#sWatch3Cloth)" stroke="#25213d" stroke-width="1"/>
+    <circle cx="90" cy="101" r="4.6" fill="#e9e2ce" opacity="0.95"/>
+    <path d="M90 97.4 L90 98.6 M93.6 101 L92.4 101 M90 104.6 L90 103.4 M86.4 101 L87.6 101"
+          stroke="#25213d" stroke-width="0.6" opacity="0.9"/>
+    <path d="M90 101 L90 98.2 M90 101 L92 101" stroke="#25213d" stroke-width="0.8" stroke-linecap="round"/>
+    <circle cx="90" cy="101" r="0.7" fill="#25213d"/>
+    <circle cx="90" cy="101" r="7.6" fill="none" stroke="#b167d6" stroke-width="0.9" opacity="0.95"/><path d="M90 101 L90 96.4" stroke="#ce93d8" stroke-width="0.9" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="0 90 101;360 90 101" dur="12s" repeatCount="indefinite"/></path><path d="M90 101 L93.2 101" stroke="#ce93d8" stroke-width="0.7" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="0 90 101;360 90 101" dur="60s" repeatCount="indefinite"/></path><path d="M84.8 96 L83 94.2 M95.2 96 L97 94.2 M84.8 106 L83 107.8 M95.2 106 L97 107.8" stroke="#9C27B0" stroke-width="0.7" opacity="0.85"/>
   </g>
 
 </svg>

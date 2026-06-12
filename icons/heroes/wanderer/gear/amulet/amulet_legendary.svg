@@ -1,11 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dMoon4Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfa75f"/>
+      <stop offset="45%" stop-color="#5d5037"/>
+      <stop offset="100%" stop-color="#423823"/>
+    </linearGradient>
+    <linearGradient id="dMoon4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5d5037"/>
+      <stop offset="100%" stop-color="#2e2716"/>
+    </linearGradient>
+    <radialGradient id="dMoon4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="amulet_legendary">
-    <path d="M86 90 Q90 86 94 90" stroke="#90a7ca" stroke-width="1.02" fill="none"/>
-    <circle cx="90" cy="100" r="5.1" fill="#344f78" stroke="#182940" stroke-width="1"/>
-    <circle cx="90" cy="100" r="2" fill="#FF9800" opacity="0.95"/>
-    <circle cx="90" cy="100" r="6.6" fill="none" stroke="#FF9800" stroke-width="1.05" opacity="0.85"/><path d="M90 95.3 L92.3 99.6 L90 103.9 L87.7 99.6 Z" fill="#FF9800" opacity="0.9"/><path d="M84.5 100 L95.5 100" stroke="#FF9800" stroke-width="0.9" opacity="0.8"/><circle cx="90" cy="100" r="10.2" fill="none" stroke="#FF9800" stroke-width="0.86" opacity="0.45"><animateTransform attributeName="transform" type="rotate" values="0 90 100;360 90 100" dur="8s" repeatCount="indefinite"/></circle><path d="M82 100 L76 97 L78 104 Z" fill="#FF9800" opacity="0.9"/><path d="M98 100 L104 97 L102 104 Z" fill="#FF9800" opacity="0.9"/>
-    <circle cx="90" cy="100" r="2.7" fill="#FF9800" opacity="0.24"><animate attributeName="r" values="2.1;4.4;2.1" dur="2s" repeatCount="indefinite"/></circle>
+    <path d="M83 88.5 Q90 85 97 88.5" stroke="#ffd58a" stroke-width="1" fill="none" opacity="0.95"/>
+    <path d="M86.8 96.8 L90 94.2 L93.2 96.8 L93.2 105 L90 108.4 L86.8 105 Z"
+          fill="url(#dMoon4Weave)" stroke="#2e2716" stroke-width="0.95"/>
+    <path d="M88 98 L90 96.4 L92 98 L92 104.4 L90 106.5 L88 104.4 Z" fill="#FF9800" opacity="0.9"/>
+    <path d="M88.8 98.6 L90 97.6 L90 100 Z" fill="#ffffff" opacity="0.7"/>
+    <path d="M90 92.8 L90 90.4" stroke="#ffd58a" stroke-width="0.8"/>
+    <path d="M85.2 95.4 L90 92.6 L94.8 95.4" stroke="#ffd58a" stroke-width="0.8" fill="none" opacity="0.9"/><circle cx="90" cy="101.5" r="8.8" fill="none" stroke="#FF9800" stroke-width="0.6" opacity="0.5"><animateTransform attributeName="transform" type="rotate" values="0 90 101.5;360 90 101.5" dur="10s" repeatCount="indefinite"/></circle><path d="M96.2 93.8 L96.592 94.808 L97.60000000000001 95.2 L96.592 95.592 L96.2 96.60000000000001 L95.808 95.592 L94.8 95.2 L95.808 94.808 Z" fill="#ffcc80" opacity="0.85"/><path d="M84.84 95.60000000000001 A1.8 1.8 0 1 0 84.84 99.2 A1.4040000000000001 1.4040000000000001 0 1 1 84.84 95.60000000000001 Z" fill="#FF9800" opacity="0.95" transform="rotate(-18 85.2 97.4)"/><circle cx="90" cy="101.5" r="3.4" fill="#FF9800" opacity="0.3"><animate attributeName="r" values="2.8;5.2;2.8" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0.12;0.3" dur="2.4s" repeatCount="indefinite"/></circle><circle cx="86" cy="95.5" r="0.5" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -5" dur="2.7s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.7s" begin="0s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

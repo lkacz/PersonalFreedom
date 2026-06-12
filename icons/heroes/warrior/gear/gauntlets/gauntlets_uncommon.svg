@@ -1,11 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wGaunt1Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8b99ac"/>
+      <stop offset="45%" stop-color="#56657a"/>
+      <stop offset="100%" stop-color="#3a4658"/>
+    </linearGradient>
+    <linearGradient id="wGaunt1Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#56657a"/>
+      <stop offset="100%" stop-color="#26313f"/>
+    </linearGradient>
+  </defs>
 
   <g id="gauntlets_uncommon">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#505d72" stroke="#2a394b" stroke-width="0.95"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#505d72" stroke="#2a394b" stroke-width="0.95"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#e1d4c2" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#e1d4c2" opacity="0.92"/>
-    <path d="M40 143 L60 143 M120 143 L140 143" stroke="#8a98ab" stroke-width="0.8" opacity="0.72"/>
+    <path d="M38 134 L62 134 L60.5 144 L39.5 144 Z" fill="url(#wGaunt1Plate)" stroke="#26313f" stroke-width="1"/><path d="M39.5 144 L60.5 144 L59.5 151 L40.5 151 Z" fill="url(#wGaunt1Deep)" stroke="#26313f" stroke-width="0.9"/><path d="M40.5 151 L59.5 151 L58 157 L42 157 Z" fill="url(#wGaunt1Plate)" stroke="#26313f" stroke-width="0.9"/><path d="M40 138.6 L60 138.6" stroke="#8b99ac" stroke-width="0.6" opacity="0.6"/><rect x="43" y="152.6" width="14" height="2.6" rx="1.2" fill="#6a4d3a" stroke="#26313f" stroke-width="0.5"/><path d="M39 144 L61 144" stroke="#79c47d" stroke-width="1.0" opacity="0.9"/>
+    <path d="M118 134 L142 134 L140.5 144 L119.5 144 Z" fill="url(#wGaunt1Plate)" stroke="#26313f" stroke-width="1"/><path d="M119.5 144 L140.5 144 L139.5 151 L120.5 151 Z" fill="url(#wGaunt1Deep)" stroke="#26313f" stroke-width="0.9"/><path d="M120.5 151 L139.5 151 L138 157 L122 157 Z" fill="url(#wGaunt1Plate)" stroke="#26313f" stroke-width="0.9"/><path d="M120 138.6 L140 138.6" stroke="#8b99ac" stroke-width="0.6" opacity="0.6"/><rect x="123" y="152.6" width="14" height="2.6" rx="1.2" fill="#6a4d3a" stroke="#26313f" stroke-width="0.5"/><path d="M119 144 L141 144" stroke="#79c47d" stroke-width="1.0" opacity="0.9"/>
   </g>
 
 </svg>

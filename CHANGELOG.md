@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.43] - 2026-05-17
+
+### Fixed
+- Added no-cache headers for local blocked-site reminder pages to avoid stale Edge network state lingering after cleanup.
+- Added Edge network-state cleanup support to the hosts cleanup script.
+- Reworked health reminder sounds to use a softer cue and reduce audio device churn during short reminders.
+
 ## [6.0.42] - 2026-02-14
 
 ### Added

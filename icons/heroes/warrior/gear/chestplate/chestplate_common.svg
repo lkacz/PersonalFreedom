@@ -1,12 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wChest0Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#717e8f"/>
+      <stop offset="45%" stop-color="#4d5563"/>
+      <stop offset="100%" stop-color="#353c49"/>
+    </linearGradient>
+    <linearGradient id="wChest0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4d5563"/>
+      <stop offset="100%" stop-color="#252c38"/>
+    </linearGradient>
+  </defs>
 
   <g id="chestplate_common">
-    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z" fill="#4b596e" stroke="#253547" stroke-width="1.05"/>
-    <path d="M76 84 L104 84 L105 143 L75 143 Z" fill="#384a62" opacity="0.92"/>
-    <path d="M76 84 L83 94 L80 143 L74 143 Z" fill="#283649" opacity="0.75"/>
-    <path d="M104 84 L97 94 L100 143 L106 143 Z" fill="#283649" opacity="0.75"/>
-    <path d="M90 84 L90 143" stroke="#1f2b3d" stroke-width="1.02"/>
-    
+    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z"
+          fill="url(#wChest0Plate)" stroke="#252c38" stroke-width="1.1"/>
+    <path d="M73 84 Q81 81 89 84.5 L89 104 Q82 108.5 74.5 105.5 Z" fill="url(#wChest0Deep)" opacity="0.95"/>
+    <path d="M107 84 Q99 81 91 84.5 L91 104 Q98 108.5 105.5 105.5 Z" fill="url(#wChest0Deep)" opacity="0.95"/>
+    <path d="M90 80 L90 144" stroke="#252c38" stroke-width="1.0" opacity="0.9"/>
+    <path d="M68 110 L73 108 L107 108 L112 110 L111.5 116 L68.5 116 Z" fill="url(#wChest0Deep)" stroke="#252c38" stroke-width="0.8"/>
+    <path d="M74 84.5 Q80 82.4 87 84.6" stroke="#717e8f" stroke-width="0.8" fill="none" opacity="0.65"/>
+    <path d="M67.5 96 L66.5 140 M112.5 96 L113.5 140" stroke="#252c38" stroke-width="0.7" opacity="0.6"/>
+    <path d="M73 118 L107 118 M74 126 L106 126 M75 134 L105 134" stroke="#252c38" stroke-width="0.9" opacity="0.85"/><path d="M73 119.2 L107 119.2 M74 127.2 L106 127.2" stroke="#717e8f" stroke-width="0.5" opacity="0.5"/><circle cx="70.5" cy="84" r="1.0" fill="#717e8f"/><circle cx="70.75" cy="84.3" r="0.45" fill="#252c38" opacity="0.55"/><circle cx="109.5" cy="84" r="1.0" fill="#717e8f"/><circle cx="109.75" cy="84.3" r="0.45" fill="#252c38" opacity="0.55"/><circle cx="69.5" cy="112" r="1.0" fill="#717e8f"/><circle cx="69.75" cy="112.3" r="0.45" fill="#252c38" opacity="0.55"/><circle cx="110.5" cy="112" r="1.0" fill="#717e8f"/><circle cx="110.75" cy="112.3" r="0.45" fill="#252c38" opacity="0.55"/><path d="M78 96 L86 102" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M97 88 L103 92" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M80 124 L85 127.5" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M95 128 Q99 131 103 129" stroke="#252c38" stroke-width="1.2" fill="none" opacity="0.7"/>
   </g>
 
 </svg>

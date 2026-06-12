@@ -3960,8 +3960,8 @@ class CityTab(QtWidgets.QWidget):
                     page.setVisible(False)
                     try:
                         page.setLifecycleState(QWebEnginePage.LifecycleState.Frozen)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        _logger.debug(f"Could not freeze WebEngine page: {e}")
 
     def _resume_all_animations(self) -> None:
         """Resume all WebEngine SMIL animations in the city grid."""
@@ -3977,8 +3977,8 @@ class CityTab(QtWidgets.QWidget):
                     page = cell._web_view.page()
                     try:
                         page.setLifecycleState(QWebEnginePage.LifecycleState.Active)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        _logger.debug(f"Could not resume WebEngine page: {e}")
                     page.setVisible(True)
 
     def on_window_minimized(self) -> None:

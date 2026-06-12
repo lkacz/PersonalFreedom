@@ -1,11 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cTab1Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#93a2b2"/>
+      <stop offset="45%" stop-color="#5d6a78"/>
+      <stop offset="100%" stop-color="#414c59"/>
+    </linearGradient>
+    <linearGradient id="cTab1Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5d6a78"/>
+      <stop offset="100%" stop-color="#2b3540"/>
+    </linearGradient>
+    <linearGradient id="cTab1Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bcd6c4"/>
+      <stop offset="100%" stop-color="#414c59"/>
+    </linearGradient>
+  </defs>
 
   <g id="shield_uncommon">
-    <path d="M34 100 L60 100 L64 106 L64 142 L60 149 L34 149 L30 142 L30 106 Z" fill="#dce3ed" stroke="#97a4b5" stroke-width="1"/>
-    <rect x="36.5" y="103.4" width="21" height="42" rx="2" fill="#4b5d7a" opacity="0.9"/>
-    <path d="M41 100 L53 100 L57 94 L45 94 Z" fill="#dce3ed" stroke="#97a4b5" stroke-width="0.8"/>
-    <path d="M30 106 L64 106" stroke="#4CAF50" stroke-width="0.98" opacity="0.82"/>
-    <path d="M38 109 L58 109 M38 117 L58 117 M38 125 L58 125 M38 133 L58 133" stroke="#8fa3bf" stroke-width="0.82" opacity="0.75"/>
+    <rect x="30" y="100.5" width="34" height="49" rx="3.4" fill="url(#cTab1Case)" stroke="#2b3540" stroke-width="1.15"/>
+    <rect x="33" y="104" width="28" height="42" rx="2" fill="url(#cTab1Deep)"/>
+    <rect x="34.5" y="106.5" width="25" height="37" rx="1.6" fill="#414c59" opacity="0.9"/>
+    <path d="M36 109 L58 109" stroke="#93a2b2" stroke-width="0.6" opacity="0.5"/>
+    <path d="M48 101.8 L52 101.8" stroke="#2b3540" stroke-width="0.8"/>
+    <path d="M52 148.6 L56 148.6 M46 148.6 L50 148.6" stroke="#2b3540" stroke-width="1" opacity="0.85"/>
+    <path d="M31.5 104 Q33 101.6 36 101.2" stroke="#93a2b2" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <circle cx="38" cy="146.4" r="0.9" fill="#7ec983"><animate attributeName="opacity" values="1;0.3;1" dur="2.1s" repeatCount="indefinite"/></circle><circle cx="41.6" cy="146.4" r="0.9" fill="#7ec983" opacity="0.75"/><circle cx="45.2" cy="146.4" r="0.9" fill="#414c59"/>
   </g>
 
 </svg>

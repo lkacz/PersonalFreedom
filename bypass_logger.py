@@ -11,6 +11,7 @@ import threading
 import json
 import logging
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -20,8 +21,8 @@ import html
 logger = logging.getLogger(__name__)
 
 # Path for storing bypass attempts
-if getattr(__import__('sys'), 'frozen', False):
-    APP_DIR = Path(__import__('sys').executable).parent
+if getattr(sys, 'frozen', False):
+    APP_DIR = Path(sys.executable).parent
 else:
     APP_DIR = Path(__file__).parent
 
@@ -63,6 +64,7 @@ class BypassAttemptHandler(BaseHTTPRequestHandler):
             # Send focus reminder page
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
+            self._send_no_cache_headers()
             self.end_headers()
             
             # Escape host to prevent XSS
@@ -73,6 +75,12 @@ class BypassAttemptHandler(BaseHTTPRequestHandler):
             pass  # Client disconnected, ignore
         except Exception:
             pass  # Silently handle any other HTTP handler errors
+
+    def _send_no_cache_headers(self) -> None:
+        """Prevent browsers from caching the local reminder as site content."""
+        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        self.send_header('Pragma', 'no-cache')
+        self.send_header('Expires', '0')
     
     def _generate_reminder_page(self, blocked_site: str) -> str:
         """Generate an HTML page reminding user to stay focused."""
@@ -328,11 +336,20 @@ class BypassLogger:
             with self._lock:
                 self._running = False
             self.server.shutdown()
-            
+
             # Wait for server thread to finish (prevent data loss during shutdown)
             if self.server_thread and self.server_thread.is_alive():
                 self.server_thread.join(timeout=5.0)
-            
+
+            # shutdown() only stops the serve_forever loop; the listening
+            # socket must be closed explicitly or the port stays bound until
+            # the process exits (interfering with other local servers).
+            try:
+                self.server.server_close()
+            except OSError as e:
+                logger.debug(f"Error closing bypass server socket: {e}")
+            self.server = None
+
             with self._lock:
                 # Save session summary
                 if self.current_session_attempts:

@@ -1,11 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dWrap3Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9a86c6"/>
+      <stop offset="45%" stop-color="#473a68"/>
+      <stop offset="100%" stop-color="#33294c"/>
+    </linearGradient>
+    <linearGradient id="dWrap3Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#473a68"/>
+      <stop offset="100%" stop-color="#221b36"/>
+    </linearGradient>
+    <radialGradient id="dWrap3Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#9C27B0" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="gauntlets_epic">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#385178" stroke="#1b2f4b" stroke-width="1"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#385178" stroke="#1b2f4b" stroke-width="1"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#d8e7ff" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#d8e7ff" opacity="0.92"/>
-    <path d="M40 143 L60 143 M120 143 L140 143" stroke="#7a93bd" stroke-width="0.82" opacity="0.72"/><path d="M44 136 L56 136 M124 136 L136 136" stroke="#9C27B0" stroke-width="0.95" opacity="0.82"/><circle cx="49.5" cy="147.2" r="1.4" fill="#9C27B0"/><circle cx="130.5" cy="147.2" r="1.4" fill="#9C27B0"/>
+    <path d="M39 134 L61 134 L60 157 L40 157 Z" fill="url(#dWrap3Weave)" stroke="#221b36" stroke-width="1"/><path d="M39.5 138 L60.5 142 M39.5 145 L60.5 149 M39.5 152 L60.5 156" stroke="url(#dWrap3Deep)" stroke-width="3.2" opacity="0.9"/><path d="M39.5 138 L60.5 142 M39.5 145 L60.5 149" stroke="#9a86c6" stroke-width="0.5" opacity="0.5"/><path d="M39 141.5 L61 145.5" stroke="#c79be8" stroke-width="1" opacity="0.9"/><path d="M50 135.70000000000002 L50.476 136.924 L51.7 137.4 L50.476 137.876 L50 139.1 L49.524 137.876 L48.3 137.4 L49.524 136.924 Z" fill="#ce93d8" opacity="0.85"/><path d="M43.0 152.6 L43.0 154.6 M43.0 153.6 L44.8 152.6 M47.8 152.6 L49.6 154.6 M49.6 152.6 L47.8 154.6 M52.6 154.6 L52.6 152.6 L54.4 152.6" stroke="#9C27B0" stroke-width="0.55" fill="none" opacity="0.85" stroke-linecap="round"/><path d="M55.56 144.8 A2.2 2.2 0 1 0 55.56 149.2 A1.7160000000000002 1.7160000000000002 0 1 1 55.56 144.8 Z" fill="#9C27B0" opacity="0.9" transform="rotate(20 56 147)"/>
+    <path d="M119 134 L141 134 L140 157 L120 157 Z" fill="url(#dWrap3Weave)" stroke="#221b36" stroke-width="1"/><path d="M119.5 138 L140.5 142 M119.5 145 L140.5 149 M119.5 152 L140.5 156" stroke="url(#dWrap3Deep)" stroke-width="3.2" opacity="0.9"/><path d="M119.5 138 L140.5 142 M119.5 145 L140.5 149" stroke="#9a86c6" stroke-width="0.5" opacity="0.5"/><path d="M119 141.5 L141 145.5" stroke="#c79be8" stroke-width="1" opacity="0.9"/><path d="M130 135.70000000000002 L130.476 136.924 L131.7 137.4 L130.476 137.876 L130 139.1 L129.524 137.876 L128.3 137.4 L129.524 136.924 Z" fill="#ce93d8" opacity="0.85"/><path d="M123.0 152.6 L123.0 154.6 M123.0 153.6 L124.8 152.6 M127.8 152.6 L129.6 154.6 M129.6 152.6 L127.8 154.6 M132.6 154.6 L132.6 152.6 L134.4 152.6" stroke="#9C27B0" stroke-width="0.55" fill="none" opacity="0.85" stroke-linecap="round"/><path d="M123.56 144.8 A2.2 2.2 0 1 0 123.56 149.2 A1.7160000000000002 1.7160000000000002 0 1 1 123.56 144.8 Z" fill="#9C27B0" opacity="0.9" transform="rotate(-20 124 147)"/>
   </g>
 
 </svg>

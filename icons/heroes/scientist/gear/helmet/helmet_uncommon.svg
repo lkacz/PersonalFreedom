@@ -1,16 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cGogg1Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#93a2b2"/>
+      <stop offset="45%" stop-color="#5d6a78"/>
+      <stop offset="100%" stop-color="#414c59"/>
+    </linearGradient>
+    <linearGradient id="cGogg1Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5d6a78"/>
+      <stop offset="100%" stop-color="#2b3540"/>
+    </linearGradient>
+    <linearGradient id="cGogg1Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bcd6c4"/>
+      <stop offset="100%" stop-color="#414c59"/>
+    </linearGradient>
+  </defs>
 
   <g id="helmet_uncommon">
-    <rect x="76.2" y="44.6" width="27.6" height="8" rx="3.2" fill="#153047" stroke="#0e1b2b" stroke-width="0.9"/>
-    <circle cx="85.5" cy="48.5" r="2.6" fill="none" stroke="#cceeff" stroke-width="1"/>
-    <circle cx="94.5" cy="48.5" r="2.6" fill="none" stroke="#cceeff" stroke-width="1"/>
-    <path d="M88.1 48.5 L91.9 48.5" stroke="#cceeff" stroke-width="0.85"/>
-    <path d="M79.3 48.5 L83 48.5 M97 48.5 L100.7 48.5" stroke="#4CAF50" stroke-width="0.9" opacity="0.8"/>
-    <rect x="72" y="46.2" width="4.8" height="4.6" rx="1" fill="#4CAF50" opacity="0.75"/><rect x="103.2" y="46.2" width="4.8" height="4.6" rx="1" fill="#4CAF50" opacity="0.75"/>
-    
-    
-    
-    
+    <path d="M67 44 Q90 39.5 113 44 L113 47 Q90 42.8 67 47 Z" fill="url(#cGogg1Deep)" stroke="#2b3540" stroke-width="0.9"/>
+    <rect x="78.6" y="40.6" width="10.4" height="8.2" rx="2.6" fill="url(#cGogg1Glass)" stroke="#2b3540" stroke-width="1" opacity="0.92"/>
+    <rect x="91" y="40.6" width="10.4" height="8.2" rx="2.6" fill="url(#cGogg1Glass)" stroke="#2b3540" stroke-width="1" opacity="0.92"/>
+    <path d="M89 44.4 L91 44.4" stroke="#2b3540" stroke-width="1.1"/>
+    <path d="M80.2 42.2 Q83 41 86 42" stroke="#ffffff" stroke-width="0.7" fill="none" opacity="0.65"/>
+    <path d="M92.6 42.2 Q95.4 41 98.4 42" stroke="#ffffff" stroke-width="0.7" fill="none" opacity="0.65"/>
+    <rect x="75.4" y="42.8" width="3.2" height="3.6" rx="0.8" fill="url(#cGogg1Case)" stroke="#2b3540" stroke-width="0.7"/>
+    <rect x="101.4" y="42.8" width="3.2" height="3.6" rx="0.8" fill="url(#cGogg1Case)" stroke="#2b3540" stroke-width="0.7"/>
+    <rect x="70.5" y="44.2" width="4.6" height="5" rx="1" fill="url(#cGogg1Deep)" stroke="#7ec983" stroke-width="0.8"/><circle cx="72.8" cy="46.7" r="0.9" fill="#7ec983"/><rect x="104.9" y="44.2" width="4.6" height="5" rx="1" fill="url(#cGogg1Deep)" stroke="#7ec983" stroke-width="0.8"/><circle cx="107.2" cy="46.7" r="0.9" fill="#7ec983"/>
   </g>
 
 </svg>

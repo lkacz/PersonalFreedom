@@ -4,7 +4,7 @@
 
 echo.
 echo =============================================
-echo   Building Personal Liberty v6.0.1
+echo   Building Personal Liberty v6.0.43
 echo =============================================
 echo.
 
@@ -60,7 +60,7 @@ copy "setup_no_uac.bat" "dist\PersonalLiberty_Package\" >nul 2>&1
 :: Create readme for the package
 echo Creating distribution README...
 (
-echo Personal Liberty v6.0.1 - Gamified Focus Blocker
+echo Personal Liberty v6.0.43 - Gamified Focus Blocker
 echo =================================================
 echo.
 echo QUICK START:
@@ -98,7 +98,7 @@ echo Done! Package created in: dist\PersonalLiberty_Package\
 
 echo.
 echo =============================================
-echo   Build Complete! v6.0.1
+echo   Build Complete! v6.0.43
 echo =============================================
 echo.
 echo DISTRIBUTION PACKAGE: %SCRIPT_DIR%dist\PersonalLiberty_Package\

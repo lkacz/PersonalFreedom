@@ -92,6 +92,7 @@
 
 - **Can't stop strict mode?** Enter your password
 - **Sites still accessible?** Clear browser cache, restart browser
+- **Edge breaks after a block?** Close Edge, then run `cleanup_hosts.ps1 -ClearEdgeNetworkState`
 - **Forgot password?** Edit `config.json`, remove `password_hash`
 - **App crashed?** Manually edit hosts file (see README)
 

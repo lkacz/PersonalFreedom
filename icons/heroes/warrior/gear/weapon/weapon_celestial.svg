@@ -1,18 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <g id="qt_anim_driver">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
-
+  <defs>
+    <linearGradient id="wWeap5Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fd9e8"/>
+      <stop offset="45%" stop-color="#3c5a6b"/>
+      <stop offset="100%" stop-color="#27414f"/>
+    </linearGradient>
+    <linearGradient id="wWeap5Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3c5a6b"/>
+      <stop offset="100%" stop-color="#19303c"/>
+    </linearGradient>
+    <radialGradient id="wWeap5Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#00E5FF" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#00E5FF" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="weapon_celestial" transform="rotate(-24 121 131)">
-    <rect x="115.2" y="126" width="10.2" height="36" rx="3" fill="#2a3d58" stroke="#151f30" stroke-width="1"/>
-    <rect x="116.8" y="134" width="7" height="2.4" rx="1" fill="#00E5FF" opacity="0.92"/>
-    <rect x="116.8" y="145" width="7" height="2.4" rx="1" fill="#00E5FF" opacity="0.75"/>
-    <rect x="118.8" y="160" width="3.2" height="4.8" rx="1.4" fill="#3a526f"/>
-    <path d="M114.8 126 L125.6 126 L127 122 L113.6 122 Z" fill="#536f93" stroke="#25384f" stroke-width="1"/>
-    <path d="M124 102 Q141 92 152 106 Q138 111 126 124 Z" fill="#d9e4f2" stroke="#4a6181" stroke-width="1"/>
-    <path d="M126.3 103.5 L129.6 108.8 L126.3 114.2 L123 108.8 Z" fill="#ffffff" opacity="0.92"/>
-    <path d="M126 103.5 Q139 96 146 108" stroke="#00E5FF" stroke-width="0.88" fill="none" opacity="0.82"/><path d="M127 111.5 Q139 106 147 99" stroke="#00E5FF" stroke-width="0.8" fill="none" opacity="0.75"/><circle cx="142" cy="102.5" r="1.45" fill="#00E5FF" opacity="0.95"/><path d="M124 124 L128 120 L131 126 L127 130 Z" fill="#344b69" stroke="#00E5FF" stroke-width="0.82"/><path d="M124 106 Q140 94 151 106" stroke="#00E5FF" stroke-width="1.16" fill="none" opacity="0.9"/><path d="M126 118 Q140 112 149 105" stroke="#00E5FF" stroke-width="0.82" fill="none" opacity="0.8"><animate attributeName="opacity" values="0.45;1;0.45" dur="1.5s" repeatCount="indefinite"/></path><ellipse cx="142" cy="103" rx="10.8" ry="4.3" fill="none" stroke="#00E5FF" stroke-width="0.8" opacity="0.55"/>
+    <rect x="115.2" y="126" width="10.2" height="38" rx="3.2" fill="url(#wWeap5Deep)" stroke="#19303c" stroke-width="1"/>
+    <path d="M116 130 L124.6 130 M116 152 L124.6 152" stroke="#2f6e80" stroke-width="2.2" opacity="0.95"/>
+    <rect x="118.6" y="160.5" width="3.4" height="5" rx="1.5" fill="url(#wWeap5Plate)" stroke="#19303c" stroke-width="0.7"/>
+    <path d="M114.4 126 L126.2 126 L127.8 121.4 L112.8 121.4 Z" fill="url(#wWeap5Plate)" stroke="#19303c" stroke-width="1"/>
+    <path d="M124 102 Q141 91 152.5 105.5 Q138.5 111 126.5 124 Z" fill="url(#wWeap5Plate)" stroke="#19303c" stroke-width="1.1"/>
+    <path d="M126.5 105 Q138 97.5 147.5 105.5 Q137 110 128.5 119 Z" fill="url(#wWeap5Deep)" opacity="0.92"/>
+    <path d="M126.3 103.5 L129.6 108.8 L126.3 114.2 L123 108.8 Z" fill="#b2f4ff" opacity="0.9"/>
+    <circle cx="120.3" cy="123.7" r="1.1" fill="#00E5FF" opacity="0.95"/>
+    <path d="M126 103.5 Q139 95.5 148 105" stroke="#4dd9f0" stroke-width="0.95" fill="none" opacity="0.85"/><path d="M117.3 137.5 L117.3 140.1 M117.3 138.8 L119.1 137.5" stroke="#00E5FF" stroke-width="0.55" fill="none" opacity="0.95" stroke-linecap="round"/><path d="M117.3 143.5 L117.3 146.1 M117.3 144.8 L119.1 143.5" stroke="#00E5FF" stroke-width="0.55" fill="none" opacity="0.8" stroke-linecap="round"/><path d="M127.5 121 L149 103" stroke="#b2f4ff" stroke-width="0.85" stroke-linecap="round" opacity="0.675"><animate attributeName="opacity" values="0.675;1.0;0.35;0.675" dur="2.7s" repeatCount="indefinite"/></path><path d="M116 104 Q103 96 95 107 Q107 110 114.5 122 Z" fill="url(#wWeap5Plate)" stroke="#19303c" stroke-width="1"/><path d="M113.5 106.5 L110.5 110.8 L113.5 115 L116.3 110.8 Z" fill="#b2f4ff" opacity="0.85"/><path d="M128 119 Q137 110 147.5 104.5 Q144 110.5 138 116 Q133.5 119.5 128 119 Z" fill="#00E5FF" opacity="0.55"><animate attributeName="opacity" values="0.55;0.85;0.35;0.55" dur="1.7s" repeatCount="indefinite"/></path><circle cx="141" cy="104" r="0.8" fill="#b2f4ff" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -8" dur="2.2s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.2s" begin="0s" repeatCount="indefinite"/></circle><circle cx="133" cy="112" r="0.65" fill="#00E5FF" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -7" dur="2.8s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.8s" begin="0.6s" repeatCount="indefinite"/></circle><ellipse cx="137" cy="109" rx="16" ry="11" fill="url(#wWeap5Aura)" opacity="0.575"><animate attributeName="opacity" values="0.575;0.8;0.35;0.575" dur="3.8s" repeatCount="indefinite"/></ellipse><path d="M128 117 L134 111" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M134 111 L141 106" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M141 106 L148 103.5" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><circle cx="128" cy="117" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="2.2s" repeatCount="indefinite"/></circle><circle cx="134" cy="111" r="0.7" fill="#b2f4ff" opacity="0.7"/><circle cx="141" cy="106" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="3.0s" repeatCount="indefinite"/></circle><circle cx="148" cy="103.5" r="0.7" fill="#b2f4ff" opacity="0.7"/><g><animateTransform attributeName="transform" type="rotate" values="0 120.3 144;360 120.3 144" dur="7s" repeatCount="indefinite"/><circle cx="127.8" cy="144" r="0.85" fill="#b2f4ff" opacity="0.9"/><circle cx="127.8" cy="144" r="1.785" fill="#b2f4ff" opacity="0.25"/></g>
   </g>
 
-  </g>
 </svg>

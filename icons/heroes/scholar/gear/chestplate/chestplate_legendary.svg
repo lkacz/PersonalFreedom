@@ -1,13 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sChest4Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfa75f"/>
+      <stop offset="45%" stop-color="#5f4f35"/>
+      <stop offset="100%" stop-color="#443821"/>
+    </linearGradient>
+    <linearGradient id="sChest4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5f4f35"/>
+      <stop offset="100%" stop-color="#2f2715"/>
+    </linearGradient>
+    <radialGradient id="sChest4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="chestplate_legendary">
-    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z" fill="#354d71" stroke="#182941" stroke-width="1.2"/>
-    <path d="M76 84 L104 84 L105 143 L75 143 Z" fill="#4a638d" opacity="0.88"/>
-    <path d="M76 84 L83 94 L80 143 L74 143 Z" fill="#2a3e5f" opacity="0.72"/>
-    <path d="M104 84 L97 94 L100 143 L106 143 Z" fill="#2a3e5f" opacity="0.72"/>
-    <path d="M90 84 L90 143" stroke="#223654" stroke-width="1.05" opacity="0.72"/>
-    <path d="M75 136 Q90 141 105 136" stroke="#FF9800" stroke-width="1.2" opacity="0.82" fill="none"/>
-    <path d="M73 88 L107 88 L104.5 135 L75.5 135 Z" fill="#556d95" opacity="0.7"/><path d="M74 96 L106 96 M74 106 L106 106 M74 116 L106 116" stroke="#6e87b0" stroke-width="0.95" opacity="0.72"/><path d="M70 82 L79 76 L101 76 L110 82" stroke="#FF9800" stroke-width="1" fill="none" opacity="0.85"/><rect x="84.2" y="94.5" width="11.6" height="17.6" rx="2.4" fill="#1a2b44" stroke="#FF9800" stroke-width="1"/><path d="M87 103.2 L93 103.2" stroke="#FF9800" stroke-width="0.95"/><path d="M68 85 Q90 68 112 85" stroke="#FF9800" stroke-width="1.35" fill="none" opacity="0.86"/><path d="M69 131 Q90 141 111 131" stroke="#FF9800" stroke-width="1.18" fill="none" opacity="0.75"/><circle cx="90" cy="102.8" r="4.8" fill="none" stroke="#FF9800" stroke-width="1.15"/>
+    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z"
+          fill="url(#sChest4Cloth)" stroke="#2f2715" stroke-width="1.1"/>
+    <path d="M76 83 L89 83 L89 143 L75.5 143 Z" fill="url(#sChest4Deep)" opacity="0.92"/>
+    <path d="M104 83 L91 83 L91 143 L104.5 143 Z" fill="url(#sChest4Deep)" opacity="0.92"/>
+    <path d="M76 83 L84 83 L78.5 96 L74.5 92 Z" fill="url(#sChest4Cloth)" stroke="#2f2715" stroke-width="0.7"/>
+    <path d="M104 83 L96 83 L101.5 96 L105.5 92 Z" fill="url(#sChest4Cloth)" stroke="#2f2715" stroke-width="0.7"/>
+    <path d="M90 83 L90 143" stroke="#2f2715" stroke-width="0.9" opacity="0.85"/>
+    <path d="M68 138 L112 138 L111.7 142.6 L68.3 142.6 Z" fill="url(#sChest4Deep)" stroke="#2f2715" stroke-width="0.7"/>
+    <path d="M77 84.5 Q82 82.8 87 84.2" stroke="#cfa75f" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <circle cx="90" cy="96" r="1.1" fill="#ffc066"/><circle cx="90" cy="106" r="1.1" fill="#ffc066"/><circle cx="90" cy="116" r="1.1" fill="#ffc066"/><circle cx="90" cy="126" r="1.1" fill="#ffc066"/><path d="M71 81 L106 138 L101 141 L67 86 Z" fill="#74552f" stroke="#2f2715" stroke-width="0.8" opacity="0.95"/><rect x="85.2" y="106.6" width="5.6" height="4.6" rx="0.9" fill="none" stroke="#ffc066" stroke-width="1.0"/><rect x="95.5" y="86.5" width="9" height="7" rx="1" fill="url(#sChest4Deep)" stroke="#ffc066" stroke-width="0.8"/><path d="M97.2 86.5 L97.2 84 M99.8 86.5 L99.4 83.2 M102.4 86.5 L102.4 84.4" stroke="#ffc066" stroke-width="0.9"/><path d="M74.0 134.6 L74.0 137.0 M74.0 135.79999999999998 L75.8 134.6 M78.2 134.6 L80.0 137.0 M80.0 134.6 L78.2 137.0 M82.4 137.0 L82.4 134.6 L84.2 134.6 M86.6 134.6 L88.4 134.6 L86.6 137.0 L88.4 137.0 M90.8 134.6 L90.8 137.0 M90.8 135.79999999999998 L92.6 134.6" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.8" stroke-linecap="round"/><circle cx="78.5" cy="120" r="4.4" fill="#FF9800" opacity="0.9"/><circle cx="78.5" cy="120" r="2.9" fill="none" stroke="#ffcc80" stroke-width="0.6"/><path d="M77 120 L78.3 121.4 L80.3 118.6" stroke="#ffcc80" stroke-width="0.7" fill="none"/><path d="M68 84 Q73 80 78 83 Q73 85 70 89 M112 84 Q107 80 102 83 Q107 85 110 89" stroke="#ffc066" stroke-width="0.9" fill="none" opacity="0.9"/><path d="M67.5 138 Q74 142.5 81 140.5 M112.5 138 Q106 142.5 99 140.5" stroke="#ffc066" stroke-width="0.9" fill="none" opacity="0.85"/><path d="M90 82 L90 142" stroke="#ffcc80" stroke-width="0.7" stroke-linecap="round" opacity="0.4"><animate attributeName="opacity" values="0.4;0.6;0.2;0.4" dur="3.4s" repeatCount="indefinite"/></path><circle cx="83" cy="100" r="0.7" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -8" dur="3s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3s" begin="0s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

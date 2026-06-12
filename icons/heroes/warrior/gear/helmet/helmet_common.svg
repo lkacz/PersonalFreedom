@@ -1,11 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wHelm0Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#717e8f"/>
+      <stop offset="45%" stop-color="#4d5563"/>
+      <stop offset="100%" stop-color="#353c49"/>
+    </linearGradient>
+    <linearGradient id="wHelm0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4d5563"/>
+      <stop offset="100%" stop-color="#252c38"/>
+    </linearGradient>
+  </defs>
 
   <g id="helmet_common">
-    <path d="M66 44 Q90 33 114 44 L110 51 Q90 49 70 51 Z" fill="#37495f" stroke="#1a2738" stroke-width="1"/>
-    <path d="M77 40 L103 40 L103 49 L77 49 Z" fill="#4a5b73" stroke="#26364b" stroke-width="0.8"/>
-    <path d="M79 46 L101 46" stroke="#94a4bc" stroke-width="0.8"/>
-    <circle cx="90" cy="46.2" r="1.5" fill="#9E9E9E" opacity="0.9"/>
-    
+    <path d="M67 47 Q66 31 78 26.5 Q90 22.5 102 26.5 Q114 31 113 47 L106 47 Q104 34 90 32.6 Q76 34 74 47 Z"
+          fill="url(#wHelm0Plate)" stroke="#252c38" stroke-width="1.1"/>
+    <path d="M74 47 Q76 34 90 32.6 Q104 34 106 47 L103 49 Q90 44.5 77 49 Z" fill="url(#wHelm0Deep)" opacity="0.95"/>
+    <path d="M67 46.5 L74 44.6 L74 56 Q69.5 54 67.5 50.5 Z" fill="url(#wHelm0Plate)" stroke="#252c38" stroke-width="0.9"/>
+    <path d="M113 46.5 L106 44.6 L106 56 Q110.5 54 112.5 50.5 Z" fill="url(#wHelm0Plate)" stroke="#252c38" stroke-width="0.9"/>
+    <path d="M88.5 33 L91.5 33 L91.2 42.5 L88.8 42.5 Z" fill="url(#wHelm0Deep)" stroke="#252c38" stroke-width="0.6"/>
+    <path d="M70.5 30.5 Q78 25.5 86 24.6" stroke="#717e8f" stroke-width="1.0" fill="none" opacity="0.7" stroke-linecap="round"/>
+    <path d="M78 33 Q90 27 102 33" stroke="#252c38" stroke-width="0.8" fill="none" opacity="0.8"/><circle cx="72.5" cy="43.5" r="1.0" fill="#717e8f"/><circle cx="72.75" cy="43.8" r="0.45" fill="#252c38" opacity="0.55"/><circle cx="90" cy="40.6" r="1.0" fill="#717e8f"/><circle cx="90.25" cy="40.9" r="0.45" fill="#252c38" opacity="0.55"/><circle cx="107.5" cy="43.5" r="1.0" fill="#717e8f"/><circle cx="107.75" cy="43.8" r="0.45" fill="#252c38" opacity="0.55"/><path d="M76 36 L82 39" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M98 34.5 L104 38" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M84 30.8 L88 32.2" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M99 44.5 L104 47.5" stroke="#252c38" stroke-width="1.1" opacity="0.75"/>
   </g>
 
 </svg>

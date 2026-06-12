@@ -1,10 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wShield2Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fb2dc"/>
+      <stop offset="45%" stop-color="#4a5d78"/>
+      <stop offset="100%" stop-color="#32425a"/>
+    </linearGradient>
+    <linearGradient id="wShield2Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a5d78"/>
+      <stop offset="100%" stop-color="#22304a"/>
+    </linearGradient>
+  </defs>
 
   <g id="shield_rare">
-    <path d="M34 100 L60 100 L64 106 L64 142 L60 149 L34 149 L30 142 L30 106 Z" fill="#505d71" stroke="#2a394a" stroke-width="0.95"/>
-    <rect x="36.5" y="103.4" width="21" height="42" rx="2" fill="#3a485e" opacity="0.9"/>
-    <path d="M30 106 L64 106" stroke="#2196F3" stroke-width="0.92" opacity="0.82"/>
-    <path d="M37 110 L59 110 M37 118 L59 118 M37 126 L59 126 M37 134 L59 134" stroke="#8799ae" stroke-width="0.78" opacity="0.72"/><path d="M40 103 L58 103 L62 109 L62 140 L58 146 L40 146 L36 140 L36 109 Z" fill="none" stroke="#2196F3" stroke-width="0.85" opacity="0.82"/>
+    <path d="M31 101 L63 101 L66 107 L66 137 L59 148.5 L47 152 L35 148.5 L28 137 L28 107 Z"
+          fill="url(#wShield2Plate)" stroke="#22304a" stroke-width="1.15"/>
+    <path d="M33.5 104.5 L60.5 104.5 L63 109.5 L63 136 L57 146 L47 149 L37 146 L31 136 L31 109.5 Z"
+          fill="url(#wShield2Deep)" opacity="0.95"/>
+    <path d="M47 104 L47 149" stroke="#22304a" stroke-width="1.0" opacity="0.85"/>
+    <path d="M31.5 117.5 L62.5 117.5" stroke="#22304a" stroke-width="0.9" opacity="0.8"/>
+    <circle cx="47" cy="117.5" r="4.6" fill="url(#wShield2Plate)" stroke="#22304a" stroke-width="1"/>
+    <circle cx="47" cy="117.5" r="1.7" fill="#2196F3" opacity="0.95"/>
+    <path d="M33 106.5 Q40 103.5 46 103.8" stroke="#8fb2dc" stroke-width="0.75" fill="none" opacity="0.6"/>
+    <circle cx="35" cy="105.5" r="0.95" fill="#8fb2dc"/><circle cx="35.25" cy="105.8" r="0.4275" fill="#22304a" opacity="0.55"/><circle cx="59" cy="105.5" r="0.95" fill="#8fb2dc"/><circle cx="59.25" cy="105.8" r="0.4275" fill="#22304a" opacity="0.55"/><circle cx="33.5" cy="128" r="0.95" fill="#8fb2dc"/><circle cx="33.75" cy="128.3" r="0.4275" fill="#22304a" opacity="0.55"/><circle cx="60.5" cy="128" r="0.95" fill="#8fb2dc"/><circle cx="60.75" cy="128.3" r="0.4275" fill="#22304a" opacity="0.55"/><path d="M33 104 L61 104 L63.5 109 L63.5 138 L57.5 146.5 L36.5 146.5 L30.5 138 L30.5 109 Z" fill="none" stroke="#64a8e8" stroke-width="1.1" opacity="0.9"/><path d="M38.5 107.2 L38.5 109.5 M38.5 108.35000000000001 L40.3 107.2 M42.4 107.2 L44.2 109.5 M44.2 107.2 L42.4 109.5 M46.3 109.5 L46.3 107.2 L48.1 107.2 M50.2 107.2 L52.0 107.2 L50.2 109.5 L52.0 109.5 M54.1 107.2 L54.1 109.5 M54.1 108.35000000000001 L55.9 107.2" stroke="#2196F3" stroke-width="0.55" fill="none" opacity="0.9" stroke-linecap="round"/><path d="M33 136 L47 145.5" stroke="#90caf9" stroke-width="0.7" stroke-linecap="round" opacity="0.45"><animate attributeName="opacity" values="0.45;0.7;0.2;0.45" dur="3.6s" repeatCount="indefinite"/></path>
   </g>
 
 </svg>

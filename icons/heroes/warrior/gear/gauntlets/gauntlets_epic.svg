@@ -1,11 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wGaunt3Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a08cc4"/>
+      <stop offset="45%" stop-color="#52476b"/>
+      <stop offset="100%" stop-color="#392f4e"/>
+    </linearGradient>
+    <linearGradient id="wGaunt3Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#52476b"/>
+      <stop offset="100%" stop-color="#271f38"/>
+    </linearGradient>
+    <radialGradient id="wGaunt3Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#9C27B0" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="gauntlets_epic">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#505d72" stroke="#2a394b" stroke-width="0.95"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#505d72" stroke="#2a394b" stroke-width="0.95"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#e1d4c2" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#e1d4c2" opacity="0.92"/>
-    <path d="M40 143 L60 143 M120 143 L140 143" stroke="#8a98ab" stroke-width="0.8" opacity="0.72"/><path d="M44 136 L56 136 M124 136 L136 136" stroke="#9C27B0" stroke-width="0.92" opacity="0.82"/><circle cx="49.5" cy="147.2" r="1.35" fill="#9C27B0"/><circle cx="130.5" cy="147.2" r="1.35" fill="#9C27B0"/>
+    <path d="M38 134 L62 134 L60.5 144 L39.5 144 Z" fill="url(#wGaunt3Plate)" stroke="#271f38" stroke-width="1"/><path d="M39.5 144 L60.5 144 L59.5 151 L40.5 151 Z" fill="url(#wGaunt3Deep)" stroke="#271f38" stroke-width="0.9"/><path d="M40.5 151 L59.5 151 L58 157 L42 157 Z" fill="url(#wGaunt3Plate)" stroke="#271f38" stroke-width="0.9"/><path d="M40 138.6 L60 138.6" stroke="#a08cc4" stroke-width="0.6" opacity="0.6"/><rect x="43" y="152.6" width="14" height="2.6" rx="1.2" fill="#4a3658" stroke="#271f38" stroke-width="0.5"/><path d="M39 144 L61 144" stroke="#b167d6" stroke-width="1.0" opacity="0.9"/><path d="M43.5 146.3 L43.5 148.5 M43.5 147.4 L45.3 146.3 M47.9 146.3 L49.7 148.5 M49.7 146.3 L47.9 148.5 M52.3 148.5 L52.3 146.3 L54.1 146.3" stroke="#9C27B0" stroke-width="0.55" fill="none" opacity="0.9" stroke-linecap="round"/><path d="M50 132.5 L53 128 L51 134 Z" fill="url(#wGaunt3Deep)" stroke="#9C27B0" stroke-width="0.6"/><circle cx="50" cy="141.2" r="2.1" fill="url(#wGaunt3Deep)" stroke="#9C27B0" stroke-width="0.8"/><circle cx="50" cy="141.2" r="0.8" fill="#9C27B0"/>
+    <path d="M118 134 L142 134 L140.5 144 L119.5 144 Z" fill="url(#wGaunt3Plate)" stroke="#271f38" stroke-width="1"/><path d="M119.5 144 L140.5 144 L139.5 151 L120.5 151 Z" fill="url(#wGaunt3Deep)" stroke="#271f38" stroke-width="0.9"/><path d="M120.5 151 L139.5 151 L138 157 L122 157 Z" fill="url(#wGaunt3Plate)" stroke="#271f38" stroke-width="0.9"/><path d="M120 138.6 L140 138.6" stroke="#a08cc4" stroke-width="0.6" opacity="0.6"/><rect x="123" y="152.6" width="14" height="2.6" rx="1.2" fill="#4a3658" stroke="#271f38" stroke-width="0.5"/><path d="M119 144 L141 144" stroke="#b167d6" stroke-width="1.0" opacity="0.9"/><path d="M123.5 146.3 L123.5 148.5 M123.5 147.4 L125.3 146.3 M127.9 146.3 L129.7 148.5 M129.7 146.3 L127.9 148.5 M132.3 148.5 L132.3 146.3 L134.1 146.3" stroke="#9C27B0" stroke-width="0.55" fill="none" opacity="0.9" stroke-linecap="round"/><path d="M130 132.5 L133 128 L131 134 Z" fill="url(#wGaunt3Deep)" stroke="#9C27B0" stroke-width="0.6"/><circle cx="130" cy="141.2" r="2.1" fill="url(#wGaunt3Deep)" stroke="#9C27B0" stroke-width="0.8"/><circle cx="130" cy="141.2" r="0.8" fill="#9C27B0"/>
   </g>
 
 </svg>

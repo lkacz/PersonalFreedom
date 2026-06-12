@@ -1,14 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dStaff1Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7b8cb2"/>
+      <stop offset="45%" stop-color="#46557a"/>
+      <stop offset="100%" stop-color="#323d59"/>
+    </linearGradient>
+    <linearGradient id="dStaff1Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#46557a"/>
+      <stop offset="100%" stop-color="#222b42"/>
+    </linearGradient>
+  </defs>
 
   <g id="weapon_uncommon" transform="rotate(-24 121 131)">
-    <rect x="115.2" y="126" width="10.2" height="36" rx="3" fill="#21354f" stroke="#111c2d" stroke-width="1"/>
-    <rect x="116.8" y="134" width="7" height="2.4" rx="1" fill="#4CAF50" opacity="0.92"/>
-    <rect x="116.8" y="145" width="7" height="2.4" rx="1" fill="#4CAF50" opacity="0.75"/>
-    <rect x="118.8" y="160" width="3.2" height="4.8" rx="1.4" fill="#2e4767"/>
-    <path d="M114.8 126 L125.6 126 L127 122 L113.6 122 Z" fill="#425f87" stroke="#1d304c" stroke-width="1"/>
-    <path d="M124 102 Q141 92 152 106 Q138 111 126 124 Z" fill="#d9e9ff" stroke="#3f5d83" stroke-width="1"/>
-    <path d="M126.3 103.5 L129.6 108.8 L126.3 114.2 L123 108.8 Z" fill="#ffffff" opacity="0.92"/>
-    <path d="M126 103.5 Q139 96 146 108" stroke="#4CAF50" stroke-width="0.9" fill="none" opacity="0.82"/>
+    <rect x="118.4" y="120" width="3.9" height="44" rx="1.9" fill="url(#dStaff1Deep)" stroke="#222b42" stroke-width="0.9"/>
+    <path d="M118.6 126 Q116 124 116.4 121 M122.1 126 Q124.6 124 124.2 121" stroke="#9fb4d8" stroke-width="0.8" fill="none" opacity="0.85"/>
+    <path d="M129.5 118 A11.5 11.5 0 1 1 146.5 99.5 A9 9 0 1 0 129.5 118 Z"
+          fill="url(#dStaff1Weave)" stroke="#222b42" stroke-width="1"/>
+    <circle cx="137.5" cy="107.5" r="2.4" fill="#4CAF50" opacity="0.95"/>
+    <circle cx="136.7" cy="106.6" r="0.8" fill="#ffffff" opacity="0.85"/>
+    <rect x="118.9" y="161" width="2.9" height="3.8" rx="1.2" fill="url(#dStaff1Weave)" stroke="#222b42" stroke-width="0.6"/>
+    <path d="M118 132 L122.6 132 M118 156 L122.6 156" stroke="#9fb4d8" stroke-width="1.4" opacity="0.95"/>
   </g>
 
 </svg>

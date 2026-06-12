@@ -1,18 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dCirc4Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfa75f"/>
+      <stop offset="45%" stop-color="#5d5037"/>
+      <stop offset="100%" stop-color="#423823"/>
+    </linearGradient>
+    <linearGradient id="dCirc4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5d5037"/>
+      <stop offset="100%" stop-color="#2e2716"/>
+    </linearGradient>
+    <radialGradient id="dCirc4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="helmet_legendary">
-    <path d="M66 44 Q90 35 114 44 L110 51 Q90 49 70 51 Z" fill="#223857" stroke="#122038" stroke-width="1"/>
-    <path d="M78 42 L102 42 L102 48 L78 48 Z" fill="#324c72" stroke="#1b304d" stroke-width="0.8"/>
-    <circle cx="84.8" cy="47.2" r="1.8" fill="#d6e9ff"/>
-    <circle cx="95.2" cy="47.2" r="1.8" fill="#d6e9ff"/>
-    <circle cx="84.8" cy="47.2" r="0.7" fill="#26303e"/>
-    <circle cx="95.2" cy="47.2" r="0.7" fill="#26303e"/>
-    <path d="M87.3 47.2 L92.7 47.2" stroke="#adc5eb" stroke-width="0.8"/>
-    <path d="M82 37 Q88 30 94 37 Q88.5 38.5 82 37 Z" fill="none" stroke="#FF9800" stroke-width="1" opacity="0.8"/>
-    <path d="M74 43 Q90 34 106 43" stroke="#FF9800" stroke-width="1" fill="none" opacity="0.9"/>
-    <path d="M90 37 L91.2 40 L94.2 40.2 L92 42.2 L92.6 45 L90 43.6 L87.4 45 L88 42.2 L85.8 40.2 L88.8 40 Z" fill="#FF9800" opacity="0.95"/>
-    <path d="M72 33 L79 29 L86 33 L93 29 L100 33 L107 29 L114 33 L114 37 L72 37 Z" fill="#2d4366" stroke="#FF9800" stroke-width="0.9"/>
-    
+    <path d="M68 42.5 Q90 34.5 112 42.5 L111.4 46.4 Q90 39.4 68.6 46.4 Z"
+          fill="url(#dCirc4Weave)" stroke="#2e2716" stroke-width="1"/>
+    <path d="M70 43.6 Q90 36.8 110 43.6" stroke="#cfa75f" stroke-width="0.7" fill="none" opacity="0.7"/>
+    <circle cx="78" cy="40.6" r="1" fill="#ffd58a" opacity="0.9"/>
+    <circle cx="102" cy="40.6" r="1" fill="#ffd58a" opacity="0.9"/>
+    <circle cx="90" cy="38.6" r="1.5" fill="#FF9800" opacity="0.95"/>
+    <path d="M89.12 32.0 A4.4 4.4 0 1 0 89.12 40.8 A3.4320000000000004 3.4320000000000004 0 1 1 89.12 32.0 Z" fill="#ffd58a" opacity="0.95" transform="rotate(18 90 36.4)"/><path d="M76.5 34.0 L77.116 35.584 L78.7 36.2 L77.116 36.816 L76.5 38.400000000000006 L75.884 36.816 L74.3 36.2 L75.884 35.584 Z" fill="#ffcc80" opacity="0.85"/><path d="M103.5 34.0 L104.116 35.584 L105.7 36.2 L104.116 36.816 L103.5 38.400000000000006 L102.884 36.816 L101.3 36.2 L102.884 35.584 Z" fill="#ffcc80" opacity="0.85"/><path d="M70 43.8 L110 43.8" stroke="#ffcc80" stroke-width="0.7" stroke-linecap="round" opacity="0.5"><animate attributeName="opacity" values="0.5;0.75;0.25;0.5" dur="3.5s" repeatCount="indefinite"/></path><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -2.6;0 0" dur="3.4s" repeatCount="indefinite"/><path d="M70 27.6 L70.532 28.968 L71.9 29.5 L70.532 30.032 L70 31.4 L69.468 30.032 L68.1 29.5 L69.468 28.968 Z" fill="#FF9800" opacity="0.9"/><path d="M110 27.6 L110.532 28.968 L111.9 29.5 L110.532 30.032 L110 31.4 L109.468 30.032 L108.1 29.5 L109.468 28.968 Z" fill="#FF9800" opacity="0.9"/></g><path d="M84 30.5 Q90 25 96 30.5" stroke="#FF9800" stroke-width="1" fill="none" opacity="0.75"><animate attributeName="opacity" values="0.75;1;0.5;0.75" dur="2.6s" repeatCount="indefinite"/></path><circle cx="85" cy="31" r="0.65" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -6" dur="2.7s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.7s" begin="0s" repeatCount="indefinite"/></circle><circle cx="95.5" cy="30.5" r="0.6" fill="#FF9800" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -7" dur="3.2s" begin="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3.2s" begin="1s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

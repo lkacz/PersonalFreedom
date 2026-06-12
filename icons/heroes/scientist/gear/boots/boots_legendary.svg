@@ -1,13 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cBoot4Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d3a967"/>
+      <stop offset="45%" stop-color="#6a5839"/>
+      <stop offset="100%" stop-color="#4a3d26"/>
+    </linearGradient>
+    <linearGradient id="cBoot4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a5839"/>
+      <stop offset="100%" stop-color="#332a17"/>
+    </linearGradient>
+    <linearGradient id="cBoot4Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd9a1"/>
+      <stop offset="100%" stop-color="#4a3d26"/>
+    </linearGradient>
+    <radialGradient id="cBoot4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="boots_legendary">
-    <path d="M43 188 L74 188 L76 202 L41 202 Z" fill="#dce3ed" stroke="#98a4b5" stroke-width="1"/>
-    <path d="M104 188 L135 188 L137 202 L102 202 Z" fill="#dce3ed" stroke="#98a4b5" stroke-width="1"/>
-    <path d="M41 201 L77 201 L79 209 L39 209 Z" fill="#5a6270" stroke="#2c323b" stroke-width="1"/>
-    <path d="M102 201 L138 201 L140 209 L100 209 Z" fill="#5a6270" stroke="#2c323b" stroke-width="1"/>
-    <path d="M45 192 L74 192" stroke="#FF9800" stroke-width="1.12" opacity="0.88"/>
-    <path d="M106 192 L135 192" stroke="#FF9800" stroke-width="1.12" opacity="0.88"/>
-    <path d="M44 194 L73 194 M106 194 L135 194" stroke="#8a9cb7" stroke-width="0.88" opacity="0.75"/><rect x="53" y="189.7" width="6" height="2.3" rx="1" fill="#FF9800" opacity="0.85"/><rect x="120" y="189.7" width="6" height="2.3" rx="1" fill="#FF9800" opacity="0.85"/><path d="M45 202.5 L74 202.5" stroke="#FF9800" stroke-width="1.08" opacity="0.84"/><path d="M106 202.5 L135 202.5" stroke="#FF9800" stroke-width="1.08" opacity="0.84"/><path d="M48 188 Q60 181 72 188" stroke="#FF9800" stroke-width="0.95" fill="none" opacity="0.84"/><path d="M108 188 Q120 181 132 188" stroke="#FF9800" stroke-width="0.95" fill="none" opacity="0.84"/>
+    <path d="M45 186 L73 186 L75 198 L43 198 Z" fill="url(#cBoot4Case)" stroke="#332a17" stroke-width="1"/><path d="M42 197.5 L76 197.5 L78.5 206.5 L40.5 206.5 Z" fill="url(#cBoot4Deep)" stroke="#332a17" stroke-width="1"/><path d="M40.5 205.6 L78.5 205.6 L78.5 209 L40.5 209 Z" fill="#332a17"/><path d="M45 206.4 L46.6 208.4 M51 206.4 L52.6 208.4 M57 206.4 L58.6 208.4 M63 206.4 L64.6 208.4 M69 206.4 L70.6 208.4" stroke="#4a3d26" stroke-width="1.1"/><path d="M66 198 L73.5 186.6 L75 198 Z" fill="url(#cBoot4Case)" stroke="#332a17" stroke-width="0.7" opacity="0.9"/><rect x="45" y="188.6" width="26" height="3.8" rx="0.8" fill="#4a3d26" opacity="0.8"/><path d="M46 192 L49 189" stroke="#ffb74d" stroke-width="1.6"/><path d="M52 192 L55 189" stroke="#ffb74d" stroke-width="1.6"/><path d="M58 192 L61 189" stroke="#ffb74d" stroke-width="1.6"/><path d="M64 192 L67 189" stroke="#ffb74d" stroke-width="1.6"/><path d="M50.0 200.8 L50.0 203.0 M50.0 201.9 L51.8 200.8 M54.5 200.8 L56.3 203.0 M56.3 200.8 L54.5 203.0 M59.0 203.0 L59.0 200.8 L60.8 200.8 M63.5 200.8 L65.3 200.8 L63.5 203.0 L65.3 203.0" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.8" stroke-linecap="round"/><circle cx="48" cy="195.4" r="1.4" fill="url(#cBoot4Deep)" stroke="#FF9800" stroke-width="0.7"/><circle cx="48" cy="195.4" r="0.5" fill="#ffcc80"><animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite"/></circle><path d="M42 207.4 L77 207.4" stroke="#FF9800" stroke-width="1.0" stroke-linecap="round" opacity="0.6"><animate attributeName="opacity" values="0.6;0.9;0.3;0.6" dur="2.7s" repeatCount="indefinite"/></path><circle cx="57" cy="195" r="0.55" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -6" dur="3.2s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3.2s" begin="0s" repeatCount="indefinite"/></circle>
+    <path d="M105 186 L133 186 L135 198 L103 198 Z" fill="url(#cBoot4Case)" stroke="#332a17" stroke-width="1"/><path d="M102 197.5 L136 197.5 L138.5 206.5 L100.5 206.5 Z" fill="url(#cBoot4Deep)" stroke="#332a17" stroke-width="1"/><path d="M100.5 205.6 L138.5 205.6 L138.5 209 L100.5 209 Z" fill="#332a17"/><path d="M105 206.4 L106.6 208.4 M111 206.4 L112.6 208.4 M117 206.4 L118.6 208.4 M123 206.4 L124.6 208.4 M129 206.4 L130.6 208.4" stroke="#4a3d26" stroke-width="1.1"/><path d="M126 198 L133.5 186.6 L135 198 Z" fill="url(#cBoot4Case)" stroke="#332a17" stroke-width="0.7" opacity="0.9"/><rect x="105" y="188.6" width="26" height="3.8" rx="0.8" fill="#4a3d26" opacity="0.8"/><path d="M106 192 L109 189" stroke="#ffb74d" stroke-width="1.6"/><path d="M112 192 L115 189" stroke="#ffb74d" stroke-width="1.6"/><path d="M118 192 L121 189" stroke="#ffb74d" stroke-width="1.6"/><path d="M124 192 L127 189" stroke="#ffb74d" stroke-width="1.6"/><path d="M110.0 200.8 L110.0 203.0 M110.0 201.9 L111.8 200.8 M114.5 200.8 L116.3 203.0 M116.3 200.8 L114.5 203.0 M119.0 203.0 L119.0 200.8 L120.8 200.8 M123.5 200.8 L125.3 200.8 L123.5 203.0 L125.3 203.0" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.8" stroke-linecap="round"/><circle cx="108" cy="195.4" r="1.4" fill="url(#cBoot4Deep)" stroke="#FF9800" stroke-width="0.7"/><circle cx="108" cy="195.4" r="0.5" fill="#ffcc80"><animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite"/></circle><path d="M102 207.4 L137 207.4" stroke="#FF9800" stroke-width="1.0" stroke-linecap="round" opacity="0.6"><animate attributeName="opacity" values="0.6;0.9;0.3;0.6" dur="2.7s" repeatCount="indefinite"/></path><circle cx="123" cy="195" r="0.55" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -6" dur="3.2s" begin="1.1s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3.2s" begin="1.1s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

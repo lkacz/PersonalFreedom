@@ -1,13 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wBoot0Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#717e8f"/>
+      <stop offset="45%" stop-color="#4d5563"/>
+      <stop offset="100%" stop-color="#353c49"/>
+    </linearGradient>
+    <linearGradient id="wBoot0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4d5563"/>
+      <stop offset="100%" stop-color="#252c38"/>
+    </linearGradient>
+  </defs>
 
   <g id="boots_common">
-    <path d="M43 188 L74 188 L76 202 L41 202 Z" fill="#515d71" stroke="#2a394a" stroke-width="0.95"/>
-    <path d="M104 188 L135 188 L137 202 L102 202 Z" fill="#515d71" stroke="#2a394a" stroke-width="0.95"/>
-    <path d="M41 201 L77 201 L79 209 L39 209 Z" fill="#2e3541" stroke="#151b25" stroke-width="1"/>
-    <path d="M102 201 L138 201 L140 209 L100 209 Z" fill="#2e3541" stroke="#151b25" stroke-width="1"/>
-    <path d="M45 192 L74 192" stroke="#9E9E9E" stroke-width="1.05" opacity="0.88"/>
-    <path d="M106 192 L135 192" stroke="#9E9E9E" stroke-width="1.05" opacity="0.88"/>
-    
+    <path d="M44 186 L74 186 L75.5 199 L42.5 199 Z" fill="url(#wBoot0Plate)" stroke="#252c38" stroke-width="1"/><path d="M42 198 L77 198 L79 207 L40 207 Z" fill="url(#wBoot0Deep)" stroke="#252c38" stroke-width="1"/><path d="M40 206.2 L79 206.2 L79 209 L40 209 Z" fill="#252c38"/><path d="M46 190 L72 190" stroke="#717e8f" stroke-width="0.6" opacity="0.6"/><rect x="49" y="192.6" width="20" height="3" rx="1.4" fill="#5d4434" stroke="#252c38" stroke-width="0.55"/><path d="M71 199 Q76 202.5 74.5 206" stroke="#717e8f" stroke-width="0.7" fill="none" opacity="0.55"/><path d="M48 200.5 L54 204" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M65 188 L70 190.5" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/>
+    <path d="M104 186 L134 186 L135.5 199 L102.5 199 Z" fill="url(#wBoot0Plate)" stroke="#252c38" stroke-width="1"/><path d="M102 198 L137 198 L139 207 L100 207 Z" fill="url(#wBoot0Deep)" stroke="#252c38" stroke-width="1"/><path d="M100 206.2 L139 206.2 L139 209 L100 209 Z" fill="#252c38"/><path d="M106 190 L132 190" stroke="#717e8f" stroke-width="0.6" opacity="0.6"/><rect x="109" y="192.6" width="20" height="3" rx="1.4" fill="#5d4434" stroke="#252c38" stroke-width="0.55"/><path d="M131 199 Q136 202.5 134.5 206" stroke="#717e8f" stroke-width="0.7" fill="none" opacity="0.55"/><path d="M108 200.5 L114 204" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/><path d="M125 188 L130 190.5" stroke="#1d2735" stroke-width="0.55" opacity="0.6" stroke-linecap="round"/>
   </g>
 
 </svg>

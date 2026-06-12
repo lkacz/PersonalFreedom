@@ -202,8 +202,8 @@ class UserManager:
                     user_dir = self.users_dir / self._sanitize_username(username)
                     if user_dir.exists() and user_dir.is_dir():
                         return username
-        except Exception:
-            pass
+        except Exception as e:
+            _logger.warning(f"Could not read last user file: {e}")
         return None
 
     def clear_last_user(self) -> bool:
@@ -224,11 +224,11 @@ class UserManager:
                 with open(self.last_user_file, 'w', encoding='utf-8') as f:
                     f.write("")  # Empty the file
                 return True
-            except Exception:
-                pass
-        except Exception:
-            pass
-        
+            except Exception as e:
+                _logger.warning(f"Could not clear last user file content: {e}")
+        except Exception as e:
+            _logger.warning(f"Could not delete last user file: {e}")
+
         return False
 
     def save_previous_user(self, username: str):

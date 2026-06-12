@@ -1,4 +1,4 @@
-﻿
+
 import sys
 import random
 import time
@@ -8,6 +8,7 @@ import threading
 import wave
 import io
 import functools
+import logging
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
@@ -32,6 +33,8 @@ except ImportError:
 
 # This flag gets set to True only after we successfully load and test a voice
 PIPER_WORKING = False
+
+logger = logging.getLogger(__name__)
 
 
 # No-Scroll Widgets - Prevents accidental value changes via scroll wheel
@@ -129,7 +132,7 @@ class GuidanceManager(QtCore.QObject):
         global PIPER_WORKING
         
         if not PIPER_IMPORT_OK:
-            print("[GuidanceManager] Piper not available (import failed), voice mode disabled")
+            logger.warning("[GuidanceManager] Piper not available (import failed), voice mode disabled")
             PIPER_WORKING = False
             return
             
@@ -145,10 +148,10 @@ class GuidanceManager(QtCore.QObject):
             model_path = app_dir / voice_config["file"]
             
             if not model_path.exists():
-                print(f"[GuidanceManager] Voice model not found: {model_path}")
+                logger.warning(f"[GuidanceManager] Voice model not found: {model_path}")
                 # Try fallback to default voice
                 if self._current_voice_name != self.DEFAULT_VOICE:
-                    print(f"[GuidanceManager] Trying default voice instead...")
+                    logger.info("[GuidanceManager] Trying default voice instead...")
                     self._current_voice_name = self.DEFAULT_VOICE
                     voice_config = self.AVAILABLE_VOICES[self.DEFAULT_VOICE]
                     model_path = app_dir / voice_config["file"]
@@ -161,11 +164,11 @@ class GuidanceManager(QtCore.QObject):
             
             self.piper_voice = PiperVoice.load(str(model_path))
             self._voice_sample_rate = voice_config["sample_rate"]
-            print(f"[GuidanceManager] Piper voice loaded: {model_path.name}")
+            logger.info(f"[GuidanceManager] Piper voice loaded: {model_path.name}")
             PIPER_WORKING = True
             
         except Exception as e:
-            print(f"[GuidanceManager] Failed to load Piper voice: {e}")
+            logger.error(f"[GuidanceManager] Failed to load Piper voice: {e}")
             import traceback
             traceback.print_exc()
             self.piper_voice = None
@@ -209,7 +212,7 @@ class GuidanceManager(QtCore.QObject):
         try:
             # If Piper isn't working, don't even try
             if not PIPER_WORKING:
-                print("[GuidanceManager] Piper not working, cannot set voice")
+                logger.warning("[GuidanceManager] Piper not working, cannot set voice")
                 return False
             
             # Guard against empty or invalid names (can happen from combo box signals)
@@ -221,7 +224,7 @@ class GuidanceManager(QtCore.QObject):
             voice_config = self.AVAILABLE_VOICES[name]
             model_path = app_dir / voice_config["file"]
             if not model_path.exists():
-                print(f"[GuidanceManager] Voice model not found: {model_path}")
+                logger.warning(f"[GuidanceManager] Voice model not found: {model_path}")
                 return False
             
             # Load the new voice
@@ -235,7 +238,7 @@ class GuidanceManager(QtCore.QObject):
             
             return self.piper_voice is not None
         except Exception as e:
-            print(f"[GuidanceManager] Error setting voice '{name}': {e}")
+            logger.error(f"[GuidanceManager] Error setting voice '{name}': {e}")
             return False
     
     @QtCore.Slot(bytes)
@@ -248,7 +251,7 @@ class GuidanceManager(QtCore.QObject):
     def say(self, text: str):
         """Speak text using Piper TTS (non-blocking)."""
         if not PIPER_WORKING or not self.piper_voice:
-            print("[GuidanceManager] No piper voice available")
+            logger.warning("[GuidanceManager] No piper voice available")
             return
         
         # Run synthesis in a worker thread to avoid blocking UI
@@ -261,7 +264,7 @@ class GuidanceManager(QtCore.QObject):
                     audio_chunks = [c.audio_int16_bytes for c in self.piper_voice.synthesize(text)]
                 
                 if not audio_chunks:
-                    print("[GuidanceManager] No audio chunks generated")
+                    logger.warning("[GuidanceManager] No audio chunks generated")
                     return
                 
                 # Combine all chunks
@@ -283,9 +286,7 @@ class GuidanceManager(QtCore.QObject):
                 self.tts_ready.emit(pcm_44100)
                 
             except Exception as e:
-                print(f"[GuidanceManager] TTS error: {e}")
-                import traceback
-                traceback.print_exc()
+                logger.exception(f"[GuidanceManager] TTS error: {e}")
         
         # Start synthesis thread
         threading.Thread(target=_synthesize_worker, daemon=True).start()
@@ -293,7 +294,7 @@ class GuidanceManager(QtCore.QObject):
     def set_mode(self, mode):
         # If trying to set Voice mode but Piper isn't working, fall back to Sound
         if mode == EyeGuidanceSettings.MODE_VOICE and not PIPER_WORKING:
-            print("[GuidanceManager] Piper not available, falling back to Sound mode")
+            logger.warning("[GuidanceManager] Piper not available, falling back to Sound mode")
             mode = EyeGuidanceSettings.MODE_SOUND
         
         self.mode = mode
@@ -947,7 +948,7 @@ class EyeProtectionChartWidget(QtWidgets.QWidget):
         painter.setFont(font)
         painter.setPen(QtGui.QColor(self.COLORS["text_light"]))
         
-        text = "đź‘ď¸Ź No eye protection history yet\nComplete routines to see your progress!"
+        text = "👁️ No eye protection history yet\nComplete routines to see your progress!"
         painter.drawText(self.rect(), QtCore.Qt.AlignmentFlag.AlignCenter, text)
     
     def _draw_grid(self, painter: QtGui.QPainter, left: int, top: int, 
@@ -1019,7 +1020,7 @@ class EyeProtectionChartWidget(QtWidgets.QWidget):
                 font.setPointSize(8)
                 painter.setFont(font)
                 painter.drawText(int(x), int(y - 2), int(bar_width), 15,
-                                QtCore.Qt.AlignmentFlag.AlignCenter, "â­")
+                                QtCore.Qt.AlignmentFlag.AlignCenter, "⭐")
     
     def _draw_weekly_bars(self, painter: QtGui.QPainter, left: int, top: int,
                           width: int, height: int) -> None:
@@ -1075,7 +1076,7 @@ class EyeProtectionChartWidget(QtWidgets.QWidget):
                 font.setPointSize(9)
                 painter.setFont(font)
                 painter.drawText(int(x), int(y - 2), int(bar_width), 15,
-                                QtCore.Qt.AlignmentFlag.AlignCenter, "đźŹ†")
+                                QtCore.Qt.AlignmentFlag.AlignCenter, "🏆")
     
     def _draw_cap_line(self, painter: QtGui.QPainter, left: int, top: int,
                        width: int, height: int) -> None:
@@ -1189,15 +1190,15 @@ class EyeProtectionChartWidget(QtWidgets.QWidget):
         font.setBold(True)
         painter.setFont(font)
         
-        title = "đź‘ď¸Ź Eye Protection Progress"
+        title = "👁️ Eye Protection Progress"
         
         # Add trend indicator
         if self._cached_trend:
             direction, slope, r_sq = self._cached_trend
             if direction == "improving":
-                title += " đź“"
+                title += " 📈"
             elif direction == "declining":
-                title += " đź“‰"
+                title += " 📉"
         
         painter.drawText(self.MARGIN_LEFT, 5, rect.width() - self.MARGIN_LEFT - self.MARGIN_RIGHT, 
                         25, QtCore.Qt.AlignmentFlag.AlignLeft, title)
@@ -1244,7 +1245,7 @@ class EyeProtectionChartWidget(QtWidgets.QWidget):
         font.setBold(True)
         painter.setFont(font)
         
-        streak_text = f"đź”Ą {streak} day streak!"
+        streak_text = f"🔥 {streak} day streak!"
         text_rect = QtCore.QRect(rect.width() - 120, 5, 110, 25)
         
         # Glow background
@@ -1281,7 +1282,7 @@ class EyeProtectionChartWidget(QtWidgets.QWidget):
         if items_won > 0:
             lines.append(f"Items Won: {items_won}")
         if met_cap:
-            lines.append("â­ Daily Cap Met!")
+            lines.append("⭐ Daily Cap Met!")
         
         tooltip_text = "\n".join(lines)
         
@@ -1503,7 +1504,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         header_row = QtWidgets.QHBoxLayout()
         header_row.setSpacing(10)
         
-        title = QtWidgets.QLabel("đź‘ď¸Ź Eyes")
+        title = QtWidgets.QLabel("👁️ Eyes")
         title.setStyleSheet("""
             font-size: 18px;
             font-weight: bold;
@@ -1669,7 +1670,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Title row with entity name and tip number
         owl_title_row = QtWidgets.QHBoxLayout()
-        self.owl_section_title = QtWidgets.QLabel("đź¦‰ Study Owl Eye Care Tips")
+        self.owl_section_title = QtWidgets.QLabel("🦉 Study Owl Eye Care Tips")
         self.owl_section_title.setStyleSheet("color: #7986cb; font-size: 10px;")
         owl_title_row.addWidget(self.owl_section_title)
         
@@ -1693,7 +1694,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         owl_tips_layout.addLayout(owl_content_col, 1)
         
         # Right: Acknowledge button (compact)
-        self.owl_acknowledge_btn = QtWidgets.QPushButton("đź“– +1đźŞ™")
+        self.owl_acknowledge_btn = QtWidgets.QPushButton("📖 +1🪙")
         self.owl_acknowledge_btn.setFixedWidth(70)
         self.owl_acknowledge_btn.setStyleSheet("""
             QPushButton {
@@ -1727,7 +1728,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
 
         # Compact Instructions - collapsible hint
         instructions_hint = QtWidgets.QLabel(
-            "<span style='color:#81c784;'>đź“‹ Step A:</span> Lowâ†’CLOSE, Highâ†’HOLD, Silenceâ†’OPEN (5x) | "
+            "<span style='color:#81c784;'>📋 Step A:</span> Low→CLOSE, High→HOLD, Silence→OPEN (5x) | "
             "<span style='color:#81c784;'>Step B:</span> Look far, Rising=INHALE(4s), Falling=EXHALE(6s)"
         )
         instructions_hint.setStyleSheet("""
@@ -1774,7 +1775,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Main Action Area (center) - clickable button that shows different states
         # States: START (ready), instructions (running), Wait X min (cooldown)
-        self.main_action_btn = QtWidgets.QPushButton("đź‘ď¸Ź START (1 min)")
+        self.main_action_btn = QtWidgets.QPushButton("👁️ START (1 min)")
         self.main_action_btn.setMinimumHeight(60)
         self.main_action_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self._set_main_action_ready_style()
@@ -1792,7 +1793,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         layout.addWidget(action_row)
 
         # Reminder Settings Section with gradient card
-        reminder_frame = QtWidgets.QGroupBox("đź”” Reminders")
+        reminder_frame = QtWidgets.QGroupBox("🔔 Reminders")
         reminder_frame.setStyleSheet("""
             QGroupBox {
                 font-size: 13px;
@@ -1813,7 +1814,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         """)
         reminder_layout = QtWidgets.QHBoxLayout(reminder_frame)
         
-        self.reminder_checkbox = QtWidgets.QCheckBox("đź”” Remind me every")
+        self.reminder_checkbox = QtWidgets.QCheckBox("🔔 Remind me every")
         self.reminder_checkbox.setChecked(getattr(self.blocker, 'eye_reminder_enabled', False))
         self.reminder_checkbox.stateChanged.connect(self._update_reminder_setting)
         reminder_layout.addWidget(self.reminder_checkbox)
@@ -1841,7 +1842,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         layout.addWidget(reminder_frame)
 
         # Reward Info Box with modern gradient card
-        info_frame = QtWidgets.QGroupBox("đźŽ Today's Progress & Rewards")
+        info_frame = QtWidgets.QGroupBox("🎁 Today's Progress & Rewards")
         info_frame.setStyleSheet("""
             QGroupBox {
                 font-size: 14px;
@@ -1874,7 +1875,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         info_layout.addWidget(self.stats_label)
         
         # Progress Chart - Eye Protection history visualization
-        chart_label = QtWidgets.QLabel("đź“Š Eye Protection Progress:")
+        chart_label = QtWidgets.QLabel("📊 Eye Protection Progress:")
         chart_label.setStyleSheet("font-weight: bold; margin-top: 8px; color: #81c784;")
         info_layout.addWidget(chart_label)
         
@@ -1936,7 +1937,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             # Update chart with data
             self.eye_chart.set_data(history, daily_cap)
         except Exception as e:
-            print(f"[EyeProtectionTab] Error refreshing chart: {e}")
+            logger.warning(f"[EyeProtectionTab] Error refreshing chart: {e}")
 
     def _update_voice_combo_visibility(self, mode):
         """Show voice combo box only when Voice mode is selected."""
@@ -2082,13 +2083,13 @@ class EyeProtectionTab(QtWidgets.QWidget):
             if is_exceptional:
                 # Pam: 50% Reroll only
                 perk_text = (
-                    f"<b>đźŚµ {entity_name}</b><br>"
+                    f"<b>🌵 {entity_name}</b><br>"
                     f"<span style='color:#ffa726;'>{reroll_chance}% Reroll on Fail</span>"
                 )
             else:
                 # Sam: +1 Eye Tier only
                 perk_text = (
-                    f"<b>đźŚµ {entity_name}</b><br>"
+                    f"<b>🌵 {entity_name}</b><br>"
                     f"<span style='color:#81c784;'>+{tier_bonus} Eye Tier</span>"
                 )
             self.entity_perk_label.setText(perk_text)
@@ -2117,7 +2118,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             self.entity_perk_card.show()
             
         except Exception as e:
-            print(f"[Eye Tab] Error updating entity perk display: {e}")
+            logger.warning(f"[Eye Tab] Error updating entity perk display: {e}")
             self.entity_perk_card.hide()
     
     def _load_entity_svg(self, is_exceptional: bool):
@@ -2143,12 +2144,12 @@ class EyeProtectionTab(QtWidgets.QWidget):
                     painter.end()
                     self.entity_svg_label.setPixmap(pixmap)
                 else:
-                    self.entity_svg_label.setText("đźŚµ")
+                    self.entity_svg_label.setText("🌵")
             else:
-                self.entity_svg_label.setText("đźŚµ")
+                self.entity_svg_label.setText("🌵")
         except Exception as e:
-            print(f"[Eye Tab] Error loading SVG: {e}")
-            self.entity_svg_label.setText("đźŚµ")
+            logger.warning(f"[Eye Tab] Error loading SVG: {e}")
+            self.entity_svg_label.setText("🌵")
 
     def _refresh_owl_tips(self) -> None:
         """Refresh the Study Owl Athena eye protection tips section."""
@@ -2190,12 +2191,12 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Update section title based on variant
         if is_exceptional:
-            self.owl_section_title.setText("â­ Study Owl (Exceptional) Advanced Eye Tips")
+            self.owl_section_title.setText("⭐ Study Owl (Exceptional) Advanced Eye Tips")
             self.owl_section_title.setStyleSheet("color: #ffd700; padding: 4px;")
-            self.owl_entity_name.setText("â­ Study Owl Athena")
+            self.owl_entity_name.setText("⭐ Study Owl Athena")
             self.owl_entity_name.setStyleSheet("color: #ffd700; font-weight: bold; font-size: 12px;")
         else:
-            self.owl_section_title.setText("đź¦‰ Study Owl Eye Care Tips")
+            self.owl_section_title.setText("🦉 Study Owl Eye Care Tips")
             self.owl_section_title.setStyleSheet("color: #9fa8da; padding: 4px;")
             self.owl_entity_name.setText("Study Owl Athena")
             self.owl_entity_name.setStyleSheet("color: #e5e7eb; font-weight: bold; font-size: 12px;")
@@ -2233,7 +2234,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
                             """)
         except Exception:
             # Fallback - just show text
-            self.owl_icon_label.setText("đź¦‰")
+            self.owl_icon_label.setText("🦉")
         
         # Get current tip index (sequential cycling)
         tip_key = "owl_tip_index_exceptional" if is_exceptional else "owl_tip_index"
@@ -2254,11 +2255,11 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         if last_acknowledged == today_str:
             # Already acknowledged today
-            self.owl_acknowledge_btn.setText("âś“ Done")
+            self.owl_acknowledge_btn.setText("✓ Done")
             self.owl_acknowledge_btn.setEnabled(False)
         else:
             # Can acknowledge
-            self.owl_acknowledge_btn.setText("đź“– +1đźŞ™")
+            self.owl_acknowledge_btn.setText("📖 +1🪙")
             self.owl_acknowledge_btn.setEnabled(True)
 
     def _acknowledge_owl_tip(self) -> None:
@@ -2296,11 +2297,11 @@ class EyeProtectionTab(QtWidgets.QWidget):
             self.blocker.save_stats()
             
             # Update button to show collected
-            self.owl_acknowledge_btn.setText("âś“ Done")
+            self.owl_acknowledge_btn.setText("✓ Done")
             self.owl_acknowledge_btn.setEnabled(False)
             
         except Exception as e:
-            print(f"[Eye Tab] Error acknowledging owl tip: {e}")
+            logger.warning(f"[Eye Tab] Error acknowledging owl tip: {e}")
 
     def _update_cooldown_display(self):
         """Update main action button to reflect current cooldown state."""
@@ -2312,7 +2313,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         # Check daily limit (can be increased by entity perks)
         if count >= daily_cap:
             self._set_main_action_limit_style()
-            self.main_action_btn.setText(f"đźŽŻ Daily limit reached! ({daily_cap}/{daily_cap})")
+            self.main_action_btn.setText(f"🎯 Daily limit reached! ({daily_cap}/{daily_cap})")
             self.main_action_btn.setEnabled(False)
             self.status_label.setText(f"Done for today!")
             return
@@ -2327,7 +2328,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
                     remaining = math.ceil(20 - elapsed.total_seconds() / 60)
                     next_time = (last_dt + timedelta(minutes=20)).strftime("%H:%M")
                     self._set_main_action_cooldown_style()
-                    self.main_action_btn.setText(f"âŹł Wait {remaining} min (next at {next_time})")
+                    self.main_action_btn.setText(f"⏳ Wait {remaining} min (next at {next_time})")
                     self.main_action_btn.setEnabled(False)
                     self.status_label.setText(f"{count}/{daily_cap} today")
                     return
@@ -2336,7 +2337,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Ready to start
         self._set_main_action_ready_style()
-        self.main_action_btn.setText("đź‘ď¸Ź START (1 min)")
+        self.main_action_btn.setText("👁️ START (1 min)")
         self.main_action_btn.setEnabled(True)
         self.status_label.setText(f"{count}/{daily_cap} today")
     
@@ -2387,7 +2388,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if count >= daily_cap:
             text = (
                 f"<b>Today's Routines: {count} / {daily_cap}</b><br><br>"
-                f"<span style='color:#4caf50;'>đźŽŻ Daily limit reached!</span><br>"
+                f"<span style='color:#4caf50;'>🎯 Daily limit reached!</span><br>"
                 f"Come back tomorrow for more rewards!"
             )
             self.stats_label.setText(text)
@@ -2433,9 +2434,9 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if tier_bonus > 0:
             tier_display = (
                 f"<span style='color:{base_color};'>{base_tier}</span> "
-                f"<span style='color:#66bb6a;'>â†’</span> "
+                f"<span style='color:#66bb6a;'>→</span> "
                 f"<span style='color:{effective_color};'><b>{effective_tier_name}</b></span> "
-                f"<span style='color:#a5d6a7;'>(+{tier_bonus} đźŚµ)</span>"
+                f"<span style='color:#a5d6a7;'>(+{tier_bonus} 🌵)</span>"
             )
         else:
             tier_display = f"<span style='color:{base_color};'>{window_start}-{window_end} ({base_tier}-centered)</span>"
@@ -2443,8 +2444,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
         text = (
             f"<b>Today's Routines: {count} / {daily_cap}</b><br><br>"
             f"Next Routine: {tier_display}<br>"
-            f"đźŽ˛ Success Rate: <span style='color:#4caf50'>{success_rate}%</span><br>"
-            f"đźŽ° Tier Distribution: [5%, 15%, <span style='color:{effective_color};'><b>60%</b></span>, 15%, 5%]"
+            f"🎲 Success Rate: <span style='color:#4caf50'>{success_rate}%</span><br>"
+            f"🎰 Tier Distribution: [5%, 15%, <span style='color:{effective_color};'><b>60%</b></span>, 15%, 5%]"
         )
         self.stats_label.setText(text)
 
@@ -2483,7 +2484,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Start Step A logic
         self.status_label.setText("Step A: 5 Gentle Blinks")
-        self.main_action_btn.setText("đź‘ď¸Ź Get Ready...")
+        self.main_action_btn.setText("👁️ Get Ready...")
         
         # Short delay before first blink using QTimer
         QtCore.QTimer.singleShot(2000, self.start_blink_cycle)
@@ -2500,7 +2501,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.blink_count += 1
         self.blink_state = "close"
         
-        self.main_action_btn.setText("đź´ CLOSE eyes")
+        self.main_action_btn.setText("😴 CLOSE eyes")
         # Reuse status area for progress, but users have eyes closed mostly
         # self.status_label.setText(f"Blink {self.blink_count}/5") 
         self.guidance.play_blink_close()
@@ -2514,7 +2515,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if not self.is_running or not self.isVisible():
             return
         self.blink_state = "hold"
-        self.main_action_btn.setText("đź HOLD...")
+        self.main_action_btn.setText("😐 HOLD...")
         self.guidance.play_blink_hold()
         # Hold duration ~0.5s -> Then Open (Silence)
         QtCore.QTimer.singleShot(500, self.do_blink_open)
@@ -2524,7 +2525,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if not self.is_running or not self.isVisible():
             return
         self.blink_state = "open"
-        self.main_action_btn.setText("đź‘€ OPEN eyes")
+        self.main_action_btn.setText("👀 OPEN eyes")
         self.guidance.play_blink_open() # Is silent
         # Open duration ~1.5s -> Next cycle
         QtCore.QTimer.singleShot(1500, self.start_blink_cycle)
@@ -2536,7 +2537,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.step_phase = "gazing"
         self.gaze_seconds_left = 20
         self.status_label.setText("Step B: Far Gaze + Breathing\n(Blink normally!)")
-        self.main_action_btn.setText("đź‘ď¸Ź Look away (20ft/6m)")
+        self.main_action_btn.setText("👁️ Look away (20ft/6m)")
         self.guidance.play_gaze_start()
         
         # Delay first tick to allow "Look far away" voice cue to complete
@@ -2569,19 +2570,19 @@ class EyeProtectionTab(QtWidgets.QWidget):
                 if t > 16:  # Inhale 1
                     if t == 20:
                         self.guidance.play_inhale()
-                    self.main_action_btn.setText(f"đźŚ¬ď¸Ź INHALE... {t-16}")
+                    self.main_action_btn.setText(f"🌬️ INHALE... {t-16}")
                 elif t > 10:  # Exhale 1
                     if t == 16:
                         self.guidance.play_exhale()
-                    self.main_action_btn.setText(f"đź’¨ EXHALE... {t-10}")
+                    self.main_action_btn.setText(f"💨 EXHALE... {t-10}")
                 elif t > 6:  # Inhale 2
                     if t == 10:
                         self.guidance.play_inhale()
-                    self.main_action_btn.setText(f"đźŚ¬ď¸Ź INHALE... {t-6}")
+                    self.main_action_btn.setText(f"🌬️ INHALE... {t-6}")
                 elif t > 0:  # Exhale 2
                     if t == 6:
                         self.guidance.play_exhale()
-                    self.main_action_btn.setText(f"đź’¨ EXHALE... {t}")
+                    self.main_action_btn.setText(f"💨 EXHALE... {t}")
                 
                 self.gaze_seconds_left -= 1
                 
@@ -2597,7 +2598,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
     def complete_routine(self):
         self.is_running = False
         self.main_action_btn.setEnabled(True)
-        self.main_action_btn.setText("âś… COMPLETE!")
+        self.main_action_btn.setText("✅ COMPLETE!")
         self.guidance.play_complete()
         
         # Update stats
@@ -2682,7 +2683,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             success_threshold=success_rate,
             tier_upgrade_enabled=False,
             base_rarity=base_rarity,
-            title="đź‘ď¸Źâ€Ťđź—¨ď¸Ź Eyes Routine Reward đź‘ď¸Źâ€Ťđź—¨ď¸Ź",
+            title="👁️‍🗨️ Eyes Routine Reward 👁️‍🗨️",
             parent=self,
             tier_weights=lock_probe["tier_weights"],
             power_gating=lock_probe.get("power_gating"),
@@ -2698,14 +2699,14 @@ class EyeProtectionTab(QtWidgets.QWidget):
         )
         won_item = bool(lottery_outcome.get("success", False))
         tier = lottery_outcome.get("rolled_tier", "")        
-        # âś¨ REROLL MECHANIC: If failed and have reroll chance, try again (50% probability)
+        # ✨ REROLL MECHANIC: If failed and have reroll chance, try again (50% probability)
         if not won_item and reroll_chance > 0:
             # 50% chance to get the opportunity to reroll
             if random.randint(1, 100) <= reroll_chance:
                 # Show reroll message
                 styled_info(
                     self, 
-                    f"{entity_name}'s Second Chance! đźŚµ",
+                    f"{entity_name}'s Second Chance! 🌵",
                     f"{entity_name} grants you another roll!\n\n"
                     f"\"If I can survive fluorescent lights, you can survive this!\""
                 )
@@ -2716,7 +2717,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
                     success_threshold=success_rate,
                     tier_upgrade_enabled=False,
                     base_rarity=base_rarity,
-                    title="đźŚ€ Second Chance Roll đźŚ€",
+                    title="🌀 Second Chance Roll 🌀",
                     parent=self,
                     tier_weights=lock_probe["tier_weights"],
                     power_gating=lock_probe.get("power_gating"),
@@ -2749,8 +2750,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
             game_state = get_game_state()
             if game_state:
                 game_state.notify_eye_routine_changed(new_count)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Eye routine change notification failed: {e}")
 
         # Refresh tab UI now that final outcome has been committed.
         self._update_cooldown_display()

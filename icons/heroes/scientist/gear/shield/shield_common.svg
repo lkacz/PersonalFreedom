@@ -1,11 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cTab0Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8a93a0"/>
+      <stop offset="45%" stop-color="#5a626e"/>
+      <stop offset="100%" stop-color="#3f4651"/>
+    </linearGradient>
+    <linearGradient id="cTab0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a626e"/>
+      <stop offset="100%" stop-color="#2b323c"/>
+    </linearGradient>
+    <linearGradient id="cTab0Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#aebdc9"/>
+      <stop offset="100%" stop-color="#3f4651"/>
+    </linearGradient>
+  </defs>
 
   <g id="shield_common">
-    <path d="M34 100 L60 100 L64 106 L64 142 L60 149 L34 149 L30 142 L30 106 Z" fill="#dce3ed" stroke="#97a4b5" stroke-width="1"/>
-    <rect x="36.5" y="103.4" width="21" height="42" rx="2" fill="#4b5d7a" opacity="0.9"/>
-    <path d="M41 100 L53 100 L57 94 L45 94 Z" fill="#dce3ed" stroke="#97a4b5" stroke-width="0.8"/>
-    <path d="M30 106 L64 106" stroke="#9E9E9E" stroke-width="0.98" opacity="0.82"/>
-    
+    <rect x="30" y="100.5" width="34" height="49" rx="3.4" fill="url(#cTab0Case)" stroke="#2b323c" stroke-width="1.15"/>
+    <rect x="33" y="104" width="28" height="42" rx="2" fill="url(#cTab0Deep)"/>
+    <rect x="34.5" y="106.5" width="25" height="37" rx="1.6" fill="#3f4651" opacity="0.9"/>
+    <path d="M36 109 L58 109" stroke="#8a93a0" stroke-width="0.6" opacity="0.5"/>
+    <path d="M48 101.8 L52 101.8" stroke="#2b323c" stroke-width="0.8"/>
+    <path d="M52 148.6 L56 148.6 M46 148.6 L50 148.6" stroke="#2b323c" stroke-width="1" opacity="0.85"/>
+    <path d="M31.5 104 Q33 101.6 36 101.2" stroke="#8a93a0" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <path d="M56 107 L59.5 111 L57 112.5 M58 108.5 L60 113" stroke="#2b323c" stroke-width="0.6" fill="none" opacity="0.85"/><rect x="36" y="134" width="7.5" height="7" fill="#d8cf9a" opacity="0.9" transform="rotate(-6 39.7 137.5)"/>
   </g>
 
 </svg>

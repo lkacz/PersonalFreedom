@@ -6,7 +6,7 @@ import pytest
 from PySide6.QtCore import QByteArray
 from PySide6.QtMultimedia import QAudio
 
-from entitidex.celebration_audio import CelebrationAudioManager
+from entitidex.celebration_audio import CelebrationAudioManager, Synthesizer, _THEME_COMPOSERS
 
 
 class _FakeSink:
@@ -54,6 +54,19 @@ def test_sanitize_volume_clamps_and_falls_back() -> None:
     assert sanitize(float("nan"), 0.5) == 0.5
     assert sanitize(float("inf"), 0.5) == 0.5
     assert sanitize("bad", 0.5) == 0.5
+
+
+def test_reminder_theme_is_registered_and_soft() -> None:
+    data = _THEME_COMPOSERS["reminder"]()
+    assert not data.isEmpty()
+
+    samples = Synthesizer._unpack_array(data)
+    assert samples
+    assert max(abs(sample) for sample in samples) < Synthesizer.MAX_AMPLITUDE * 0.25
+
+
+def test_release_delay_keeps_device_warm_between_short_reminders() -> None:
+    assert CelebrationAudioManager.RELEASE_DELAY_MS >= 5000
 
 
 def test_play_buffer_internal_rate_limits_sound_effects(

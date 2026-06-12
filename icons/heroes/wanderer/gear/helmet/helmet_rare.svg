@@ -1,18 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dCirc2Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#84a0d8"/>
+      <stop offset="45%" stop-color="#3c4f7d"/>
+      <stop offset="100%" stop-color="#2a385c"/>
+    </linearGradient>
+    <linearGradient id="dCirc2Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3c4f7d"/>
+      <stop offset="100%" stop-color="#1c2742"/>
+    </linearGradient>
+  </defs>
 
   <g id="helmet_rare">
-    <path d="M66 44 Q90 35 114 44 L110 51 Q90 49 70 51 Z" fill="#223857" stroke="#122038" stroke-width="1"/>
-    <path d="M78 42 L102 42 L102 48 L78 48 Z" fill="#324c72" stroke="#1b304d" stroke-width="0.8"/>
-    <circle cx="84.8" cy="47.2" r="1.8" fill="#d6e9ff"/>
-    <circle cx="95.2" cy="47.2" r="1.8" fill="#d6e9ff"/>
-    <circle cx="84.8" cy="47.2" r="0.7" fill="#26303e"/>
-    <circle cx="95.2" cy="47.2" r="0.7" fill="#26303e"/>
-    <path d="M87.3 47.2 L92.7 47.2" stroke="#adc5eb" stroke-width="0.8"/>
-    <path d="M82 37 Q88 30 94 37 Q88.5 38.5 82 37 Z" fill="none" stroke="#2196F3" stroke-width="1" opacity="0.8"/>
-    <path d="M74 43 Q90 34 106 43" stroke="#2196F3" stroke-width="1" fill="none" opacity="0.9"/>
-    
-    
-    
+    <path d="M68 42.5 Q90 34.5 112 42.5 L111.4 46.4 Q90 39.4 68.6 46.4 Z"
+          fill="url(#dCirc2Weave)" stroke="#1c2742" stroke-width="1"/>
+    <path d="M70 43.6 Q90 36.8 110 43.6" stroke="#84a0d8" stroke-width="0.7" fill="none" opacity="0.7"/>
+    <circle cx="78" cy="40.6" r="1" fill="#aac6f2" opacity="0.9"/>
+    <circle cx="102" cy="40.6" r="1" fill="#aac6f2" opacity="0.9"/>
+    <circle cx="90" cy="38.6" r="1.5" fill="#2196F3" opacity="0.95"/>
+    <path d="M89.12 32.0 A4.4 4.4 0 1 0 89.12 40.8 A3.4320000000000004 3.4320000000000004 0 1 1 89.12 32.0 Z" fill="#aac6f2" opacity="0.95" transform="rotate(18 90 36.4)"/><path d="M76.5 34.0 L77.116 35.584 L78.7 36.2 L77.116 36.816 L76.5 38.400000000000006 L75.884 36.816 L74.3 36.2 L75.884 35.584 Z" fill="#90caf9" opacity="0.85"/><path d="M103.5 34.0 L104.116 35.584 L105.7 36.2 L104.116 36.816 L103.5 38.400000000000006 L102.884 36.816 L101.3 36.2 L102.884 35.584 Z" fill="#90caf9" opacity="0.85"/><path d="M70 43.8 L110 43.8" stroke="#90caf9" stroke-width="0.7" stroke-linecap="round" opacity="0.5"><animate attributeName="opacity" values="0.5;0.75;0.25;0.5" dur="3.5s" repeatCount="indefinite"/></path>
   </g>
 
 </svg>

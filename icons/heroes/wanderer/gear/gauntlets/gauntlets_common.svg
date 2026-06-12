@@ -1,11 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dWrap0Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6f7791"/>
+      <stop offset="45%" stop-color="#474e66"/>
+      <stop offset="100%" stop-color="#333949"/>
+    </linearGradient>
+    <linearGradient id="dWrap0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#474e66"/>
+      <stop offset="100%" stop-color="#23283a"/>
+    </linearGradient>
+  </defs>
 
   <g id="gauntlets_common">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#385178" stroke="#1b2f4b" stroke-width="1"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#385178" stroke="#1b2f4b" stroke-width="1"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#d8e7ff" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#d8e7ff" opacity="0.92"/>
-    
+    <path d="M39 134 L61 134 L60 157 L40 157 Z" fill="url(#dWrap0Weave)" stroke="#23283a" stroke-width="1"/><path d="M39.5 138 L60.5 142 M39.5 145 L60.5 149 M39.5 152 L60.5 156" stroke="url(#dWrap0Deep)" stroke-width="3.2" opacity="0.9"/><path d="M39.5 138 L60.5 142 M39.5 145 L60.5 149" stroke="#6f7791" stroke-width="0.5" opacity="0.5"/><path d="M59 156 Q62 161 60 165" stroke="url(#dWrap0Deep)" stroke-width="2.4" fill="none" opacity="0.85"/>
+    <path d="M119 134 L141 134 L140 157 L120 157 Z" fill="url(#dWrap0Weave)" stroke="#23283a" stroke-width="1"/><path d="M119.5 138 L140.5 142 M119.5 145 L140.5 149 M119.5 152 L140.5 156" stroke="url(#dWrap0Deep)" stroke-width="3.2" opacity="0.9"/><path d="M119.5 138 L140.5 142 M119.5 145 L140.5 149" stroke="#6f7791" stroke-width="0.5" opacity="0.5"/><path d="M121 156 Q118 161 120 165" stroke="url(#dWrap0Deep)" stroke-width="2.4" fill="none" opacity="0.85"/>
   </g>
 
 </svg>

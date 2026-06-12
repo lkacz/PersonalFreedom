@@ -1,11 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dShroud2Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#84a0d8"/>
+      <stop offset="45%" stop-color="#3c4f7d"/>
+      <stop offset="100%" stop-color="#2a385c"/>
+    </linearGradient>
+    <linearGradient id="dShroud2Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3c4f7d"/>
+      <stop offset="100%" stop-color="#1c2742"/>
+    </linearGradient>
+  </defs>
 
-  <g id="cloak_rare" opacity="0.9">
-    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#223659" opacity="0.48"/>
-    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#466193" opacity="0.44"/>
-    <path d="M70 150 L62 191 L74 191 Z" fill="#2b4368" opacity="0.68"/>
-    <path d="M108 150 L120 189 L106 190 Z" fill="#2b4368" opacity="0.68"/>
-    <path d="M72 94 L68 182 M108 94 L112 182" stroke="#9db6de" stroke-width="0.8" opacity="0.45"/><path d="M68 83 Q90 96 112 83" stroke="#2196F3" stroke-width="0.95" fill="none" opacity="0.82"/>
+  <g id="cloak_rare" opacity="0.96">
+    <path d="M64 75 Q90 70 116 75 L124 92 L120 188 Q105 183 90 183 Q75 183 60 188 L56 92 Z"
+          fill="url(#dShroud2Weave)" stroke="#1c2742" stroke-width="1" opacity="0.6"/>
+    <path d="M66 92 Q64 138 63 182 M114 92 Q116 138 117 182" stroke="#1c2742" stroke-width="0.75" fill="none" opacity="0.5"/>
+    <path d="M72 76 L78 74.8 L80 88 L73 90 Z M108 76 L102 74.8 L100 88 L107 90 Z" fill="url(#dShroud2Deep)" opacity="0.8"/>
+    <path d="M70 150 L61 189 L74 189 Z" fill="url(#dShroud2Deep)" opacity="0.5"/>
+    <path d="M110 150 L119 188 L106 189 Z" fill="url(#dShroud2Deep)" opacity="0.5"/>
+    <path d="M79 76 Q90 73.4 101 76 L100 80.6 Q90 78.4 80 80.6 Z" fill="url(#dShroud2Deep)" stroke="#1c2742" stroke-width="0.7"/>
+    <circle cx="66" cy="104" r="0.7" fill="#aac6f2" opacity="0.6"><animate attributeName="opacity" values="0.6;0.2;0.6" dur="3.0s" repeatCount="indefinite"/></circle><circle cx="72" cy="130" r="0.7" fill="#aac6f2" opacity="0.6"><animate attributeName="opacity" values="0.6;0.2;0.6" dur="3.45s" repeatCount="indefinite"/></circle><circle cx="64" cy="158" r="0.7" fill="#aac6f2" opacity="0.6"><animate attributeName="opacity" values="0.6;0.2;0.6" dur="3.9s" repeatCount="indefinite"/></circle><circle cx="112" cy="112" r="0.7" fill="#aac6f2" opacity="0.6"><animate attributeName="opacity" values="0.6;0.2;0.6" dur="4.35s" repeatCount="indefinite"/></circle><circle cx="116" cy="144" r="0.7" fill="#aac6f2" opacity="0.6"><animate attributeName="opacity" values="0.6;0.2;0.6" dur="4.8s" repeatCount="indefinite"/></circle><circle cx="110" cy="170" r="0.7" fill="#aac6f2" opacity="0.6"><animate attributeName="opacity" values="0.6;0.2;0.6" dur="5.25s" repeatCount="indefinite"/></circle><path d="M89.48 76.80000000000001 A2.6 2.6 0 1 0 89.48 82.0 A2.028 2.028 0 1 1 89.48 76.80000000000001 Z" fill="#aac6f2" opacity="0.95" transform="rotate(12 90 79.4)"/><path d="M70 114.4 L70.448 115.552 L71.6 116 L70.448 116.448 L70 117.6 L69.552 116.448 L68.4 116 L69.552 115.552 Z" fill="#90caf9" opacity="0.8"/><path d="M113 126.5 L113.42 127.58 L114.5 128 L113.42 128.42 L113 129.5 L112.58 128.42 L111.5 128 L112.58 127.58 Z" fill="#90caf9" opacity="0.75"/><path d="M68 144.6 L68.392 145.608 L69.4 146 L68.392 146.392 L68 147.4 L67.608 146.392 L66.6 146 L67.608 145.608 Z" fill="#90caf9" opacity="0.7"/>
   </g>
 
 </svg>

@@ -1,11 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="dFxEpic" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.38"/>
+      <stop offset="65%" stop-color="#9C27B0" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="fx_epic">
-    <ellipse cx="90" cy="101" rx="25" ry="12" fill="#9C27B0" opacity="0.1"/>
-    <circle cx="90" cy="100" r="19" fill="none" stroke="#9C27B0" stroke-width="1.65" opacity="0.66"/>
-    <path d="M69 100 L111 100" stroke="#cf83ef" stroke-width="1" opacity="0.74"/>
-    <circle cx="66" cy="93" r="1.15" fill="#cf83ef"/>
-    <circle cx="114" cy="109" r="1.15" fill="#cf83ef"/>
+    <ellipse cx="90" cy="120" rx="52" ry="78" fill="url(#dFxEpic)"/>
+    <ellipse cx="90" cy="201" rx="40" ry="8.5" fill="#9C27B0" opacity="0.26">
+      <animate attributeName="opacity" values="0.26;0.46;0.26" dur="3.4s" repeatCount="indefinite"/>
+    </ellipse>
+    <path d="M52 164 Q48 134 58 110 M128 164 Q132 134 122 110" stroke="#9C27B0" stroke-width="1.05" fill="none" opacity="0.48"/>
+    <path d="M58 120.0 L58.56 121.44 L60.0 122 L58.56 122.56 L58 124.0 L57.44 122.56 L56.0 122 L57.44 121.44 Z" fill="#ce93d8" opacity="0.8"/>
+    <path d="M124 132.2 L124.504 133.496 L125.8 134 L124.504 134.504 L124 135.8 L123.496 134.504 L122.2 134 L123.496 133.496 Z" fill="#ce93d8" opacity="0.7"/>
+    <circle cx="60" cy="150" r="0.95" fill="#ce93d8" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -17" dur="3.7s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3.7s" begin="0s" repeatCount="indefinite"/></circle>
+    <circle cx="121" cy="154" r="0.85" fill="#9C27B0" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -19" dur="4.4s" begin="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="4.4s" begin="1.5s" repeatCount="indefinite"/></circle>
+    <circle cx="74" cy="178" r="0.75" fill="#ce93d8" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -14" dur="3.1s" begin="0.7s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3.1s" begin="0.7s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

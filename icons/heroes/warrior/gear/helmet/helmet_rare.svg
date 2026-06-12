@@ -1,11 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wHelm2Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fb2dc"/>
+      <stop offset="45%" stop-color="#4a5d78"/>
+      <stop offset="100%" stop-color="#32425a"/>
+    </linearGradient>
+    <linearGradient id="wHelm2Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a5d78"/>
+      <stop offset="100%" stop-color="#22304a"/>
+    </linearGradient>
+  </defs>
 
   <g id="helmet_rare">
-    <path d="M66 44 Q90 33 114 44 L110 51 Q90 49 70 51 Z" fill="#37495f" stroke="#1a2738" stroke-width="1"/>
-    <path d="M77 40 L103 40 L103 49 L77 49 Z" fill="#4a5b73" stroke="#26364b" stroke-width="0.8"/>
-    <path d="M79 46 L101 46" stroke="#94a4bc" stroke-width="0.8"/>
-    <circle cx="90" cy="46.2" r="1.5" fill="#2196F3" opacity="0.9"/>
-    <path d="M74 44 L106 44" stroke="#2196F3" stroke-width="0.95" opacity="0.8"/><path d="M76 40 L90 33 L104 40" stroke="#2196F3" stroke-width="1" fill="none" opacity="0.82"/>
+    <path d="M67 47 Q66 31 78 26.5 Q90 22.5 102 26.5 Q114 31 113 47 L106 47 Q104 34 90 32.6 Q76 34 74 47 Z"
+          fill="url(#wHelm2Plate)" stroke="#22304a" stroke-width="1.1"/>
+    <path d="M74 47 Q76 34 90 32.6 Q104 34 106 47 L103 49 Q90 44.5 77 49 Z" fill="url(#wHelm2Deep)" opacity="0.95"/>
+    <path d="M67 46.5 L74 44.6 L74 56 Q69.5 54 67.5 50.5 Z" fill="url(#wHelm2Plate)" stroke="#22304a" stroke-width="0.9"/>
+    <path d="M113 46.5 L106 44.6 L106 56 Q110.5 54 112.5 50.5 Z" fill="url(#wHelm2Plate)" stroke="#22304a" stroke-width="0.9"/>
+    <path d="M88.5 33 L91.5 33 L91.2 42.5 L88.8 42.5 Z" fill="url(#wHelm2Deep)" stroke="#22304a" stroke-width="0.6"/>
+    <path d="M70.5 30.5 Q78 25.5 86 24.6" stroke="#8fb2dc" stroke-width="1.0" fill="none" opacity="0.7" stroke-linecap="round"/>
+    <path d="M78 33 Q90 27 102 33" stroke="#22304a" stroke-width="0.8" fill="none" opacity="0.8"/><circle cx="72.5" cy="43.5" r="1.0" fill="#8fb2dc"/><circle cx="72.75" cy="43.8" r="0.45" fill="#22304a" opacity="0.55"/><circle cx="90" cy="40.6" r="1.0" fill="#8fb2dc"/><circle cx="90.25" cy="40.9" r="0.45" fill="#22304a" opacity="0.55"/><circle cx="107.5" cy="43.5" r="1.0" fill="#8fb2dc"/><circle cx="107.75" cy="43.8" r="0.45" fill="#22304a" opacity="0.55"/><path d="M66 45.5 Q90 38.5 114 45.5" stroke="#64a8e8" stroke-width="1.2" fill="none" opacity="0.9"/><path d="M80.5 41.6 L80.5 44.0 M80.5 42.800000000000004 L82.3 41.6 M84.5 41.6 L86.3 44.0 M86.3 41.6 L84.5 44.0 M88.5 44.0 L88.5 41.6 L90.3 41.6 M92.5 41.6 L94.3 41.6 L92.5 44.0 L94.3 44.0 M96.5 41.6 L96.5 44.0 M96.5 42.800000000000004 L98.3 41.6" stroke="#2196F3" stroke-width="0.55" fill="none" opacity="0.9" stroke-linecap="round"/><path d="M70 47.5 L110 47.5" stroke="#90caf9" stroke-width="0.7" stroke-linecap="round" opacity="0.525"><animate attributeName="opacity" values="0.525;0.8;0.25;0.525" dur="3.4s" repeatCount="indefinite"/></path>
   </g>
 
 </svg>

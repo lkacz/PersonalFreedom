@@ -1,15 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <g id="qt_anim_driver">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
-
+  <defs>
+    <linearGradient id="cTab3Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a18fc7"/>
+      <stop offset="45%" stop-color="#544a6e"/>
+      <stop offset="100%" stop-color="#3b3450"/>
+    </linearGradient>
+    <linearGradient id="cTab3Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#544a6e"/>
+      <stop offset="100%" stop-color="#282239"/>
+    </linearGradient>
+    <linearGradient id="cTab3Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d3aef0"/>
+      <stop offset="100%" stop-color="#3b3450"/>
+    </linearGradient>
+    <radialGradient id="cTab3Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#9C27B0" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="shield_epic">
-    <path d="M34 100 L60 100 L64 106 L64 142 L60 149 L34 149 L30 142 L30 106 Z" fill="#dce3ed" stroke="#97a4b5" stroke-width="1"/>
-    <rect x="36.5" y="103.4" width="21" height="42" rx="2" fill="#4b5d7a" opacity="0.9"/>
-    <path d="M41 100 L53 100 L57 94 L45 94 Z" fill="#dce3ed" stroke="#97a4b5" stroke-width="0.8"/>
-    <path d="M30 106 L64 106" stroke="#9C27B0" stroke-width="0.98" opacity="0.82"/>
-    <path d="M38 109 L58 109 M38 117 L58 117 M38 125 L58 125 M38 133 L58 133" stroke="#8fa3bf" stroke-width="0.82" opacity="0.75"/><path d="M40 103 L58 103 L62 109 L62 140 L58 146 L40 146 L36 140 L36 109 Z" fill="none" stroke="#9C27B0" stroke-width="0.9" opacity="0.82"/><rect x="43" y="115.5" width="12" height="2" rx="1" fill="#9C27B0" opacity="0.86"><animate attributeName="y" values="115.5;137;115.5" dur="2.1s" repeatCount="indefinite"/></rect>
+    <rect x="30" y="100.5" width="34" height="49" rx="3.4" fill="url(#cTab3Case)" stroke="#282239" stroke-width="1.15"/>
+    <rect x="33" y="104" width="28" height="42" rx="2" fill="url(#cTab3Deep)"/>
+    <rect x="34.5" y="106.5" width="25" height="37" rx="1.6" fill="#3b3450" opacity="0.9"/>
+    <path d="M36 109 L58 109" stroke="#a18fc7" stroke-width="0.6" opacity="0.5"/>
+    <path d="M48 101.8 L52 101.8" stroke="#282239" stroke-width="0.8"/>
+    <path d="M52 148.6 L56 148.6 M46 148.6 L50 148.6" stroke="#282239" stroke-width="1" opacity="0.85"/>
+    <path d="M31.5 104 Q33 101.6 36 101.2" stroke="#a18fc7" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <circle cx="38" cy="146.4" r="0.9" fill="#b167d6"><animate attributeName="opacity" values="1;0.3;1" dur="2.1s" repeatCount="indefinite"/></circle><circle cx="41.6" cy="146.4" r="0.9" fill="#b167d6" opacity="0.75"/><circle cx="45.2" cy="146.4" r="0.9" fill="#3b3450"/><path d="M36 124 L40 124 L42.5 118.5 L45.5 129 L48.5 121 L51 124 L58 124" stroke="#ce93d8" stroke-width="0.9" fill="none" opacity="0.9"><animate attributeName="opacity" values="0.9;0.45;0.9" dur="2.4s" repeatCount="indefinite"/></path><path d="M37.0 111.2 L37.0 113.4 M37.0 112.3 L38.8 111.2 M41.2 111.2 L43.0 113.4 M43.0 111.2 L41.2 113.4 M45.4 113.4 L45.4 111.2 L47.2 111.2 M49.6 111.2 L51.4 111.2 L49.6 113.4 L51.4 113.4 M53.8 111.2 L53.8 113.4 M53.8 112.3 L55.6 111.2" stroke="#9C27B0" stroke-width="0.55" fill="none" opacity="0.8" stroke-linecap="round"/><circle cx="40" cy="133.5" r="1.3" fill="none" stroke="#9C27B0" stroke-width="0.6"/><circle cx="45.5" cy="131" r="1.3" fill="none" stroke="#9C27B0" stroke-width="0.6"/><circle cx="44" cy="136.5" r="1.3" fill="none" stroke="#9C27B0" stroke-width="0.6"/><path d="M41.2 132.9 L44.3 131.6 M44.6 132.2 L44.2 135.2 M41.1 134.3 L42.8 135.9" stroke="#9C27B0" stroke-width="0.55"/>
   </g>
 
-  </g>
 </svg>

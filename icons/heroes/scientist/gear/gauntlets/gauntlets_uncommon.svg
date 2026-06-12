@@ -1,12 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cGlove1Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#93a2b2"/>
+      <stop offset="45%" stop-color="#5d6a78"/>
+      <stop offset="100%" stop-color="#414c59"/>
+    </linearGradient>
+    <linearGradient id="cGlove1Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5d6a78"/>
+      <stop offset="100%" stop-color="#2b3540"/>
+    </linearGradient>
+    <linearGradient id="cGlove1Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bcd6c4"/>
+      <stop offset="100%" stop-color="#414c59"/>
+    </linearGradient>
+  </defs>
 
   <g id="gauntlets_uncommon">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#dbe2ec" stroke="#97a3b4" stroke-width="1"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#dbe2ec" stroke="#97a3b4" stroke-width="1"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#f6fbff" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#f6fbff" opacity="0.92"/>
-    <path d="M44.5 138 L55.5 138 M124.5 138 L135.5 138" stroke="#415370" stroke-width="0.9"/>
-    <path d="M40 143 L60 143 M120 143 L140 143" stroke="#7f90ab" stroke-width="0.85" opacity="0.75"/>
+    <path d="M38.5 134 L61.5 134 L60.5 145 L39.5 145 Z" fill="url(#cGlove1Case)" stroke="#2b3540" stroke-width="1"/><path d="M39.5 145 L60.5 145 L59 157 L41 157 Z" fill="url(#cGlove1Deep)" stroke="#2b3540" stroke-width="0.9"/><path d="M39 141 L61 141" stroke="#93a2b2" stroke-width="0.6" opacity="0.55"/><rect x="39" y="143.6" width="22" height="2.8" rx="1.3" fill="url(#cGlove1Deep)" stroke="#7ec983" stroke-width="0.7"/><circle cx="42.5" cy="145" r="0.8" fill="#7ec983"><animate attributeName="opacity" values="1;0.35;1" dur="2.2s" repeatCount="indefinite"/></circle>
+    <path d="M118.5 134 L141.5 134 L140.5 145 L119.5 145 Z" fill="url(#cGlove1Case)" stroke="#2b3540" stroke-width="1"/><path d="M119.5 145 L140.5 145 L139 157 L121 157 Z" fill="url(#cGlove1Deep)" stroke="#2b3540" stroke-width="0.9"/><path d="M119 141 L141 141" stroke="#93a2b2" stroke-width="0.6" opacity="0.55"/><rect x="119" y="143.6" width="22" height="2.8" rx="1.3" fill="url(#cGlove1Deep)" stroke="#7ec983" stroke-width="0.7"/><circle cx="122.5" cy="145" r="0.8" fill="#7ec983"><animate attributeName="opacity" values="1;0.35;1" dur="2.2s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

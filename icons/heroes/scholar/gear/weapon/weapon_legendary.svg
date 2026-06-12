@@ -1,18 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <g id="qt_anim_driver">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
-
+  <defs>
+    <linearGradient id="sQuill4Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfa75f"/>
+      <stop offset="45%" stop-color="#5f4f35"/>
+      <stop offset="100%" stop-color="#443821"/>
+    </linearGradient>
+    <linearGradient id="sQuill4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5f4f35"/>
+      <stop offset="100%" stop-color="#2f2715"/>
+    </linearGradient>
+    <radialGradient id="sQuill4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="weapon_legendary" transform="rotate(-24 121 131)">
-    <rect x="115.2" y="126" width="10.2" height="36" rx="3" fill="#1b2b43" stroke="#0e1725" stroke-width="1"/>
-    <rect x="116.8" y="134" width="7" height="2.4" rx="1" fill="#FF9800" opacity="0.92"/>
-    <rect x="116.8" y="145" width="7" height="2.4" rx="1" fill="#FF9800" opacity="0.75"/>
-    <rect x="118.8" y="160" width="3.2" height="4.8" rx="1.4" fill="#28405d"/>
-    <path d="M114.8 126 L125.6 126 L127 122 L113.6 122 Z" fill="#38537a" stroke="#1a2b45" stroke-width="1"/>
-    <path d="M124 102 Q141 92 152 106 Q138 111 126 124 Z" fill="#cadcf2" stroke="#314b6a" stroke-width="1.05"/>
-    <path d="M126.3 103.5 L129.6 108.8 L126.3 114.2 L123 108.8 Z" fill="#f2f7ff" opacity="0.9"/>
-    <path d="M126 104 Q138 96 146 108" stroke="#FF9800" stroke-width="0.95" fill="none" opacity="0.85"/><path d="M127 112 Q139 106 147 99" stroke="#FF9800" stroke-width="0.9" fill="none" opacity="0.75"/><circle cx="142" cy="102.5" r="1.6" fill="#FF9800" opacity="0.95"/><path d="M124 124 L128 120 L131 126 L127 130 Z" fill="#294260" stroke="#FF9800" stroke-width="0.9"/><path d="M124 106 Q140 94 151 106" stroke="#FF9800" stroke-width="1.35" fill="none" opacity="0.92"/><path d="M126 118 Q140 112 149 105" stroke="#FF9800" stroke-width="0.95" fill="none" opacity="0.8"><animate attributeName="opacity" values="0.45;1;0.45" dur="1.5s" repeatCount="indefinite"/></path>
+    <rect x="117" y="128" width="6.6" height="34" rx="2.8" fill="url(#sQuill4Deep)" stroke="#2f2715" stroke-width="0.95"/>
+    <path d="M117.2 134 L123.4 134 M117.2 152 L123.4 152" stroke="#ffc066" stroke-width="1.6" opacity="0.95"/>
+    <path d="M118.6 162 L121.9 162 L120.3 168.5 Z" fill="#ffc066" stroke="#2f2715" stroke-width="0.6"/>
+    <path d="M120.3 164.5 L120.3 167.6" stroke="#2f2715" stroke-width="0.5"/>
+    <path d="M121 128 Q126 116 134 107 Q142 99 151 95.5 Q146 104 139 111.5 Q131 119.5 124 124.5 Z"
+          fill="url(#sQuill4Cloth)" stroke="#2f2715" stroke-width="1"/>
+    <path d="M122.5 125 Q132 114 149 97" stroke="#2f2715" stroke-width="0.9" fill="none" opacity="0.9"/>
+    <path d="M126 119 Q124 115 125.5 111 M131 113 Q129 109 130.5 105 M137 106.5 Q135 103 136.5 99.5"
+          stroke="#443821" stroke-width="0.7" fill="none" opacity="0.8"/>
+    <path d="M127 117 Q136 107 146 101" stroke="#ffc066" stroke-width="0.8" fill="none" opacity="0.85"/><path d="M117.4 137.8 L117.4 140.4 M117.4 139.10000000000002 L119.2 137.8" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.95" stroke-linecap="round"/><circle cx="120.3" cy="166.8" r="1.5" fill="#FF9800" opacity="0.9"><animate attributeName="opacity" values="0.9;0.4;0.9" dur="2.6s" repeatCount="indefinite"/></circle><path d="M134 104 Q139 99 137 94 Q142 97 141.5 103" stroke="#FF9800" stroke-width="0.8" fill="none" opacity="0.75"><animate attributeName="opacity" values="0.75;0.25;0.75" dur="3.2s" repeatCount="indefinite"/></path><circle cx="143" cy="99" r="0.7" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -7" dur="2.9s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.9s" begin="0s" repeatCount="indefinite"/></circle><path d="M125.5 121 Q135 111.5 147 104 Q141 112 133 118.5 Q129 121.5 125.5 121 Z" fill="#FF9800" opacity="0.4"><animate attributeName="opacity" values="0.4;0.7;0.25;0.4" dur="2.1s" repeatCount="indefinite"/></path><circle cx="136" cy="108" r="0.6" fill="#FF9800" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -8" dur="2.4s" begin="0.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.4s" begin="0.8s" repeatCount="indefinite"/></circle>
   </g>
 
-  </g>
 </svg>

@@ -637,15 +637,15 @@ class BlockerCore:
                 with open(self.stats_path, 'r', encoding='utf-8') as f:
                     loaded = json.load(f)
                     self.stats = {**self._default_stats(), **loaded}
-            except (json.JSONDecodeError, IOError):
-                pass
+            except (json.JSONDecodeError, IOError) as e:
+                logger.warning(f"Could not load stats ({e}), using defaults")
 
     def save_stats(self):
         """Save statistics to file atomically (crash-safe)"""
         try:
             atomic_write_json(self.stats_path, self.stats)
-        except (IOError, OSError):
-            pass
+        except (IOError, OSError) as e:
+            logger.error(f"Could not save stats: {e}")
 
     def export_all_data(self, export_path: Path) -> dict:
         """
@@ -682,8 +682,8 @@ class BlockerCore:
                         config_data.pop('password_hash', None)
                         zf.writestr("config.json", json.dumps(config_data, indent=2))
                         exported_files.append("config.json")
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"Config not included in data export: {e}")
                 
                 # Export stats
                 if self.stats_path.exists():
@@ -1075,6 +1075,26 @@ class BlockerCore:
         except Exception as e:
             logger.debug(f"DNS flush failed (non-critical): {e}")
 
+    def _write_hosts_file(self, content: str) -> None:
+        """Atomically replace the hosts file contents.
+
+        Writes to a temp file in the same directory and swaps it in with
+        os.replace so a crash mid-write can never truncate the system
+        hosts file. Raises on failure (callers handle PermissionError etc.).
+        """
+        hosts_dir = os.path.dirname(HOSTS_PATH)
+        fd, temp_path = tempfile.mkstemp(dir=hosts_dir, prefix='hosts.', suffix='.tmp')
+        try:
+            with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                f.write(content)
+            os.replace(temp_path, HOSTS_PATH)
+        except Exception:
+            try:
+                os.unlink(temp_path)
+            except OSError:
+                pass
+            raise
+
     def get_effective_blacklist(self):
         """Get the effective blacklist considering categories and whitelist"""
         effective = set()
@@ -1134,8 +1154,7 @@ class BlockerCore:
                     block_entries.append(f"{REDIRECT_IP} {clean_site}")
             block_entries.append(f"{MARKER_END}\n")
 
-            with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
-                f.write(content.strip() + '\n' + '\n'.join(block_entries))
+            self._write_hosts_file(content.strip() + '\n' + '\n'.join(block_entries))
 
             self.is_blocking = True
             self.session_id = str(uuid.uuid4())
@@ -1192,8 +1211,7 @@ class BlockerCore:
                 if start_idx < end_idx:
                     content = content[:start_idx] + content[end_idx:]
 
-            with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
-                f.write(content.strip() + '\n')
+            self._write_hosts_file(content.strip() + '\n')
 
             self.is_blocking = False
             self.session_id = None
@@ -1215,15 +1233,8 @@ class BlockerCore:
 
     def add_site(self, site):
         """Add a site to the blacklist"""
-        if not site or not isinstance(site, str):
-            return False
-        site = site.lower().strip()
-        for prefix in ['https://', 'http://', 'www.']:
-            if site.startswith(prefix):
-                site = site[len(prefix):]
-        site = site.split('/')[0].strip()
-
-        if not site or not self._is_valid_hostname(site):
+        site = self._normalize_site(site)
+        if not site:
             return False
 
         added = False
@@ -1251,15 +1262,11 @@ class BlockerCore:
 
     def add_to_whitelist(self, site):
         """Add a site to the whitelist"""
-        if not site or not isinstance(site, str):
+        site = self._normalize_site(site)
+        if not site:
             return False
-        site = site.lower().strip()
-        for prefix in ['https://', 'http://', 'www.']:
-            if site.startswith(prefix):
-                site = site[len(prefix):]
-        site = site.split('/')[0].strip()
 
-        if site and site not in self.whitelist:
+        if site not in self.whitelist:
             self.whitelist.append(site)
             if not site.startswith('www.'):
                 self.whitelist.append(f"www.{site}")
@@ -1293,6 +1300,13 @@ class BlockerCore:
         self.session_id = None
         self.end_time = None
 
+        # Stop the bypass logger HTTP server so no local port stays bound
+        try:
+            if self.bypass_logger:
+                self.bypass_logger.stop_server()
+        except Exception as e:
+            errors.append(f"Bypass logger: {str(e)}")
+
         # 2. Clean hosts file - remove our markers section only
         try:
             with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
@@ -1309,8 +1323,7 @@ class BlockerCore:
             while '\n\n\n' in content:
                 content = content.replace('\n\n\n', '\n\n')
 
-            with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
-                f.write(content.strip() + '\n')
+            self._write_hosts_file(content.strip() + '\n')
 
         except Exception as e:
             errors.append(f"Hosts file: {str(e)}")
@@ -1320,6 +1333,9 @@ class BlockerCore:
             self._flush_dns()
         except Exception as e:
             errors.append(f"DNS flush: {str(e)}")
+
+        # 4. Remove crash-recovery session state (no longer relevant)
+        self.clear_session_state()
 
         if errors:
             return True, f"Cleanup completed with warnings: {'; '.join(errors)}"
@@ -1340,6 +1356,19 @@ class BlockerCore:
             logger.warning(f"Failed to export config: {e}")
             return False
 
+    def _normalize_site(self, site) -> Optional[str]:
+        """Normalize a site entry to a bare hostname; None if invalid."""
+        if not site or not isinstance(site, str):
+            return None
+        site = site.lower().strip()
+        for prefix in ['https://', 'http://', 'www.']:
+            if site.startswith(prefix):
+                site = site[len(prefix):]
+        site = site.split('/')[0].strip()
+        if not site or not self._is_valid_hostname(site):
+            return None
+        return site
+
     def import_config(self, filepath):
         """Import configuration from file"""
         try:
@@ -1348,11 +1377,17 @@ class BlockerCore:
             if 'blacklist' in config:
                 blacklist_data = config['blacklist']
                 if isinstance(blacklist_data, list):
-                    self.blacklist.extend([s for s in blacklist_data if s not in self.blacklist])
+                    for raw in blacklist_data:
+                        site = self._normalize_site(raw)
+                        if site and site not in self.blacklist:
+                            self.blacklist.append(site)
             if 'whitelist' in config:
                 whitelist_data = config['whitelist']
                 if isinstance(whitelist_data, list):
-                    self.whitelist.extend([s for s in whitelist_data if s not in self.whitelist])
+                    for raw in whitelist_data:
+                        site = self._normalize_site(raw)
+                        if site and site not in self.whitelist:
+                            self.whitelist.append(site)
             self.save_config()
             return True
         except (IOError, OSError, json.JSONDecodeError, KeyError, TypeError) as e:

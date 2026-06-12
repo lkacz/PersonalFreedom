@@ -195,11 +195,41 @@ class TestBypassLogger:
         """Test that session history is limited to 100 entries."""
         # Pre-fill with 100 sessions
         logger.attempts["session_history"] = [{"date": "2024-01-01", "attempt_count": 1, "sites": []}] * 100
-        
+
         logger.log_attempt("example.com")
         logger.stop_server()
-        
+
         assert len(logger.attempts["session_history"]) == 100
+
+    def test_stop_server_closes_listening_socket(self, logger):
+        """stop_server must release the port: shutdown() alone leaves the
+        listening socket bound until process exit."""
+        mock_server = MagicMock()
+        logger.server = mock_server
+
+        logger.stop_server()
+
+        mock_server.shutdown.assert_called_once()
+        mock_server.server_close.assert_called_once()
+        assert logger.server is None
+
+    def test_server_can_restart_after_stop(self, logger):
+        """A stopped logger must be able to start a fresh server (real socket)."""
+        import socket
+
+        if not logger.start_server(port=18476):
+            pytest.skip("Port 18476 unavailable in this environment")
+        logger.stop_server()
+
+        # Port must be free for a plain bind (no SO_REUSEADDR)
+        probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            probe.bind(("127.0.0.1", 18476))
+        finally:
+            probe.close()
+
+        assert logger.start_server(port=18476)
+        logger.stop_server()
 
 
 class TestBypassAttemptHandler:
@@ -222,6 +252,21 @@ class TestBypassAttemptHandler:
         handler = MagicMock(spec=BypassAttemptHandler)
         # Should not raise any exceptions
         BypassAttemptHandler.log_message(handler, "%s", "test")
+
+    def test_no_cache_headers_are_sent(self):
+        """Test that reminder pages are not cached under blocked domains."""
+        from bypass_logger import BypassAttemptHandler
+
+        handler = MagicMock(spec=BypassAttemptHandler)
+
+        BypassAttemptHandler._send_no_cache_headers(handler)
+
+        handler.send_header.assert_any_call(
+            'Cache-Control',
+            'no-store, no-cache, must-revalidate, max-age=0'
+        )
+        handler.send_header.assert_any_call('Pragma', 'no-cache')
+        handler.send_header.assert_any_call('Expires', '0')
 
 
 class TestGetBypassLogger:

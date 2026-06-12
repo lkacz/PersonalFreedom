@@ -1,11 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wCloak4Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d9ab66"/>
+      <stop offset="45%" stop-color="#6b5638"/>
+      <stop offset="100%" stop-color="#4a3a24"/>
+    </linearGradient>
+    <linearGradient id="wCloak4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6b5638"/>
+      <stop offset="100%" stop-color="#332715"/>
+    </linearGradient>
+    <radialGradient id="wCloak4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
-  <g id="cloak_legendary" opacity="0.9">
-    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#2f4058" opacity="0.5"/>
-    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#465972" opacity="0.45"/>
-    <path d="M70 150 L62 191 L74 191 Z" fill="#334862" opacity="0.68"/>
-    <path d="M108 150 L120 189 L106 190 Z" fill="#334862" opacity="0.68"/>
-    <path d="M72 94 L68 182 M108 94 L112 182" stroke="#8f9eb4" stroke-width="0.78" opacity="0.45"/><path d="M68 83 Q90 96 112 83" stroke="#FF9800" stroke-width="0.92" fill="none" opacity="0.82"/><circle cx="76" cy="118" r="1" fill="#FF9800" opacity="0.72"/><circle cx="104" cy="125" r="1" fill="#FF9800" opacity="0.72"/><circle cx="95" cy="145" r="1" fill="#FF9800" opacity="0.68"/><circle cx="84" cy="138" r="0.9" fill="#FF9800" opacity="0.68"/><path d="M66 112 Q90 96 114 112" stroke="#FF9800" stroke-width="1.2" fill="none" opacity="0.85"/><path d="M66 150 Q90 136 114 150" stroke="#FF9800" stroke-width="1.02" fill="none" opacity="0.67"/>
+  <g id="cloak_legendary" opacity="0.96">
+    <path d="M64 75 Q90 70 116 75 L124 92 L120 188 Q105 183 90 183 Q75 183 60 188 L56 92 Z"
+          fill="url(#wCloak4Plate)" stroke="#332715" stroke-width="1" opacity="0.62"/>
+    <path d="M64 78 L77 74.5 L78 86 L66 90 Z" fill="url(#wCloak4Deep)" opacity="0.9"/>
+    <path d="M116 78 L103 74.5 L102 86 L114 90 Z" fill="url(#wCloak4Deep)" opacity="0.9"/>
+    <path d="M66 92 Q63 138 62.5 182 M114 92 Q117 138 117.5 182" stroke="#332715" stroke-width="0.8" fill="none" opacity="0.55"/>
+    <path d="M70 150 L61 189 L74 189 Z" fill="url(#wCloak4Deep)" opacity="0.6"/>
+    <path d="M110 150 L119 188 L106 189 Z" fill="url(#wCloak4Deep)" opacity="0.6"/>
+    <path d="M78 76.5 Q90 73.5 102 76.5 L101 81 Q90 78.6 79 81 Z" fill="url(#wCloak4Deep)" stroke="#332715" stroke-width="0.7"/>
+    <circle cx="90" cy="78.6" r="1.6" fill="#FF9800" opacity="0.95"/>
+    <path d="M58 96 Q57 140 60.5 184 M122 96 Q123 140 119.5 184" stroke="#ffb74d" stroke-width="0.9" fill="none" opacity="0.7"/><path d="M60.5 178.5 L60.5 180.9 M60.5 179.7 L62.3 178.5 M64.5 178.5 L66.3 180.9 M66.3 178.5 L64.5 180.9 M68.5 180.9 L68.5 178.5 L70.3 178.5 M72.5 178.5 L74.3 178.5 L72.5 180.9 L74.3 180.9" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.7" stroke-linecap="round"/><path d="M104.5 178.5 L104.5 180.9 M104.5 179.7 L106.3 178.5 M108.5 178.5 L110.3 180.9 M110.3 178.5 L108.5 180.9 M112.5 180.9 L112.5 178.5 L114.3 178.5 M116.5 178.5 L118.3 178.5 L116.5 180.9 L118.3 180.9" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.7" stroke-linecap="round"/><path d="M62 128 Q66 121 71.5 124 Q69 126.5 70 129.5 Q74.5 128.5 75.5 133 Q71 132 69 134.5 Q66.5 138 63 136.5 Q65.5 132.5 62 128 Z" fill="none" stroke="#FF9800" stroke-width="0.85" opacity="0.85"/><path d="M59 100 L59 178" stroke="#FF9800" stroke-width="0.8" stroke-linecap="round" opacity="0.525"><animate attributeName="opacity" values="0.525;0.8;0.25;0.525" dur="3.4s" repeatCount="indefinite"/></path><path d="M121 100 L121 178" stroke="#FF9800" stroke-width="0.8" stroke-linecap="round" opacity="0.525"><animate attributeName="opacity" values="0.525;0.25;0.8;0.525" dur="3.4s" repeatCount="indefinite"/></path><circle cx="64" cy="160" r="0.7" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -10" dur="3.2s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3.2s" begin="0s" repeatCount="indefinite"/></circle><circle cx="117" cy="154" r="0.6" fill="#FF9800" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -9" dur="2.7s" begin="1.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.7s" begin="1.2s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

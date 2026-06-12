@@ -1,12 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dVest0Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6f7791"/>
+      <stop offset="45%" stop-color="#474e66"/>
+      <stop offset="100%" stop-color="#333949"/>
+    </linearGradient>
+    <linearGradient id="dVest0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#474e66"/>
+      <stop offset="100%" stop-color="#23283a"/>
+    </linearGradient>
+  </defs>
 
   <g id="chestplate_common">
-    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z" fill="#354d73" stroke="#182942" stroke-width="1.1"/>
-    <path d="M76 84 L104 84 L105 143 L75 143 Z" fill="#4f6794" opacity="0.9"/>
-    <path d="M76 84 L83 94 L80 143 L74 143 Z" fill="#314766" opacity="0.74"/>
-    <path d="M104 84 L97 94 L100 143 L106 143 Z" fill="#314766" opacity="0.74"/>
-    <path d="M90 84 L90 143" stroke="#243654" stroke-width="1"/>
-    
+    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z"
+          fill="url(#dVest0Weave)" stroke="#23283a" stroke-width="1.05"/>
+    <path d="M76 82 L90 90 L90 143 L74 143 Z" fill="url(#dVest0Deep)" opacity="0.85"/>
+    <path d="M104 82 L90 90 L90 143 L106 143 Z" fill="url(#dVest0Deep)" opacity="0.7"/>
+    <path d="M76 82 L90 90 M104 82 L90 90" stroke="#23283a" stroke-width="0.8" opacity="0.85"/>
+    <path d="M73 86 Q70 110 71 142 M107 86 Q110 110 109 142" stroke="#333949" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <path d="M78 84 Q84 81 89 85" stroke="#6f7791" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <circle cx="90" cy="97" r="1.5" fill="#333949" stroke="#8d96ad" stroke-width="0.5"/><path d="M90 106.5 A1.5 1.5 0 0 1 90 109.5 Z" fill="#8d96ad"/><circle cx="90" cy="108" r="1.5" fill="none" stroke="#8d96ad" stroke-width="0.5"/><circle cx="90" cy="119" r="1.5" fill="#8d96ad"/><path d="M75 132 L79 136 M77.5 131.5 L74 135" stroke="#23283a" stroke-width="0.6" opacity="0.7"/><path d="M101 88 Q104 90 106 88.5 L105 92 Q102 91 101 88 Z" fill="#333949" opacity="0.8"/>
   </g>
 
 </svg>

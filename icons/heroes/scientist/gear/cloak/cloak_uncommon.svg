@@ -1,11 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cHaz1Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#93a2b2"/>
+      <stop offset="45%" stop-color="#5d6a78"/>
+      <stop offset="100%" stop-color="#414c59"/>
+    </linearGradient>
+    <linearGradient id="cHaz1Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5d6a78"/>
+      <stop offset="100%" stop-color="#2b3540"/>
+    </linearGradient>
+    <linearGradient id="cHaz1Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bcd6c4"/>
+      <stop offset="100%" stop-color="#414c59"/>
+    </linearGradient>
+  </defs>
 
-  <g id="cloak_uncommon" opacity="0.86">
-    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#dce3ed" opacity="0.36"/>
-    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#5a6f92" opacity="0.34"/>
-    <path d="M70 150 L62 191 L74 191 Z" fill="#415a80" opacity="0.5"/>
-    <path d="M108 150 L120 189 L106 190 Z" fill="#415a80" opacity="0.5"/>
-    <path d="M72 94 L68 182 M108 94 L112 182" stroke="#9fb3d1" stroke-width="0.8" opacity="0.45"/>
+  <g id="cloak_uncommon" opacity="0.95">
+    <path d="M64 75 Q90 70 116 75 L124 92 L120 188 Q105 183 90 183 Q75 183 60 188 L56 92 Z"
+          fill="url(#cHaz1Case)" stroke="#2b3540" stroke-width="1" opacity="0.55"/>
+    <path d="M66 92 Q64 138 63 182 M114 92 Q116 138 117 182" stroke="#2b3540" stroke-width="0.75" fill="none" opacity="0.5"/>
+    <path d="M72 76 L78 74.8 L80 88 L73 90 Z M108 76 L102 74.8 L100 88 L107 90 Z" fill="url(#cHaz1Deep)" opacity="0.8"/>
+    <path d="M70 150 L61 189 L74 189 Z" fill="url(#cHaz1Deep)" opacity="0.5"/>
+    <path d="M110 150 L119 188 L106 189 Z" fill="url(#cHaz1Deep)" opacity="0.5"/>
+    <path d="M79 76 Q90 73.4 101 76 L100 80.6 Q90 78.4 80 80.6 Z" fill="url(#cHaz1Deep)" stroke="#2b3540" stroke-width="0.7"/>
+    <circle cx="90" cy="78.5" r="1.4" fill="#4CAF50" opacity="0.9"/>
+    <path d="M90 78 L90 182" stroke="#7ec983" stroke-width="1" opacity="0.6"/><rect x="88.8" y="84" width="2.4" height="3.4" rx="0.7" fill="#7ec983" opacity="0.9"/>
   </g>
 
 </svg>

@@ -1,16 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cGogg4Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d3a967"/>
+      <stop offset="45%" stop-color="#6a5839"/>
+      <stop offset="100%" stop-color="#4a3d26"/>
+    </linearGradient>
+    <linearGradient id="cGogg4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a5839"/>
+      <stop offset="100%" stop-color="#332a17"/>
+    </linearGradient>
+    <linearGradient id="cGogg4Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd9a1"/>
+      <stop offset="100%" stop-color="#4a3d26"/>
+    </linearGradient>
+    <radialGradient id="cGogg4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="helmet_legendary">
-    <rect x="76.2" y="44.6" width="27.6" height="8" rx="3.2" fill="#153047" stroke="#0e1b2b" stroke-width="0.9"/>
-    <circle cx="85.5" cy="48.5" r="2.6" fill="none" stroke="#cceeff" stroke-width="1"/>
-    <circle cx="94.5" cy="48.5" r="2.6" fill="none" stroke="#cceeff" stroke-width="1"/>
-    <path d="M88.1 48.5 L91.9 48.5" stroke="#cceeff" stroke-width="0.85"/>
-    <path d="M79.3 48.5 L83 48.5 M97 48.5 L100.7 48.5" stroke="#FF9800" stroke-width="0.9" opacity="0.8"/>
-    <rect x="72" y="46.2" width="4.8" height="4.6" rx="1" fill="#FF9800" opacity="0.75"/><rect x="103.2" y="46.2" width="4.8" height="4.6" rx="1" fill="#FF9800" opacity="0.75"/>
-    <path d="M76 48.5 L104 48.5" stroke="#FF9800" stroke-width="1.05" opacity="0.85"/>
-    <path d="M84 36 L96 36 L99 43 L81 43 Z" fill="#2e4364" stroke="#FF9800" stroke-width="0.95"/><circle cx="90" cy="39.5" r="1.8" fill="#FF9800" opacity="0.95"/>
-    <ellipse cx="90" cy="48.5" rx="19" ry="7.4" fill="none" stroke="#FF9800" stroke-width="1.1" opacity="0.62"/>
-    
+    <path d="M67 44 Q90 39.5 113 44 L113 47 Q90 42.8 67 47 Z" fill="url(#cGogg4Deep)" stroke="#332a17" stroke-width="0.9"/>
+    <rect x="78.6" y="40.6" width="10.4" height="8.2" rx="2.6" fill="url(#cGogg4Glass)" stroke="#332a17" stroke-width="1" opacity="0.92"/>
+    <rect x="91" y="40.6" width="10.4" height="8.2" rx="2.6" fill="url(#cGogg4Glass)" stroke="#332a17" stroke-width="1" opacity="0.92"/>
+    <path d="M89 44.4 L91 44.4" stroke="#332a17" stroke-width="1.1"/>
+    <path d="M80.2 42.2 Q83 41 86 42" stroke="#ffffff" stroke-width="0.7" fill="none" opacity="0.65"/>
+    <path d="M92.6 42.2 Q95.4 41 98.4 42" stroke="#ffffff" stroke-width="0.7" fill="none" opacity="0.65"/>
+    <rect x="75.4" y="42.8" width="3.2" height="3.6" rx="0.8" fill="url(#cGogg4Case)" stroke="#332a17" stroke-width="0.7"/>
+    <rect x="101.4" y="42.8" width="3.2" height="3.6" rx="0.8" fill="url(#cGogg4Case)" stroke="#332a17" stroke-width="0.7"/>
+    <rect x="70.5" y="44.2" width="4.6" height="5" rx="1" fill="url(#cGogg4Deep)" stroke="#ffb74d" stroke-width="0.8"/><circle cx="72.8" cy="46.7" r="0.9" fill="#ffb74d"/><rect x="104.9" y="44.2" width="4.6" height="5" rx="1" fill="url(#cGogg4Deep)" stroke="#ffb74d" stroke-width="0.8"/><circle cx="107.2" cy="46.7" r="0.9" fill="#ffb74d"/><path d="M91.8 42.6 L98.6 42.6" stroke="#ffcc80" stroke-width="0.6" opacity="0.7"><animateTransform attributeName="transform" type="translate" values="0 0;0 6;0 0" dur="2.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.7;0.25;0.7" dur="2.8s" repeatCount="indefinite"/></path><path d="M78.5 38.2 L78.5 40.2 M78.5 39.2 L80.3 38.2 M83.1 38.2 L84.9 40.2 M84.9 38.2 L83.1 40.2 M87.7 40.2 L87.7 38.2 L89.5 38.2 M92.3 38.2 L94.1 38.2 L92.3 40.2 L94.1 40.2 M96.9 38.2 L96.9 40.2 M96.9 39.2 L98.7 38.2" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.8" stroke-linecap="round"/><path d="M70 42 L66.5 38.5 L70.5 36.8" stroke="#FF9800" stroke-width="1" fill="none"/><circle cx="70.8" cy="36.6" r="1.7" fill="url(#cGogg4Deep)" stroke="#FF9800" stroke-width="0.8"/><circle cx="70.8" cy="36.6" r="0.6" fill="#ffcc80"><animate attributeName="opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite"/></circle><path d="M73 53.2 L107 53.2" stroke="#FF9800" stroke-width="0.8" stroke-linecap="round" opacity="0.6"><animate attributeName="opacity" values="0.6;0.9;0.3;0.6" dur="2.6s" repeatCount="indefinite"/></path><circle cx="76" cy="38" r="0.6" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -5" dur="2.5s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.5s" begin="0s" repeatCount="indefinite"/></circle><circle cx="103" cy="37" r="0.55" fill="#FF9800" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -6" dur="3.1s" begin="0.9s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="3.1s" begin="0.9s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

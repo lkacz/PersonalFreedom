@@ -1,11 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sCloak0Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6b7c95"/>
+      <stop offset="45%" stop-color="#42526b"/>
+      <stop offset="100%" stop-color="#2e3a4f"/>
+    </linearGradient>
+    <linearGradient id="sCloak0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#42526b"/>
+      <stop offset="100%" stop-color="#202b3c"/>
+    </linearGradient>
+  </defs>
 
-  <g id="cloak_common" opacity="0.9">
-    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#1f2f49" opacity="0.5"/>
-    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#344d75" opacity="0.46"/>
-    <path d="M70 150 L62 191 L74 191 Z" fill="#1b2c45" opacity="0.7"/>
-    <path d="M108 150 L120 189 L106 190 Z" fill="#1b2c45" opacity="0.7"/>
-    
+  <g id="cloak_common" opacity="0.96">
+    <path d="M64 75 Q90 70 116 75 L124 92 L120 188 Q105 183 90 183 Q75 183 60 188 L56 92 Z"
+          fill="url(#sCloak0Cloth)" stroke="#202b3c" stroke-width="1" opacity="0.6"/>
+    <path d="M66 92 Q64 138 63 182 M114 92 Q116 138 117 182" stroke="#202b3c" stroke-width="0.75" fill="none" opacity="0.55"/>
+    <path d="M72 76 L78 74.8 L80 88 L73 90 Z M108 76 L102 74.8 L100 88 L107 90 Z" fill="url(#sCloak0Deep)" opacity="0.85"/>
+    <path d="M70 92 Q70 130 69 178 M110 92 Q110 130 111 178" stroke="#2e3a4f" stroke-width="0.7" fill="none" opacity="0.5"/>
+    <path d="M70 150 L61 189 L74 189 Z" fill="url(#sCloak0Deep)" opacity="0.55"/>
+    <path d="M110 150 L119 188 L106 189 Z" fill="url(#sCloak0Deep)" opacity="0.55"/>
+    <path d="M79 76 Q90 73.4 101 76 L100 80.6 Q90 78.4 80 80.6 Z" fill="url(#sCloak0Deep)" stroke="#202b3c" stroke-width="0.7"/>
+    <path d="M61 184 L65 190 L68.5 184.5 L72 189.5 L75 184 L70 181.5 Z" fill="url(#sCloak0Deep)" opacity="0.75"/><rect x="108" y="168" width="6.5" height="5" rx="0.8" fill="url(#sCloak0Deep)" stroke="#202b3c" stroke-width="0.5" opacity="0.85"/>
   </g>
 
 </svg>

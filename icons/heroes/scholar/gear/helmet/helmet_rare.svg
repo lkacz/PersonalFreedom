@@ -1,16 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sHelm2Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#88abd8"/>
+      <stop offset="45%" stop-color="#3f5a85"/>
+      <stop offset="100%" stop-color="#2c4063"/>
+    </linearGradient>
+    <linearGradient id="sHelm2Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3f5a85"/>
+      <stop offset="100%" stop-color="#1e2f4c"/>
+    </linearGradient>
+  </defs>
 
   <g id="helmet_rare">
-    <path d="M66 40 L114 40 L109 48 L71 48 Z" fill="#1f2f49" stroke="#132138" stroke-width="1.1"/>
-    <rect x="75" y="48" width="30" height="3.8" rx="1.7" fill="#314565" stroke="#1a2b45" stroke-width="0.8"/>
-    <path d="M79 41 L101 41 L101 47 L79 47 Z" fill="#3f577d" stroke="#1f304a" stroke-width="0.8"/>
-    <path d="M79 42 L101 42" stroke="#2196F3" stroke-width="1" opacity="0.72"/>
-    <circle cx="90" cy="45.1" r="1.5" fill="#2196F3" opacity="0.9"/>
-    <path d="M101 39 L109 47 Q110 50 108 52" stroke="#2196F3" stroke-width="1.1" fill="none"/><circle cx="108" cy="52" r="1.6" fill="#2196F3"/>
-    <circle cx="84" cy="48" r="2.5" fill="none" stroke="#2196F3" stroke-width="0.9"/><circle cx="96" cy="48" r="2.5" fill="none" stroke="#2196F3" stroke-width="0.9"/>
-    
-    
-    
+    <path d="M66 40 L114 40 L109 48 L71 48 Z" fill="url(#sHelm2Deep)" stroke="#1e2f4c" stroke-width="1.05"/>
+    <rect x="75" y="48" width="30" height="3.8" rx="1.7" fill="url(#sHelm2Cloth)" stroke="#1e2f4c" stroke-width="0.8"/>
+    <path d="M62 33 L90 26.5 L118 33 L90 39.5 Z" fill="url(#sHelm2Cloth)" stroke="#1e2f4c" stroke-width="1.1"/>
+    <path d="M66 33.6 L90 28.4 L114 33.6 L90 38.6 Z" fill="url(#sHelm2Deep)" opacity="0.65"/>
+    <path d="M62 33 L90 39.5 L90 42.2 L62 35.4 Z" fill="#2c4063" stroke="#1e2f4c" stroke-width="0.7"/>
+    <path d="M118 33 L90 39.5 L90 42.2 L118 35.4 Z" fill="#1e2f4c" stroke="#1e2f4c" stroke-width="0.7"/>
+    <circle cx="90" cy="31" r="1.5" fill="#9fc3ef"/>
+    <path d="M68 33.4 Q79 30.6 88 30" stroke="#88abd8" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <g><animateTransform attributeName="transform" type="rotate" values="-4 90 31;5 90 31;-4 90 31" dur="3.6s" repeatCount="indefinite"/><path d="M90 31 Q101 32.5 106.5 41 Q108 45 107 49" stroke="#9fc3ef" stroke-width="1.1" fill="none"/><path d="M105.6 48.6 L108.4 48.6 L108.7 54 L105.3 54 Z" fill="#9fc3ef"/><circle cx="107" cy="48.4" r="1.3" fill="#90caf9"/></g><path d="M78.0 44.4 L78.0 46.6 M78.0 45.5 L79.8 44.4 M82.1 44.4 L83.9 46.6 M83.9 44.4 L82.1 46.6 M86.2 46.6 L86.2 44.4 L88.0 44.4 M90.3 44.4 L92.1 44.4 L90.3 46.6 L92.1 46.6 M94.4 44.4 L94.4 46.6 M94.4 45.5 L96.2 44.4 M98.5 44.4 L100.3 46.6 M100.3 44.4 L98.5 46.6" stroke="#2196F3" stroke-width="0.55" fill="none" opacity="0.85" stroke-linecap="round"/><path d="M64 31.5 L116 31.5" stroke="#90caf9" stroke-width="0.6" stroke-linecap="round" opacity="0.425"><animate attributeName="opacity" values="0.425;0.65;0.2;0.425" dur="3.8s" repeatCount="indefinite"/></path>
   </g>
 
 </svg>

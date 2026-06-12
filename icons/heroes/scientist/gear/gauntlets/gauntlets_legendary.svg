@@ -1,12 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cGlove4Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d3a967"/>
+      <stop offset="45%" stop-color="#6a5839"/>
+      <stop offset="100%" stop-color="#4a3d26"/>
+    </linearGradient>
+    <linearGradient id="cGlove4Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a5839"/>
+      <stop offset="100%" stop-color="#332a17"/>
+    </linearGradient>
+    <linearGradient id="cGlove4Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd9a1"/>
+      <stop offset="100%" stop-color="#4a3d26"/>
+    </linearGradient>
+    <radialGradient id="cGlove4Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FF9800" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#FF9800" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FF9800" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="gauntlets_legendary">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#dbe2ec" stroke="#97a3b4" stroke-width="1"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#dbe2ec" stroke="#97a3b4" stroke-width="1"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#f6fbff" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#f6fbff" opacity="0.92"/>
-    <path d="M44.5 138 L55.5 138 M124.5 138 L135.5 138" stroke="#415370" stroke-width="0.9"/>
-    <path d="M40 143 L60 143 M120 143 L140 143" stroke="#7f90ab" stroke-width="0.85" opacity="0.75"/><path d="M44 136 L56 136 M124 136 L136 136" stroke="#FF9800" stroke-width="0.95" opacity="0.82"/><circle cx="49.5" cy="147.2" r="1.4" fill="#FF9800"/><circle cx="130.5" cy="147.2" r="1.4" fill="#FF9800"/><path d="M39 145.8 L61 145.8" stroke="#FF9800" stroke-width="1.22" opacity="0.82"/><path d="M119 145.8 L141 145.8" stroke="#FF9800" stroke-width="1.22" opacity="0.82"/>
+    <path d="M38.5 134 L61.5 134 L60.5 145 L39.5 145 Z" fill="url(#cGlove4Case)" stroke="#332a17" stroke-width="1"/><path d="M39.5 145 L60.5 145 L59 157 L41 157 Z" fill="url(#cGlove4Deep)" stroke="#332a17" stroke-width="0.9"/><path d="M39 141 L61 141" stroke="#d3a967" stroke-width="0.6" opacity="0.55"/><rect x="39" y="143.6" width="22" height="2.8" rx="1.3" fill="url(#cGlove4Deep)" stroke="#ffb74d" stroke-width="0.7"/><circle cx="42.5" cy="145" r="0.8" fill="#ffb74d"><animate attributeName="opacity" values="1;0.35;1" dur="2.2s" repeatCount="indefinite"/></circle><rect x="43" y="150" width="3.4" height="4.6" rx="1" fill="url(#cGlove4Case)" stroke="#332a17" stroke-width="0.5"/><rect x="48" y="151" width="3.4" height="4.6" rx="1" fill="url(#cGlove4Case)" stroke="#332a17" stroke-width="0.5"/><rect x="53" y="150" width="3.4" height="4.6" rx="1" fill="url(#cGlove4Case)" stroke="#332a17" stroke-width="0.5"/><path d="M43.0 136.6 L43.0 138.6 M43.0 137.6 L44.8 136.6 M48.0 136.6 L49.8 138.6 M49.8 136.6 L48.0 138.6 M53.0 138.6 L53.0 136.6 L54.8 136.6" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.85" stroke-linecap="round"/><circle cx="50" cy="140.4" r="2" fill="url(#cGlove4Deep)" stroke="#FF9800" stroke-width="0.8"/><circle cx="50" cy="140.4" r="0.7" fill="#ffcc80"><animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/></circle><path d="M40 156 L60 156" stroke="#FF9800" stroke-width="0.9" opacity="0.5"><animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite"/></path><circle cx="46" cy="136.5" r="0.6" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -6" dur="2.9s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.9s" begin="0s" repeatCount="indefinite"/></circle>
+    <path d="M118.5 134 L141.5 134 L140.5 145 L119.5 145 Z" fill="url(#cGlove4Case)" stroke="#332a17" stroke-width="1"/><path d="M119.5 145 L140.5 145 L139 157 L121 157 Z" fill="url(#cGlove4Deep)" stroke="#332a17" stroke-width="0.9"/><path d="M119 141 L141 141" stroke="#d3a967" stroke-width="0.6" opacity="0.55"/><rect x="119" y="143.6" width="22" height="2.8" rx="1.3" fill="url(#cGlove4Deep)" stroke="#ffb74d" stroke-width="0.7"/><circle cx="122.5" cy="145" r="0.8" fill="#ffb74d"><animate attributeName="opacity" values="1;0.35;1" dur="2.2s" repeatCount="indefinite"/></circle><rect x="123" y="150" width="3.4" height="4.6" rx="1" fill="url(#cGlove4Case)" stroke="#332a17" stroke-width="0.5"/><rect x="128" y="151" width="3.4" height="4.6" rx="1" fill="url(#cGlove4Case)" stroke="#332a17" stroke-width="0.5"/><rect x="133" y="150" width="3.4" height="4.6" rx="1" fill="url(#cGlove4Case)" stroke="#332a17" stroke-width="0.5"/><path d="M123.0 136.6 L123.0 138.6 M123.0 137.6 L124.8 136.6 M128.0 136.6 L129.8 138.6 M129.8 136.6 L128.0 138.6 M133.0 138.6 L133.0 136.6 L134.8 136.6" stroke="#FF9800" stroke-width="0.55" fill="none" opacity="0.85" stroke-linecap="round"/><circle cx="130" cy="140.4" r="2" fill="url(#cGlove4Deep)" stroke="#FF9800" stroke-width="0.8"/><circle cx="130" cy="140.4" r="0.7" fill="#ffcc80"><animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/></circle><path d="M120 156 L140 156" stroke="#FF9800" stroke-width="0.9" opacity="0.5"><animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite"/></path><circle cx="134" cy="136.5" r="0.6" fill="#ffcc80" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -6" dur="2.9s" begin="0.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.9s" begin="0.8s" repeatCount="indefinite"/></circle>
   </g>
 
 </svg>

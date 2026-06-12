@@ -1,13 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sBoot0Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6b7c95"/>
+      <stop offset="45%" stop-color="#42526b"/>
+      <stop offset="100%" stop-color="#2e3a4f"/>
+    </linearGradient>
+    <linearGradient id="sBoot0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#42526b"/>
+      <stop offset="100%" stop-color="#202b3c"/>
+    </linearGradient>
+  </defs>
 
   <g id="boots_common">
-    <path d="M43 188 L74 188 L76 202 L41 202 Z" fill="#3c5276" stroke="#1d2f4a" stroke-width="1.15"/>
-    <path d="M104 188 L135 188 L137 202 L102 202 Z" fill="#3c5276" stroke="#1d2f4a" stroke-width="1.15"/>
-    <path d="M41 201 L77 201 L79 209 L39 209 Z" fill="#242c3a" stroke="#0f1622" stroke-width="1"/>
-    <path d="M102 201 L138 201 L140 209 L100 209 Z" fill="#242c3a" stroke="#0f1622" stroke-width="1"/>
-    <path d="M45 192 L74 192" stroke="#9E9E9E" stroke-width="1.2" opacity="0.9"/>
-    <path d="M106 192 L135 192" stroke="#9E9E9E" stroke-width="1.2" opacity="0.9"/>
-    
+    <path d="M45 186 L73 186 L75 198 L43 198 Z" fill="url(#sBoot0Cloth)" stroke="#202b3c" stroke-width="1"/><path d="M42 197.5 L76 197.5 L78.5 206.5 L40.5 206.5 Z" fill="url(#sBoot0Deep)" stroke="#202b3c" stroke-width="1"/><path d="M40.5 205.8 L78.5 205.8 L78.5 209 L40.5 209 Z" fill="#202b3c"/><path d="M65 198 Q70 201.5 68.5 205.5" stroke="#6b7c95" stroke-width="0.75" fill="none" opacity="0.7"/><path d="M50 188.5 L59 188.5 M50.6 191 L58.4 191 M51.2 193.5 L57.8 193.5" stroke="#5d4a39" stroke-width="1" opacity="0.95"/><circle cx="50" cy="188.5" r="0.7" fill="#8b96a8"/><circle cx="59" cy="188.5" r="0.7" fill="#8b96a8"/><path d="M47 201 L52 204" stroke="#202b3c" stroke-width="0.6" opacity="0.7" stroke-linecap="round"/><path d="M67 188 L71 190" stroke="#202b3c" stroke-width="0.6" opacity="0.7" stroke-linecap="round"/>
+    <path d="M105 186 L133 186 L135 198 L103 198 Z" fill="url(#sBoot0Cloth)" stroke="#202b3c" stroke-width="1"/><path d="M102 197.5 L136 197.5 L138.5 206.5 L100.5 206.5 Z" fill="url(#sBoot0Deep)" stroke="#202b3c" stroke-width="1"/><path d="M100.5 205.8 L138.5 205.8 L138.5 209 L100.5 209 Z" fill="#202b3c"/><path d="M125 198 Q130 201.5 128.5 205.5" stroke="#6b7c95" stroke-width="0.75" fill="none" opacity="0.7"/><path d="M110 188.5 L119 188.5 M110.6 191 L118.4 191 M111.2 193.5 L117.8 193.5" stroke="#5d4a39" stroke-width="1" opacity="0.95"/><circle cx="110" cy="188.5" r="0.7" fill="#8b96a8"/><circle cx="119" cy="188.5" r="0.7" fill="#8b96a8"/><path d="M107 201 L112 204" stroke="#202b3c" stroke-width="0.6" opacity="0.7" stroke-linecap="round"/><path d="M127 188 L131 190" stroke="#202b3c" stroke-width="0.6" opacity="0.7" stroke-linecap="round"/>
   </g>
 
 </svg>

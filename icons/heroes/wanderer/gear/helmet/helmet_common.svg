@@ -1,18 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dCirc0Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6f7791"/>
+      <stop offset="45%" stop-color="#474e66"/>
+      <stop offset="100%" stop-color="#333949"/>
+    </linearGradient>
+    <linearGradient id="dCirc0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#474e66"/>
+      <stop offset="100%" stop-color="#23283a"/>
+    </linearGradient>
+  </defs>
 
   <g id="helmet_common">
-    <path d="M66 44 Q90 35 114 44 L110 51 Q90 49 70 51 Z" fill="#223857" stroke="#122038" stroke-width="1"/>
-    <path d="M78 42 L102 42 L102 48 L78 48 Z" fill="#324c72" stroke="#1b304d" stroke-width="0.8"/>
-    <circle cx="84.8" cy="47.2" r="1.8" fill="#d6e9ff"/>
-    <circle cx="95.2" cy="47.2" r="1.8" fill="#d6e9ff"/>
-    <circle cx="84.8" cy="47.2" r="0.7" fill="#26303e"/>
-    <circle cx="95.2" cy="47.2" r="0.7" fill="#26303e"/>
-    <path d="M87.3 47.2 L92.7 47.2" stroke="#adc5eb" stroke-width="0.8"/>
-    
-    
-    
-    
-    
+    <path d="M68 42.5 Q90 34.5 112 42.5 L111.4 46.4 Q90 39.4 68.6 46.4 Z"
+          fill="url(#dCirc0Weave)" stroke="#23283a" stroke-width="1"/>
+    <path d="M70 43.6 Q90 36.8 110 43.6" stroke="#6f7791" stroke-width="0.7" fill="none" opacity="0.7"/>
+    <circle cx="78" cy="40.6" r="1" fill="#8d96ad" opacity="0.9"/>
+    <circle cx="102" cy="40.6" r="1" fill="#8d96ad" opacity="0.9"/>
+    <circle cx="90" cy="38.6" r="1.5" fill="#9E9E9E" opacity="0.95"/>
+    <path d="M73 41.5 L78 43" stroke="#23283a" stroke-width="0.8" opacity="0.8"/><path d="M101 40.2 Q104 41.6 106.5 41" stroke="#333949" stroke-width="0.7" fill="none" opacity="0.85"/>
   </g>
 
 </svg>

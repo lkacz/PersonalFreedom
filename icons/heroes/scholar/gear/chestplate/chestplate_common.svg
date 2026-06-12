@@ -1,13 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sChest0Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6b7c95"/>
+      <stop offset="45%" stop-color="#42526b"/>
+      <stop offset="100%" stop-color="#2e3a4f"/>
+    </linearGradient>
+    <linearGradient id="sChest0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#42526b"/>
+      <stop offset="100%" stop-color="#202b3c"/>
+    </linearGradient>
+  </defs>
 
   <g id="chestplate_common">
-    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z" fill="#354d71" stroke="#182941" stroke-width="1.2"/>
-    <path d="M76 84 L104 84 L105 143 L75 143 Z" fill="#4a638d" opacity="0.88"/>
-    <path d="M76 84 L83 94 L80 143 L74 143 Z" fill="#2a3e5f" opacity="0.72"/>
-    <path d="M104 84 L97 94 L100 143 L106 143 Z" fill="#2a3e5f" opacity="0.72"/>
-    <path d="M90 84 L90 143" stroke="#223654" stroke-width="1.05" opacity="0.72"/>
-    <path d="M75 136 Q90 141 105 136" stroke="#9E9E9E" stroke-width="1.2" opacity="0.82" fill="none"/>
-    
+    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z"
+          fill="url(#sChest0Cloth)" stroke="#202b3c" stroke-width="1.1"/>
+    <path d="M76 83 L89 83 L89 143 L75.5 143 Z" fill="url(#sChest0Deep)" opacity="0.92"/>
+    <path d="M104 83 L91 83 L91 143 L104.5 143 Z" fill="url(#sChest0Deep)" opacity="0.92"/>
+    <path d="M76 83 L84 83 L78.5 96 L74.5 92 Z" fill="url(#sChest0Cloth)" stroke="#202b3c" stroke-width="0.7"/>
+    <path d="M104 83 L96 83 L101.5 96 L105.5 92 Z" fill="url(#sChest0Cloth)" stroke="#202b3c" stroke-width="0.7"/>
+    <path d="M90 83 L90 143" stroke="#202b3c" stroke-width="0.9" opacity="0.85"/>
+    <path d="M68 138 L112 138 L111.7 142.6 L68.3 142.6 Z" fill="url(#sChest0Deep)" stroke="#202b3c" stroke-width="0.7"/>
+    <path d="M77 84.5 Q82 82.8 87 84.2" stroke="#6b7c95" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <circle cx="90" cy="96" r="1.1" fill="#8b96a8"/><circle cx="90" cy="106" r="1.1" fill="#8b96a8"/><circle cx="90" cy="116" r="1.1" fill="#8b96a8"/><circle cx="90" cy="126" r="1.1" fill="#8b96a8"/><path d="M79 99 L84 103" stroke="#202b3c" stroke-width="0.6" opacity="0.65" stroke-linecap="round"/><path d="M98 121 L102 124" stroke="#202b3c" stroke-width="0.6" opacity="0.65" stroke-linecap="round"/><ellipse cx="99" cy="92" rx="3" ry="2.2" fill="#3b3328" opacity="0.5"/><rect x="73.5" y="129" width="7" height="5" rx="0.8" fill="url(#sChest0Deep)" stroke="#202b3c" stroke-width="0.6"/>
   </g>
 
 </svg>

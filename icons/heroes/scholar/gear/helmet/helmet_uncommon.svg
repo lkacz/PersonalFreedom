@@ -1,16 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sHelm1Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7e94b8"/>
+      <stop offset="45%" stop-color="#475d80"/>
+      <stop offset="100%" stop-color="#32445f"/>
+    </linearGradient>
+    <linearGradient id="sHelm1Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#475d80"/>
+      <stop offset="100%" stop-color="#22304a"/>
+    </linearGradient>
+  </defs>
 
   <g id="helmet_uncommon">
-    <path d="M66 40 L114 40 L109 48 L71 48 Z" fill="#1f2f49" stroke="#132138" stroke-width="1.1"/>
-    <rect x="75" y="48" width="30" height="3.8" rx="1.7" fill="#314565" stroke="#1a2b45" stroke-width="0.8"/>
-    <path d="M79 41 L101 41 L101 47 L79 47 Z" fill="#3f577d" stroke="#1f304a" stroke-width="0.8"/>
-    <path d="M79 42 L101 42" stroke="#4CAF50" stroke-width="1" opacity="0.72"/>
-    <circle cx="90" cy="45.1" r="1.5" fill="#4CAF50" opacity="0.9"/>
-    <path d="M101 39 L109 47 Q110 50 108 52" stroke="#4CAF50" stroke-width="1.1" fill="none"/><circle cx="108" cy="52" r="1.6" fill="#4CAF50"/>
-    
-    
-    
-    
+    <path d="M66 40 L114 40 L109 48 L71 48 Z" fill="url(#sHelm1Deep)" stroke="#22304a" stroke-width="1.05"/>
+    <rect x="75" y="48" width="30" height="3.8" rx="1.7" fill="url(#sHelm1Cloth)" stroke="#22304a" stroke-width="0.8"/>
+    <path d="M62 33 L90 26.5 L118 33 L90 39.5 Z" fill="url(#sHelm1Cloth)" stroke="#22304a" stroke-width="1.1"/>
+    <path d="M66 33.6 L90 28.4 L114 33.6 L90 38.6 Z" fill="url(#sHelm1Deep)" opacity="0.65"/>
+    <path d="M62 33 L90 39.5 L90 42.2 L62 35.4 Z" fill="#32445f" stroke="#22304a" stroke-width="0.7"/>
+    <path d="M118 33 L90 39.5 L90 42.2 L118 35.4 Z" fill="#22304a" stroke="#22304a" stroke-width="0.7"/>
+    <circle cx="90" cy="31" r="1.5" fill="#c9a063"/>
+    <path d="M68 33.4 Q79 30.6 88 30" stroke="#7e94b8" stroke-width="0.7" fill="none" opacity="0.6"/>
+    <g><animateTransform attributeName="transform" type="rotate" values="-4 90 31;5 90 31;-4 90 31" dur="3.6s" repeatCount="indefinite"/><path d="M90 31 Q101 32.5 106.5 41 Q108 45 107 49" stroke="#c9a063" stroke-width="1.1" fill="none"/><path d="M105.6 48.6 L108.4 48.6 L108.7 54 L105.3 54 Z" fill="#c9a063"/><circle cx="107" cy="48.4" r="1.3" fill="#a5d6a7"/></g>
   </g>
 
 </svg>

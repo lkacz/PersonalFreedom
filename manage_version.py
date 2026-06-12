@@ -140,12 +140,17 @@ def update_pyproject_toml(new_version):
     with open(PYPROJECT_FILE, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # version = "5.0.0"
-    new_content = re.sub(
-        r'version = "[^"]+"',
+    # Only update the project version. Avoid touching tool settings such as
+    # python_version or target-version.
+    new_content, replacements = re.subn(
+        r'(?m)^version = "[^"]+"',
         f'version = "{new_version}"',
-        content
+        content,
+        count=1,
     )
+    if replacements == 0:
+        print(f"Warning: project version not found in {PYPROJECT_FILE}. Skipping.")
+        return
 
     with open(PYPROJECT_FILE, 'w', encoding='utf-8') as f:
         f.write(new_content)

@@ -1,11 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sCloak2Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#88abd8"/>
+      <stop offset="45%" stop-color="#3f5a85"/>
+      <stop offset="100%" stop-color="#2c4063"/>
+    </linearGradient>
+    <linearGradient id="sCloak2Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3f5a85"/>
+      <stop offset="100%" stop-color="#1e2f4c"/>
+    </linearGradient>
+  </defs>
 
-  <g id="cloak_rare" opacity="0.9">
-    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#1f2f49" opacity="0.5"/>
-    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#344d75" opacity="0.46"/>
-    <path d="M70 150 L62 191 L74 191 Z" fill="#1b2c45" opacity="0.7"/>
-    <path d="M108 150 L120 189 L106 190 Z" fill="#1b2c45" opacity="0.7"/>
-    <path d="M72 94 L68 182 M108 94 L112 182" stroke="#9cb7dd" stroke-width="0.8" opacity="0.45"/><path d="M68 83 Q90 96 112 83" stroke="#2196F3" stroke-width="1" fill="none" opacity="0.82"/>
+  <g id="cloak_rare" opacity="0.96">
+    <path d="M64 75 Q90 70 116 75 L124 92 L120 188 Q105 183 90 183 Q75 183 60 188 L56 92 Z"
+          fill="url(#sCloak2Cloth)" stroke="#1e2f4c" stroke-width="1" opacity="0.6"/>
+    <path d="M66 92 Q64 138 63 182 M114 92 Q116 138 117 182" stroke="#1e2f4c" stroke-width="0.75" fill="none" opacity="0.55"/>
+    <path d="M72 76 L78 74.8 L80 88 L73 90 Z M108 76 L102 74.8 L100 88 L107 90 Z" fill="url(#sCloak2Deep)" opacity="0.85"/>
+    <path d="M70 92 Q70 130 69 178 M110 92 Q110 130 111 178" stroke="#2c4063" stroke-width="0.7" fill="none" opacity="0.5"/>
+    <path d="M70 150 L61 189 L74 189 Z" fill="url(#sCloak2Deep)" opacity="0.55"/>
+    <path d="M110 150 L119 188 L106 189 Z" fill="url(#sCloak2Deep)" opacity="0.55"/>
+    <path d="M79 76 Q90 73.4 101 76 L100 80.6 Q90 78.4 80 80.6 Z" fill="url(#sCloak2Deep)" stroke="#1e2f4c" stroke-width="0.7"/>
+    <path d="M63 88 Q61 138 62.5 184 M117 88 Q119 138 117.5 184" stroke="#9fc3ef" stroke-width="1.4" fill="none" opacity="0.8"/><path d="M74 84 Q90 92 106 84" stroke="#9fc3ef" stroke-width="0.9" fill="none" opacity="0.9"/><circle cx="90" cy="88.6" r="1.4" fill="#9fc3ef"/><path d="M62.0 174.5 L62.0 176.9 M62.0 175.7 L63.8 174.5 M66.4 174.5 L68.2 176.9 M68.2 174.5 L66.4 176.9 M70.8 176.9 L70.8 174.5 L72.6 174.5" stroke="#2196F3" stroke-width="0.55" fill="none" opacity="0.7" stroke-linecap="round"/><path d="M105.0 174.5 L105.0 176.9 M105.0 175.7 L106.8 174.5 M109.4 174.5 L111.2 176.9 M111.2 174.5 L109.4 176.9 M113.8 176.9 L113.8 174.5 L115.6 174.5" stroke="#2196F3" stroke-width="0.55" fill="none" opacity="0.7" stroke-linecap="round"/>
   </g>
 
 </svg>

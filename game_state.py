@@ -695,10 +695,8 @@ class GameStateManager(QtCore.QObject):
         try:
             from gamification import get_level_from_xp
             old_level_from_total, _, _, _ = get_level_from_xp(current_total)
-        except ImportError:
-            pass
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Falling back to stored hero level: {e}")
 
         new_total_xp = current_total + amount
         # Cap at 2B to prevent overflow

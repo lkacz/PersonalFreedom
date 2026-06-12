@@ -362,7 +362,16 @@ def _compose_zoo_worker() -> QByteArray:
     return Synthesizer.mix_sequences(seq)
 
 def _compose_default() -> QByteArray:
-    return Synthesizer.generate_tone(440, 200)
+    return Synthesizer.generate_tone(440, 160, 0.25, "sine", 15, 80)
+
+def _compose_reminder() -> QByteArray:
+    """Soft health reminder cue that avoids a sharp default beep."""
+    seq = [
+        Synthesizer.generate_tone(659.25, 90, 0.18, "sine", 12, 60),
+        QByteArray(b'\x00' * int(Synthesizer.SAMPLE_RATE * 0.04 * 2)),
+        Synthesizer.generate_tone(523.25, 140, 0.16, "sine", 12, 90),
+    ]
+    return Synthesizer.mix_sequences(seq)
 
 def _compose_eye_start() -> QByteArray:
     """Eye Routine: Start Chime (C5, E5, G5)."""
@@ -445,6 +454,7 @@ _THEME_COMPOSERS = {
     "space_pirate": _compose_space_pirate,
     "thief": _compose_thief,
     "zoo_worker": _compose_zoo_worker,
+    "reminder": _compose_reminder,
     
     "eye_start": _compose_eye_start,
     "eye_complete": _compose_eye_complete,
@@ -462,8 +472,8 @@ class CelebrationAudioManager(QObject):
     Singleton manager using QtMultimedia for low-latency synthesis.
     
     Playback is queue-driven and non-blocking to keep the Qt GUI thread responsive.
-    The sink is released shortly after idle, and safely rebuilt when the default
-    output device changes.
+    The sink is kept warm briefly after idle, and safely rebuilt when the
+    default output device changes.
     """
     _instance = None
     _play_requested = Signal(QByteArray, bool)
@@ -472,8 +482,10 @@ class CelebrationAudioManager(QObject):
     # Windows MMCSS can only handle ~8-10 audio threads per process
     # Higher value = fewer thread creations = more stable audio
     MIN_PLAY_INTERVAL_MS = 300
-    # Time to wait after playback finishes before releasing device (ms)
-    RELEASE_DELAY_MS = 1200
+    # Time to wait after playback finishes before releasing device (ms).
+    # Keeping the shared stream warm reduces audio-driver churn during short
+    # reminder bursts, which can otherwise disturb apps already playing audio.
+    RELEASE_DELAY_MS = 10000
     # Periodically re-check default output device to follow device changes.
     DEVICE_RECHECK_INTERVAL_MS = 2000
     # Sanitized fallback volumes.
@@ -579,23 +591,6 @@ class CelebrationAudioManager(QObject):
                 self._audio_device_key = ""
                 return
 
-            fmt = QAudioFormat()
-            fmt.setSampleRate(Synthesizer.SAMPLE_RATE)
-            fmt.setChannelCount(1)
-            fmt.setSampleFormat(QAudioFormat.SampleFormat.Int16)
-
-            if self._audio_device.isFormatSupported(fmt):
-                self._audio_format = fmt
-                self._channel_count = 1
-                self._audio_device_key = self._device_key(self._audio_device)
-                _logger.info(
-                    "Audio format prepared: %sHz, %s ch (device not opened yet)",
-                    fmt.sampleRate(),
-                    fmt.channelCount(),
-                )
-                return
-
-            # Fallback: try stereo at the same sample rate (we can duplicate channels)
             stereo_fmt = QAudioFormat()
             stereo_fmt.setSampleRate(Synthesizer.SAMPLE_RATE)
             stereo_fmt.setChannelCount(2)
@@ -606,9 +601,26 @@ class CelebrationAudioManager(QObject):
                 self._channel_count = 2
                 self._audio_device_key = self._device_key(self._audio_device)
                 _logger.info(
-                    "Audio format prepared: %sHz, %s ch (stereo fallback, device not opened yet)",
+                    "Audio format prepared: %sHz, %s ch (device not opened yet)",
                     stereo_fmt.sampleRate(),
                     stereo_fmt.channelCount(),
+                )
+                return
+
+            # Fallback: try mono at the same sample rate.
+            fmt = QAudioFormat()
+            fmt.setSampleRate(Synthesizer.SAMPLE_RATE)
+            fmt.setChannelCount(1)
+            fmt.setSampleFormat(QAudioFormat.SampleFormat.Int16)
+
+            if self._audio_device.isFormatSupported(fmt):
+                self._audio_format = fmt
+                self._channel_count = 1
+                self._audio_device_key = self._device_key(self._audio_device)
+                _logger.info(
+                    "Audio format prepared: %sHz, %s ch (mono fallback, device not opened yet)",
+                    fmt.sampleRate(),
+                    fmt.channelCount(),
                 )
                 return
 

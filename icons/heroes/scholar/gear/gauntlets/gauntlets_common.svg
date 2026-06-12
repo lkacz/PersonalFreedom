@@ -1,12 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="sGaunt0Cloth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6b7c95"/>
+      <stop offset="45%" stop-color="#42526b"/>
+      <stop offset="100%" stop-color="#2e3a4f"/>
+    </linearGradient>
+    <linearGradient id="sGaunt0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#42526b"/>
+      <stop offset="100%" stop-color="#202b3c"/>
+    </linearGradient>
+  </defs>
 
   <g id="gauntlets_common">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#3a5377" stroke="#1d304d" stroke-width="1.15"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#3a5377" stroke="#1d304d" stroke-width="1.15"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#e0ccb2" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#e0ccb2" opacity="0.92"/>
-    <path d="M44 138 L56 138 M124 138 L136 138" stroke="#9E9E9E" stroke-width="1" opacity="0.8"/>
-    
+    <path d="M38 134 L62 134 L61 146 L39 146 Z" fill="url(#sGaunt0Cloth)" stroke="#202b3c" stroke-width="1"/><path d="M39 146 L61 146 L59.5 157 L40.5 157 Z" fill="url(#sGaunt0Deep)" stroke="#202b3c" stroke-width="0.9"/><path d="M38.5 139.5 L61.5 139.5" stroke="#6b7c95" stroke-width="0.7" opacity="0.6"/><path d="M40 146 L60 146" stroke="#8b96a8" stroke-width="1.1" opacity="0.9"/><ellipse cx="46" cy="151" rx="2.6" ry="1.8" fill="#1c2331" opacity="0.75"/><path d="M42 136 L46 138.5" stroke="#202b3c" stroke-width="0.55" opacity="0.7" stroke-linecap="round"/>
+    <path d="M118 134 L142 134 L141 146 L119 146 Z" fill="url(#sGaunt0Cloth)" stroke="#202b3c" stroke-width="1"/><path d="M119 146 L141 146 L139.5 157 L120.5 157 Z" fill="url(#sGaunt0Deep)" stroke="#202b3c" stroke-width="0.9"/><path d="M118.5 139.5 L141.5 139.5" stroke="#6b7c95" stroke-width="0.7" opacity="0.6"/><path d="M120 146 L140 146" stroke="#8b96a8" stroke-width="1.1" opacity="0.9"/><ellipse cx="134" cy="151" rx="2.6" ry="1.8" fill="#1c2331" opacity="0.75"/><path d="M122 136 L126 138.5" stroke="#202b3c" stroke-width="0.55" opacity="0.7" stroke-linecap="round"/>
   </g>
 
 </svg>

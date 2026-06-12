@@ -1,14 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <g id="qt_anim_driver">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
-
+  <defs>
+    <linearGradient id="dWard5Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7fd2e4"/>
+      <stop offset="45%" stop-color="#37596c"/>
+      <stop offset="100%" stop-color="#264250"/>
+    </linearGradient>
+    <linearGradient id="dWard5Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#37596c"/>
+      <stop offset="100%" stop-color="#18303d"/>
+    </linearGradient>
+    <radialGradient id="dWard5Aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#00E5FF" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#00E5FF" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
 
   <g id="shield_celestial">
-    <path d="M34 100 L60 100 L64 106 L64 142 L60 149 L34 149 L30 142 L30 106 Z" fill="#395377" stroke="#1b304c" stroke-width="1"/>
-    <rect x="36.5" y="103.4" width="21" height="42" rx="2" fill="#4f6995" opacity="0.9"/>
-    <path d="M30 106 L64 106" stroke="#00E5FF" stroke-width="0.95" opacity="0.82"/>
-    <path d="M37 110 L59 110 M37 118 L59 118 M37 126 L59 126 M37 134 L59 134" stroke="#7f97c2" stroke-width="0.8" opacity="0.72"/><path d="M40 103 L58 103 L62 109 L62 140 L58 146 L40 146 L36 140 L36 109 Z" fill="none" stroke="#00E5FF" stroke-width="0.88" opacity="0.82"/><rect x="43" y="115.5" width="12" height="2" rx="1" fill="#00E5FF" opacity="0.86"><animate attributeName="y" values="115.5;137;115.5" dur="2.1s" repeatCount="indefinite"/></rect><path d="M44 126 L49 131 L55 121" stroke="#00E5FF" stroke-width="1.05" fill="none"/><circle cx="49.5" cy="110.4" r="2.0" fill="#243757" stroke="#00E5FF" stroke-width="0.86"/><ellipse cx="49" cy="125" rx="17.2" ry="8.2" fill="none" stroke="#00E5FF" stroke-width="0.92" opacity="0.55"/><ellipse cx="49" cy="125" rx="11.7" ry="5.5" fill="none" stroke="#bcf8ff" stroke-width="0.78" opacity="0.58"/>
+    <circle cx="47" cy="119" r="16.5" fill="url(#dWard5Deep)" fill-opacity="0.35" stroke="url(#dWard5Weave)" stroke-width="3.4"/>
+    <circle cx="47" cy="119" r="16.5" fill="none" stroke="#18303d" stroke-width="0.8"/>
+    <path d="M47 119 L63.5 119.0 M47 119 L58.7 130.7 M47 119 L47.0 135.5 M47 119 L35.3 130.7 M47 119 L30.5 119.0 M47 119 L35.3 107.3 M47 119 L47.0 102.5 M47 119 L58.7 107.3" stroke="#9beefc" stroke-width="0.5" opacity="0.85"/>
+    <path d="M56.5 122.9 L50.9 128.4 L43.1 128.5 L37.6 122.9 L37.5 115.1 L43.1 109.6 L50.9 109.5 L56.4 115.1 Z" fill="none" stroke="#9beefc" stroke-width="0.5" opacity="0.8"/>
+    <path d="M52.0 119.0 L50.5 122.5 L47.0 124.0 L43.5 122.5 L42.0 119.0 L43.5 115.5 L47.0 114.0 L50.5 115.5 Z" fill="none" stroke="#9beefc" stroke-width="0.5" opacity="0.75"/>
+    <circle cx="47" cy="119" r="1.6" fill="#00E5FF" opacity="0.95"/>
+    <path d="M40 101.0 Q47 97.5 54 101.0" stroke="#9beefc" stroke-width="1" fill="none"/>
+    <g><animateTransform attributeName="transform" type="rotate" values="-3 38 132.0;3 38 132.0;-3 38 132.0" dur="4.2s" repeatCount="indefinite"/><path d="M38 132.0 L38 138.0" stroke="#9beefc" stroke-width="0.7"/><path d="M38 138.0 Q35.6 141.5 38 146.0 Q40.4 141.5 38 138.0 Z" fill="#00E5FF" opacity="0.9"/><path d="M38 139.5 L38 144.5" stroke="#18303d" stroke-width="0.4" opacity="0.8"/></g>
+    <g><animateTransform attributeName="transform" type="rotate" values="-3 47 134.5;3 47 134.5;-3 47 134.5" dur="5s" repeatCount="indefinite"/><path d="M47 134.5 L47 142.5" stroke="#9beefc" stroke-width="0.7"/><path d="M47 142.5 Q44.6 146.0 47 150.5 Q49.4 146.0 47 142.5 Z" fill="#b2f4ff" opacity="0.9"/><path d="M47 144.0 L47 149.0" stroke="#18303d" stroke-width="0.4" opacity="0.8"/></g>
+    <g><animateTransform attributeName="transform" type="rotate" values="-3 56 132.0;3 56 132.0;-3 56 132.0" dur="4.6s" repeatCount="indefinite"/><path d="M56 132.0 L56 138.0" stroke="#9beefc" stroke-width="0.7"/><path d="M56 138.0 Q53.6 141.5 56 146.0 Q58.4 141.5 56 138.0 Z" fill="#00E5FF" opacity="0.9"/><path d="M56 139.5 L56 144.5" stroke="#18303d" stroke-width="0.4" opacity="0.8"/></g>
+    <circle cx="38" cy="133.0" r="0.8" fill="#9beefc"/>
+    <circle cx="47" cy="135.5" r="0.8" fill="#9beefc"/>
+    <circle cx="56" cy="133.0" r="0.8" fill="#9beefc"/>
+    <circle cx="47" cy="119" r="14.1" fill="none" stroke="#9beefc" stroke-width="0.6" opacity="0.75"/><path d="M54.5 109.3 L54.976 110.524 L56.2 111 L54.976 111.476 L54.5 112.7 L54.024 111.476 L52.8 111 L54.024 110.524 Z" fill="#b2f4ff" opacity="0.9"/><path d="M37.5 137.3 L37.5 139.5 M37.5 138.4 L39.3 137.3 M41.5 137.3 L43.3 139.5 M43.3 137.3 L41.5 139.5 M45.5 139.5 L45.5 137.3 L47.3 137.3 M49.5 137.3 L51.3 137.3 L49.5 139.5 L51.3 139.5 M53.5 137.3 L53.5 139.5 M53.5 138.4 L55.3 137.3" stroke="#00E5FF" stroke-width="0.55" fill="none" opacity="0.8" stroke-linecap="round"/><path d="M46.16 114.8 A4.2 4.2 0 1 0 46.16 123.2 A3.2760000000000002 3.2760000000000002 0 1 1 46.16 114.8 Z" fill="#00E5FF" opacity="0.95" transform="rotate(20 47 119)"/><circle cx="47" cy="119" r="19.7" fill="none" stroke="#00E5FF" stroke-width="0.8" opacity="0.5"><animate attributeName="opacity" values="0.5;0.95;0.5" dur="2.4s" repeatCount="indefinite"/></circle><circle cx="38" cy="123" r="0.65" fill="#b2f4ff" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -8" dur="2.9s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.9s" begin="0s" repeatCount="indefinite"/></circle><circle cx="56" cy="126" r="0.6" fill="#00E5FF" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0;0 -7" dur="2.5s" begin="0.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.75;0.9;0" dur="2.5s" begin="0.8s" repeatCount="indefinite"/></circle><ellipse cx="47" cy="125" rx="21" ry="26" fill="url(#dWard5Aura)" opacity="0.475"><animate attributeName="opacity" values="0.475;0.65;0.3;0.475" dur="4.6s" repeatCount="indefinite"/></ellipse><path d="M36 109 L47 104.5" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M47 104.5 L58 109" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M58 109 L60 125" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M60 125 L47 133.5" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M47 133.5 L34 125" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><path d="M34 125 L36 109" stroke="#b2f4ff" stroke-width="0.45" opacity="0.5"/><circle cx="36" cy="109" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="2.2s" repeatCount="indefinite"/></circle><circle cx="47" cy="104.5" r="0.7" fill="#b2f4ff" opacity="0.7"/><circle cx="58" cy="109" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="3.0s" repeatCount="indefinite"/></circle><circle cx="60" cy="125" r="0.7" fill="#b2f4ff" opacity="0.7"/><circle cx="47" cy="133.5" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="3.8000000000000003s" repeatCount="indefinite"/></circle><circle cx="34" cy="125" r="0.7" fill="#b2f4ff" opacity="0.7"/><circle cx="36" cy="109" r="0.7" fill="#b2f4ff" opacity="0.85"><animate attributeName="opacity" values="0.85;0.3;0.85" dur="4.6000000000000005s" repeatCount="indefinite"/></circle><g><animateTransform attributeName="transform" type="rotate" values="0 47 119;360 47 119" dur="9s" repeatCount="indefinite"/><circle cx="69.0" cy="119" r="1.0" fill="#b2f4ff" opacity="0.9"/><circle cx="69.0" cy="119" r="2.1" fill="#b2f4ff" opacity="0.25"/></g>
   </g>
 
-  </g>
 </svg>

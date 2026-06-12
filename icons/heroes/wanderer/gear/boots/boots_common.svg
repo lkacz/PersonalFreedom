@@ -1,13 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="dCloud0Weave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6f7791"/>
+      <stop offset="45%" stop-color="#474e66"/>
+      <stop offset="100%" stop-color="#333949"/>
+    </linearGradient>
+    <linearGradient id="dCloud0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#474e66"/>
+      <stop offset="100%" stop-color="#23283a"/>
+    </linearGradient>
+  </defs>
 
   <g id="boots_common">
-    <path d="M43 188 L74 188 L76 202 L41 202 Z" fill="#395276" stroke="#1c304b" stroke-width="1"/>
-    <path d="M104 188 L135 188 L137 202 L102 202 Z" fill="#395276" stroke="#1c304b" stroke-width="1"/>
-    <path d="M41 201 L77 201 L79 209 L39 209 Z" fill="#262f3f" stroke="#111924" stroke-width="1"/>
-    <path d="M102 201 L138 201 L140 209 L100 209 Z" fill="#262f3f" stroke="#111924" stroke-width="1"/>
-    <path d="M45 192 L74 192" stroke="#9E9E9E" stroke-width="1.08" opacity="0.88"/>
-    <path d="M106 192 L135 192" stroke="#9E9E9E" stroke-width="1.08" opacity="0.88"/>
-    
+    <path d="M46 186 Q60 182.5 72 186 L74.5 198.5 Q60 194.5 43.5 198.5 Z" fill="url(#dCloud0Weave)" stroke="#23283a" stroke-width="1"/><path d="M44 197.6 Q60 193.8 74 197.6 L76.5 205 Q60 201.5 41.5 205 Z" fill="url(#dCloud0Deep)" stroke="#23283a" stroke-width="0.9"/><ellipse cx="49" cy="206.4" rx="6.4" ry="2.7" fill="#6f7791" opacity="0.5"><animate attributeName="opacity" values="0.5;0.7;0.5" dur="3.2s" repeatCount="indefinite"/></ellipse><ellipse cx="60" cy="207.6" rx="8" ry="3" fill="#6f7791" opacity="0.42"><animate attributeName="opacity" values="0.42;0.62;0.42" dur="3.8s" repeatCount="indefinite"/></ellipse><ellipse cx="70" cy="206.4" rx="6" ry="2.6" fill="#6f7791" opacity="0.5"><animate attributeName="opacity" values="0.5;0.68;0.5" dur="2.9s" repeatCount="indefinite"/></ellipse><path d="M48 190.5 Q60 187.5 70 190.5" stroke="#6f7791" stroke-width="0.65" fill="none" opacity="0.6"/><path d="M49 199.5 L54 202.5" stroke="#23283a" stroke-width="0.6" opacity="0.65" stroke-linecap="round"/>
+    <path d="M106 186 Q120 182.5 132 186 L134.5 198.5 Q120 194.5 103.5 198.5 Z" fill="url(#dCloud0Weave)" stroke="#23283a" stroke-width="1"/><path d="M104 197.6 Q120 193.8 134 197.6 L136.5 205 Q120 201.5 101.5 205 Z" fill="url(#dCloud0Deep)" stroke="#23283a" stroke-width="0.9"/><ellipse cx="109" cy="206.4" rx="6.4" ry="2.7" fill="#6f7791" opacity="0.5"><animate attributeName="opacity" values="0.5;0.7;0.5" dur="3.2s" repeatCount="indefinite"/></ellipse><ellipse cx="120" cy="207.6" rx="8" ry="3" fill="#6f7791" opacity="0.42"><animate attributeName="opacity" values="0.42;0.62;0.42" dur="3.8s" repeatCount="indefinite"/></ellipse><ellipse cx="130" cy="206.4" rx="6" ry="2.6" fill="#6f7791" opacity="0.5"><animate attributeName="opacity" values="0.5;0.68;0.5" dur="2.9s" repeatCount="indefinite"/></ellipse><path d="M108 190.5 Q120 187.5 130 190.5" stroke="#6f7791" stroke-width="0.65" fill="none" opacity="0.6"/><path d="M109 199.5 L114 202.5" stroke="#23283a" stroke-width="0.6" opacity="0.65" stroke-linecap="round"/>
   </g>
 
 </svg>

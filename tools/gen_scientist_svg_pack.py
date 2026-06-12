@@ -1,36 +1,665 @@
 #!/usr/bin/env python3
-"""Regenerate complete scientist hero SVG pack with fit-aligned rarity progression."""
+"""Regenerate complete scientist hero SVG pack with fit-aligned rarity progression.
+
+Art direction: working lab equipment that escalates from chipped, taped-up
+gear through certified instruments, blue-glass precision optics, violet
+plasma prototypes, amber reactor-grade apparatus, up to quantum celestial
+instruments. Slot semantics: Helmet = goggles, Shield = data tablet,
+Weapon = analyzer with reagent bulb, Amulet = ID badge, Cloak = hazmat
+drape / energy field. Footprints match the established hero body anchors.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
 
+try:
+    from svg_pack_common import (
+        RARITIES, RARITY_COLORS, RARITY_LIGHT,
+        write, wrap, linear_gradient, radial_gradient,
+        glow_pulse, shimmer_line, ember, orbit_glint,
+        constellation, rivets, scratches, rune_strip,
+    )
+except ImportError:
+    from tools.svg_pack_common import (
+        RARITIES, RARITY_COLORS, RARITY_LIGHT,
+        write, wrap, linear_gradient, radial_gradient,
+        glow_pulse, shimmer_line, ember, orbit_glint,
+        constellation, rivets, scratches, rune_strip,
+    )
 
 ROOT = Path("icons/heroes/scientist")
-RARITIES = ["common", "uncommon", "rare", "epic", "legendary", "celestial"]
-RARITY_COLORS = {
-    "common": "#9E9E9E",
-    "uncommon": "#4CAF50",
-    "rare": "#2196F3",
-    "epic": "#9C27B0",
-    "legendary": "#FF9800",
-    "celestial": "#00E5FF",
+
+# Casing face, casing shadow, outline, highlight, status accent, glass tint.
+PAL = {
+    "common": {
+        "case": "#5a626e", "shadow": "#3f4651", "edge": "#2b323c",
+        "hi": "#8a93a0", "trim": "#9aa3b0", "glass": "#aebdc9",
+    },
+    "uncommon": {
+        "case": "#5d6a78", "shadow": "#414c59", "edge": "#2b3540",
+        "hi": "#93a2b2", "trim": "#7ec983", "glass": "#bcd6c4",
+    },
+    "rare": {
+        "case": "#4c5f76", "shadow": "#354459", "edge": "#232f40",
+        "hi": "#8fb0d4", "trim": "#64a8e8", "glass": "#aed4f5",
+    },
+    "epic": {
+        "case": "#544a6e", "shadow": "#3b3450", "edge": "#282239",
+        "hi": "#a18fc7", "trim": "#b167d6", "glass": "#d3aef0",
+    },
+    "legendary": {
+        "case": "#6a5839", "shadow": "#4a3d26", "edge": "#332a17",
+        "hi": "#d3a967", "trim": "#ffb74d", "glass": "#ffd9a1",
+    },
+    "celestial": {
+        "case": "#3d5a6a", "shadow": "#29424e", "edge": "#1a313c",
+        "hi": "#8cd7e6", "trim": "#4dd9f0", "glass": "#b8f3ff",
+    },
 }
 
 
-def write(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content.strip() + "\n", encoding="utf-8")
+def tier_defs(rarity: str, prefix: str) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    parts = [
+        linear_gradient(f"{prefix}Case", [("0%", p["hi"]), ("45%", p["case"]), ("100%", p["shadow"])]),
+        linear_gradient(f"{prefix}Deep", [("0%", p["case"]), ("100%", p["edge"])]),
+        linear_gradient(f"{prefix}Glass", [("0%", p["glass"]), ("100%", p["shadow"])]),
+    ]
+    if rarity in ("epic", "legendary", "celestial"):
+        parts.append(radial_gradient(f"{prefix}Aura", [("0%", c, 0.5), ("70%", c, 0.16), ("100%", c, 0.0)]))
+    return "\n".join(parts)
 
 
-def wrap(body: str, defs: str = "") -> str:
-    defs_block = f"<defs>\n{defs}\n</defs>\n" if defs else ""
-    return (
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">\n'
-        f"{defs_block}{body}\n"
-        "</svg>"
+# ---------------------------------------------------------------------------
+# HELMET — lab goggles strapped over the brow; HUD optics grow per tier.
+# Footprint: x66-114, y38-55.
+# ---------------------------------------------------------------------------
+
+def helmet_svg(rarity: str, idx: int) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    lc = RARITY_LIGHT[rarity]
+    g = f"cGogg{idx}"
+
+    details = []
+    if idx == 0:
+        details.append(f'<path d="M84 41.5 L88 44.5" stroke="{p["edge"]}" stroke-width="0.7" opacity="0.85"/>')  # cracked lens
+        details.append(f'<rect x="97.5" y="40" width="4.5" height="2.2" rx="0.5" fill="#c8c2ae" opacity="0.85"/>')  # tape patch
+    if idx >= 1:
+        details.append(
+            f'<rect x="70.5" y="44.2" width="4.6" height="5" rx="1" fill="url(#{g}Deep)" stroke="{p["trim"]}" stroke-width="0.8"/>'
+            f'<circle cx="72.8" cy="46.7" r="0.9" fill="{p["trim"]}"/>'
+            f'<rect x="104.9" y="44.2" width="4.6" height="5" rx="1" fill="url(#{g}Deep)" stroke="{p["trim"]}" stroke-width="0.8"/>'
+            f'<circle cx="107.2" cy="46.7" r="0.9" fill="{p["trim"]}"/>'
+        )
+    if idx >= 2:
+        # Scanning HUD line sweeping across the right lens.
+        details.append(
+            f'<path d="M91.8 42.6 L98.6 42.6" stroke="{lc}" stroke-width="0.6" opacity="0.7">'
+            f'<animateTransform attributeName="transform" type="translate" values="0 0;0 6;0 0" dur="2.8s" repeatCount="indefinite"/>'
+            f'<animate attributeName="opacity" values="0.7;0.25;0.7" dur="2.8s" repeatCount="indefinite"/></path>'
+        )
+        details.append(rune_strip(78.5, 38.2, 5, c, step=4.6, height=2.0, opacity=0.8))
+    if idx >= 3:
+        # Side analyzer arm folding over the left lens.
+        details.append(
+            f'<path d="M70 42 L66.5 38.5 L70.5 36.8" stroke="{c}" stroke-width="1" fill="none"/>'
+            f'<circle cx="70.8" cy="36.6" r="1.7" fill="url(#{g}Deep)" stroke="{c}" stroke-width="0.8"/>'
+            f'<circle cx="70.8" cy="36.6" r="0.6" fill="{lc}">'
+            f'<animate attributeName="opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite"/></circle>'
+        )
+    if idx >= 4:
+        details.append(shimmer_line(73, 53.2, 107, 53.2, c, width=0.8, dur="2.6s", omin=0.3, omax=0.9))
+        details.append(ember(76, 38, 0.6, lc, rise=5, dur="2.5s"))
+        details.append(ember(103, 37, 0.55, c, rise=6, dur="3.1s", begin="0.9s"))
+    if idx == 5:
+        details.append(glow_pulse(90, 45, 27, 9.5, f"url(#{g}Aura)", dur="4s", omin=0.35, omax=0.75))
+        details.append(constellation([(72, 37.5), (81, 35), (90, 34.2), (99, 35), (108, 37.5)], lc))
+        details.append(orbit_glint(90, 45, 24, 0.95, lc, dur="9s"))
+
+    body = f"""
+  <g id="helmet_{rarity}">
+    <path d="M67 44 Q90 39.5 113 44 L113 47 Q90 42.8 67 47 Z" fill="url(#{g}Deep)" stroke="{p["edge"]}" stroke-width="0.9"/>
+    <rect x="78.6" y="40.6" width="10.4" height="8.2" rx="2.6" fill="url(#{g}Glass)" stroke="{p["edge"]}" stroke-width="1" opacity="0.92"/>
+    <rect x="91" y="40.6" width="10.4" height="8.2" rx="2.6" fill="url(#{g}Glass)" stroke="{p["edge"]}" stroke-width="1" opacity="0.92"/>
+    <path d="M89 44.4 L91 44.4" stroke="{p["edge"]}" stroke-width="1.1"/>
+    <path d="M80.2 42.2 Q83 41 86 42" stroke="#ffffff" stroke-width="0.7" fill="none" opacity="0.65"/>
+    <path d="M92.6 42.2 Q95.4 41 98.4 42" stroke="#ffffff" stroke-width="0.7" fill="none" opacity="0.65"/>
+    <rect x="75.4" y="42.8" width="3.2" height="3.6" rx="0.8" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.7"/>
+    <rect x="101.4" y="42.8" width="3.2" height="3.6" rx="0.8" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.7"/>
+    {''.join(details)}
+  </g>
+"""
+    return wrap(body, tier_defs(rarity, g))
+
+
+# ---------------------------------------------------------------------------
+# CHESTPLATE — lab coat front: pocket protector, vial rack, hazard tags.
+# Footprint: x64-116, y76-146.
+# ---------------------------------------------------------------------------
+
+def chestplate_svg(rarity: str, idx: int) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    lc = RARITY_LIGHT[rarity]
+    g = f"cCoat{idx}"
+
+    details = []
+    # Pocket protector with pens on all tiers.
+    details.append(
+        f'<rect x="95" y="88" width="10" height="8.4" rx="1" fill="url(#{g}Deep)" stroke="{p["edge"]}" stroke-width="0.7"/>'
+        f'<path d="M97 88 L97 84.6 M99.6 88 L99.2 83.4 M102.2 88 L102.2 84.8" stroke="{p["trim"]}" stroke-width="1"/>'
     )
+    if idx == 0:
+        details.append(f'<ellipse cx="80" cy="92" rx="3.4" ry="2.4" fill="#7a6a3f" opacity="0.5"/>')  # chemical stain
+        details.append(f'<ellipse cx="98" cy="124" rx="2.6" ry="1.9" fill="#3f5a46" opacity="0.45"/>')
+        details.append(scratches([(76, 110, 81, 114), (100, 104, 104, 107)], color=p["edge"], width=0.6, opacity=0.6))
+    if idx >= 1:
+        # Buttoned placket + collar tabs.
+        details.append(
+            f'<circle cx="90" cy="98" r="1" fill="{p["trim"]}"/><circle cx="90" cy="110" r="1" fill="{p["trim"]}"/>'
+            f'<circle cx="90" cy="122" r="1" fill="{p["trim"]}"/><circle cx="90" cy="134" r="1" fill="{p["trim"]}"/>'
+            f'<path d="M84 80 L90 88 L96 80" stroke="{p["hi"]}" stroke-width="1" fill="none" opacity="0.85"/>'
+        )
+    if idx >= 2:
+        # Vial rack strip with three reagent tubes.
+        vials = []
+        for i, (vx, fill_h) in enumerate([(75.5, 4.6), (80.3, 3.4), (85.1, 5.2)]):
+            vials.append(
+                f'<rect x="{vx}" y="100" width="3.2" height="7.6" rx="1.4" fill="url(#{g}Glass)" stroke="{p["edge"]}" stroke-width="0.6" opacity="0.95"/>'
+                f'<rect x="{vx + 0.55}" y="{107 - fill_h}" width="2.1" height="{fill_h}" rx="0.9" fill="{c}" opacity="0.85">'
+                f'<animate attributeName="opacity" values="0.85;0.55;0.85" dur="{2.3 + 0.5 * i}s" repeatCount="indefinite"/></rect>'
+            )
+        details.append(f'<rect x="74" y="99" width="15.6" height="9.8" rx="1.4" fill="none" stroke="{p["trim"]}" stroke-width="0.8"/>' + "".join(vials))
+    if idx >= 3:
+        # Radiation-grade seal patch.
+        details.append(
+            f'<circle cx="99" cy="112" r="4.2" fill="url(#{g}Deep)" stroke="{c}" stroke-width="0.9"/>'
+            f'<path d="M99 112 L99 108.4 A3.6 3.6 0 0 1 102.1 110.2 Z M99 112 L95.9 110.2 A3.6 3.6 0 0 1 99 108.4 Z" fill="{c}" opacity="0.9"/>'
+            f'<circle cx="99" cy="112" r="1" fill="{lc}"/>'
+        )
+    if idx >= 4:
+        details.append(
+            f'<path d="M68 84 Q90 70 112 84" stroke="{c}" stroke-width="1.2" fill="none" opacity="0.8"/>'
+        )
+        details.append(shimmer_line(90, 84, 90, 142, lc, width=0.7, dur="3.2s", omin=0.2, omax=0.65))
+        details.append(ember(82, 118, 0.7, lc, rise=9, dur="2.9s"))
+        details.append(ember(101, 100, 0.6, c, rise=8, dur="3.4s", begin="1.2s"))
+    if idx == 5:
+        details.append(glow_pulse(90, 106, 25, 18, f"url(#{g}Aura)", dur="4.5s", omin=0.3, omax=0.7))
+        details.append(constellation([(77, 95), (84, 90), (93, 90), (101, 95), (102, 104), (95, 110), (85, 109), (78, 103), (77, 95)], lc, dot_r=0.75))
+        details.append(orbit_glint(90, 104, 20, 1.0, lc, dur="10.5s"))
 
+    body = f"""
+  <g id="chestplate_{rarity}">
+    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z"
+          fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="1.05"/>
+    <path d="M76 83 L89 83 L89 143 L75.5 143 Z" fill="url(#{g}Deep)" opacity="0.55"/>
+    <path d="M104 83 L91 83 L91 143 L104.5 143 Z" fill="url(#{g}Deep)" opacity="0.55"/>
+    <path d="M76 83 L83.5 83 L78.5 94 L74.5 90 Z" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.7"/>
+    <path d="M104 83 L96.5 83 L101.5 94 L105.5 90 Z" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.7"/>
+    <path d="M90 83 L90 143" stroke="{p["edge"]}" stroke-width="0.9" opacity="0.8"/>
+    <rect x="72.5" y="128" width="9.6" height="10" rx="1.2" fill="url(#{g}Deep)" stroke="{p["edge"]}" stroke-width="0.7" opacity="0.9"/>
+    <rect x="97.9" y="128" width="9.6" height="10" rx="1.2" fill="url(#{g}Deep)" stroke="{p["edge"]}" stroke-width="0.7" opacity="0.9"/>
+    <path d="M73 85 Q80 82.6 87 84.4" stroke="{p["hi"]}" stroke-width="0.7" fill="none" opacity="0.55"/>
+    {''.join(details)}
+  </g>
+"""
+    return wrap(body, tier_defs(rarity, g))
+
+
+# ---------------------------------------------------------------------------
+# GAUNTLETS — sealed lab gloves: cuff rings, grip pads, status LEDs.
+# Footprints: left x37-63 / right x117-143, y132-158.
+# ---------------------------------------------------------------------------
+
+def gauntlets_svg(rarity: str, idx: int) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    lc = RARITY_LIGHT[rarity]
+    g = f"cGlove{idx}"
+
+    def one(x0: float, mirror: bool) -> str:
+        xm = x0 + 13
+        parts = [
+            f'<path d="M{x0+1.5} 134 L{x0+24.5} 134 L{x0+23.5} 145 L{x0+2.5} 145 Z" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="1"/>',
+            f'<path d="M{x0+2.5} 145 L{x0+23.5} 145 L{x0+22} 157 L{x0+4} 157 Z" fill="url(#{g}Deep)" stroke="{p["edge"]}" stroke-width="0.9"/>',
+            f'<path d="M{x0+2} 141 L{x0+24} 141" stroke="{p["hi"]}" stroke-width="0.6" opacity="0.55"/>',
+            # Sealed cuff ring.
+            f'<rect x="{x0+2}" y="143.6" width="22" height="2.8" rx="1.3" fill="url(#{g}Deep)" stroke="{p["trim"]}" stroke-width="0.7"/>',
+        ]
+        if idx == 0:
+            parts.append(f'<rect x="{xm-3}" y="136.4" width="6" height="2.4" rx="0.5" fill="#c8c2ae" opacity="0.8"/>')  # tape
+            parts.append(scratches([(x0 + 5, 149, x0 + 9, 152)], color=p["edge"], width=0.55, opacity=0.7))
+        if idx >= 1:
+            parts.append(
+                f'<circle cx="{x0+5.5}" cy="145" r="0.8" fill="{p["trim"]}">'
+                f'<animate attributeName="opacity" values="1;0.35;1" dur="2.2s" repeatCount="indefinite"/></circle>'
+            )
+        if idx >= 2:
+            # Grip pads.
+            parts.append(
+                f'<rect x="{x0+6}" y="150" width="3.4" height="4.6" rx="1" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.5"/>'
+                f'<rect x="{x0+11}" y="151" width="3.4" height="4.6" rx="1" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.5"/>'
+                f'<rect x="{x0+16}" y="150" width="3.4" height="4.6" rx="1" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.5"/>'
+            )
+            parts.append(rune_strip(x0 + 6, 136.6, 3, c, step=5.0, height=2.0, opacity=0.85))
+        if idx >= 3:
+            parts.append(
+                f'<circle cx="{xm}" cy="140.4" r="2" fill="url(#{g}Deep)" stroke="{c}" stroke-width="0.8"/>'
+                f'<circle cx="{xm}" cy="140.4" r="0.7" fill="{lc}">'
+                f'<animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/></circle>'
+            )
+        if idx >= 4:
+            parts.append(
+                f'<path d="M{x0+3} 156 L{x0+23} 156" stroke="{c}" stroke-width="0.9" opacity="0.5">'
+                f'<animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite"/></path>'
+            )
+            parts.append(ember(xm + (4 if mirror else -4), 136.5, 0.6, lc, rise=6, dur="2.9s", begin="0.8s" if mirror else "0s"))
+        if idx == 5:
+            parts.append(glow_pulse(xm, 145, 13, 10, f"url(#{g}Aura)", dur="4.3s", omin=0.3, omax=0.7))
+            parts.append(constellation([(x0 + 5, 137.6), (xm, 135.6), (x0 + 21, 137.6)], lc, dot_r=0.7))
+        return "".join(parts)
+
+    body = f"""
+  <g id="gauntlets_{rarity}">
+    {one(37, False)}
+    {one(117, True)}
+  </g>
+"""
+    return wrap(body, tier_defs(rarity, g))
+
+
+# ---------------------------------------------------------------------------
+# BOOTS — safety shoes: composite toe caps, hazard stripe, tread sole.
+# Footprints: left x41-79 / right x101-139, y184-210.
+# ---------------------------------------------------------------------------
+
+def boots_svg(rarity: str, idx: int) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    lc = RARITY_LIGHT[rarity]
+    g = f"cBoot{idx}"
+
+    def one(x0: float, flip: bool) -> str:
+        xm = x0 + 19
+        parts = [
+            f'<path d="M{x0+4} 186 L{x0+32} 186 L{x0+34} 198 L{x0+2} 198 Z" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="1"/>',
+            f'<path d="M{x0+1} 197.5 L{x0+35} 197.5 L{x0+37.5} 206.5 L{x0-0.5} 206.5 Z" fill="url(#{g}Deep)" stroke="{p["edge"]}" stroke-width="1"/>',
+            # Tread sole.
+            f'<path d="M{x0-0.5} 205.6 L{x0+37.5} 205.6 L{x0+37.5} 209 L{x0-0.5} 209 Z" fill="{p["edge"]}"/>',
+            f'<path d="M{x0+4} 206.4 L{x0+5.6} 208.4 M{x0+10} 206.4 L{x0+11.6} 208.4 M{x0+16} 206.4 L{x0+17.6} 208.4 M{x0+22} 206.4 L{x0+23.6} 208.4 M{x0+28} 206.4 L{x0+29.6} 208.4" stroke="{p["shadow"]}" stroke-width="1.1"/>',
+            # Composite toe cap.
+            f'<path d="M{x0+25} 198 L{x0+32.5} 186.6 L{x0+34} 198 Z" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.7" opacity="0.9"/>',
+        ]
+        if idx == 0:
+            parts.append(scratches([(x0 + 7, 200.5, x0 + 12, 203.5), (x0 + 25, 188.5, x0 + 29, 191)], color=p["edge"], width=0.6, opacity=0.7))
+        if idx >= 1:
+            # Hazard stripe band.
+            stripe = "".join(
+                f'<path d="M{x0 + 5 + i * 6} 192 L{x0 + 8 + i * 6} 189" stroke="{p["trim"]}" stroke-width="1.6"/>'
+                for i in range(4)
+            )
+            parts.append(f'<rect x="{x0+4}" y="188.6" width="26" height="3.8" rx="0.8" fill="{p["shadow"]}" opacity="0.8"/>{stripe}')
+        if idx >= 2:
+            parts.append(rune_strip(x0 + 9, 200.8, 4, c, step=4.5, height=2.2, opacity=0.8))
+        if idx >= 3:
+            parts.append(
+                f'<circle cx="{x0+7}" cy="195.4" r="1.4" fill="url(#{g}Deep)" stroke="{c}" stroke-width="0.7"/>'
+                f'<circle cx="{x0+7}" cy="195.4" r="0.5" fill="{lc}">'
+                f'<animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite"/></circle>'
+            )
+        if idx >= 4:
+            parts.append(shimmer_line(x0 + 1, 207.4, x0 + 36, 207.4, c, width=1.0, dur="2.7s", omin=0.3, omax=0.9))
+            parts.append(ember(xm + (3 if flip else -3), 195, 0.55, lc, rise=6, dur="3.2s", begin="1.1s" if flip else "0s"))
+        if idx == 5:
+            parts.append(glow_pulse(xm, 198, 18, 8, f"url(#{g}Aura)", dur="4.8s", omin=0.25, omax=0.6))
+            parts.append(constellation([(x0 + 8, 189.5), (xm, 187.4), (x0 + 30, 189.5)], lc, dot_r=0.65))
+        return "".join(parts)
+
+    body = f"""
+  <g id="boots_{rarity}">
+    {one(41, False)}
+    {one(101, True)}
+  </g>
+"""
+    return wrap(body, tier_defs(rarity, g))
+
+
+# ---------------------------------------------------------------------------
+# SHIELD — research tablet: screen bezel, live data trace, port row.
+# Footprint: x28-66, y98-152.
+# ---------------------------------------------------------------------------
+
+def shield_svg(rarity: str, idx: int) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    lc = RARITY_LIGHT[rarity]
+    g = f"cTab{idx}"
+
+    details = []
+    if idx == 0:
+        # Cracked screen corner + sticky note.
+        details.append(f'<path d="M56 107 L59.5 111 L57 112.5 M58 108.5 L60 113" stroke="{p["edge"]}" stroke-width="0.6" fill="none" opacity="0.85"/>')
+        details.append(f'<rect x="36" y="134" width="7.5" height="7" fill="#d8cf9a" opacity="0.9" transform="rotate(-6 39.7 137.5)"/>')
+    if idx >= 1:
+        # Status LED row.
+        details.append(
+            f'<circle cx="38" cy="146.4" r="0.9" fill="{p["trim"]}">'
+            f'<animate attributeName="opacity" values="1;0.3;1" dur="2.1s" repeatCount="indefinite"/></circle>'
+            f'<circle cx="41.6" cy="146.4" r="0.9" fill="{p["trim"]}" opacity="0.75"/>'
+            f'<circle cx="45.2" cy="146.4" r="0.9" fill="{p["shadow"]}"/>'
+        )
+    if idx >= 2:
+        # Live data trace drifting across the screen.
+        details.append(
+            f'<path d="M36 124 L40 124 L42.5 118.5 L45.5 129 L48.5 121 L51 124 L58 124" '
+            f'stroke="{lc}" stroke-width="0.9" fill="none" opacity="0.9">'
+            f'<animate attributeName="opacity" values="0.9;0.45;0.9" dur="2.4s" repeatCount="indefinite"/></path>'
+        )
+        details.append(rune_strip(37, 111.2, 5, c, step=4.2, height=2.2, opacity=0.8))
+    if idx >= 3:
+        # Molecule diagram in screen corner.
+        details.append(
+            f'<circle cx="40" cy="133.5" r="1.3" fill="none" stroke="{c}" stroke-width="0.6"/>'
+            f'<circle cx="45.5" cy="131" r="1.3" fill="none" stroke="{c}" stroke-width="0.6"/>'
+            f'<circle cx="44" cy="136.5" r="1.3" fill="none" stroke="{c}" stroke-width="0.6"/>'
+            f'<path d="M41.2 132.9 L44.3 131.6 M44.6 132.2 L44.2 135.2 M41.1 134.3 L42.8 135.9" stroke="{c}" stroke-width="0.55"/>'
+        )
+    if idx >= 4:
+        details.append(
+            f'<rect x="33.5" y="105.5" width="27" height="39" rx="2" fill="none" stroke="{c}" stroke-width="0.8" opacity="0.6">'
+            f'<animate attributeName="opacity" values="0.6;1;0.6" dur="2.6s" repeatCount="indefinite"/></rect>'
+        )
+        details.append(ember(39, 119, 0.65, lc, rise=8, dur="2.8s"))
+        details.append(ember(53, 127, 0.6, c, rise=7, dur="3.3s", begin="1s"))
+    if idx == 5:
+        details.append(glow_pulse(47, 125, 20, 26, f"url(#{g}Aura)", dur="4.3s", omin=0.3, omax=0.7))
+        details.append(constellation([(38, 112), (47, 108.6), (56, 112), (58, 124), (51, 134), (40, 132), (38, 112)], lc, dot_r=0.75))
+        details.append(orbit_glint(47, 124, 16.5, 0.95, lc, dur="9.5s"))
+
+    body = f"""
+  <g id="shield_{rarity}">
+    <rect x="30" y="100.5" width="34" height="49" rx="3.4" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="1.15"/>
+    <rect x="33" y="104" width="28" height="42" rx="2" fill="url(#{g}Deep)"/>
+    <rect x="34.5" y="106.5" width="25" height="37" rx="1.6" fill="{p["shadow"]}" opacity="0.9"/>
+    <path d="M36 109 L58 109" stroke="{p["hi"]}" stroke-width="0.6" opacity="0.5"/>
+    <path d="M48 101.8 L52 101.8" stroke="{p["edge"]}" stroke-width="0.8"/>
+    <path d="M52 148.6 L56 148.6 M46 148.6 L50 148.6" stroke="{p["edge"]}" stroke-width="1" opacity="0.85"/>
+    <path d="M31.5 104 Q33 101.6 36 101.2" stroke="{p["hi"]}" stroke-width="0.7" fill="none" opacity="0.6"/>
+    {''.join(details)}
+  </g>
+"""
+    return wrap(body, tier_defs(rarity, g))
+
+
+# ---------------------------------------------------------------------------
+# WEAPON — handheld analyzer on the -24° axis: grip, stem and reagent bulb
+# with live contents; escalates to plasma instrument.
+# ---------------------------------------------------------------------------
+
+def weapon_svg(rarity: str, idx: int) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    lc = RARITY_LIGHT[rarity]
+    g = f"cInst{idx}"
+
+    details = []
+    if idx == 0:
+        details.append(f'<path d="M133 109 L137 113" stroke="{p["edge"]}" stroke-width="0.6" opacity="0.9"/>')  # crack
+        details.append(f'<rect x="118" y="132" width="5" height="2.2" rx="0.5" fill="#c8c2ae" opacity="0.85" transform="rotate(8 120.5 133)"/>')
+    if idx >= 1:
+        details.append(
+            f'<circle cx="120.3" cy="156" r="1" fill="{p["trim"]}">'
+            f'<animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite"/></circle>'
+        )
+    if idx >= 2:
+        # Bubbles rising in the reagent bulb.
+        details.append(
+            f'<circle cx="135" cy="112" r="0.9" fill="{lc}" opacity="0.85">'
+            f'<animateTransform attributeName="transform" type="translate" values="0 0;0 -7" dur="2.2s" repeatCount="indefinite"/>'
+            f'<animate attributeName="opacity" values="0.85;0.85;0" dur="2.2s" repeatCount="indefinite"/></circle>'
+            f'<circle cx="139" cy="114" r="0.7" fill="{lc}" opacity="0.75">'
+            f'<animateTransform attributeName="transform" type="translate" values="0 0;0 -8" dur="2.9s" begin="0.7s" repeatCount="indefinite"/>'
+            f'<animate attributeName="opacity" values="0.75;0.75;0" dur="2.9s" begin="0.7s" repeatCount="indefinite"/></circle>'
+        )
+        details.append(rune_strip(117.2, 140.5, 1, c, step=4, height=2.4, opacity=0.9))
+    if idx >= 3:
+        # Coil winding around the stem.
+        details.append(
+            f'<path d="M126.5 126 Q130 124.5 128.5 122 Q126 120.5 129.5 118.5 Q133 117 131 114.5" '
+            f'stroke="{c}" stroke-width="0.9" fill="none" opacity="0.9"/>'
+        )
+    if idx >= 4:
+        details.append(
+            f'<circle cx="137" cy="108.5" r="8.6" fill="none" stroke="{c}" stroke-width="0.8" opacity="0.55">'
+            f'<animate attributeName="opacity" values="0.55;0.95;0.55" dur="2.1s" repeatCount="indefinite"/></circle>'
+        )
+        details.append(ember(133, 102, 0.7, lc, rise=8, dur="2.4s"))
+        details.append(ember(141, 104, 0.6, c, rise=7, dur="2.9s", begin="0.9s"))
+    if idx == 5:
+        details.append(glow_pulse(137, 108, 14, 11, f"url(#{g}Aura)", dur="3.7s", omin=0.35, omax=0.8))
+        details.append(constellation([(129, 115), (134, 109.5), (140, 105), (146, 102)], lc, dot_r=0.7))
+        details.append(orbit_glint(137, 108.5, 11, 0.85, lc, dur="6.5s"))
+
+    body = f"""
+  <g id="weapon_{rarity}" transform="rotate(-24 121 131)">
+    <rect x="116.6" y="128" width="7.4" height="34" rx="2.9" fill="url(#{g}Deep)" stroke="{p["edge"]}" stroke-width="0.95"/>
+    <path d="M116.8 134 L123.8 134 M116.8 150 L123.8 150" stroke="{p["trim"]}" stroke-width="1.5" opacity="0.95"/>
+    <rect x="118.5" y="158" width="3.6" height="6" rx="1.5" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.7"/>
+    <path d="M121.5 128 L127 121 L131 116" stroke="url(#{g}Case)" stroke-width="4.6" stroke-linecap="round"/>
+    <path d="M121.5 128 L127 121 L131 116" stroke="{p["edge"]}" stroke-width="0.7" opacity="0.5"/>
+    <circle cx="137" cy="108.5" r="7.8" fill="url(#{g}Glass)" stroke="{p["edge"]}" stroke-width="1" opacity="0.95"/>
+    <path d="M131.5 104.5 Q134 101.5 138 101.2" stroke="#ffffff" stroke-width="0.8" fill="none" opacity="0.7"/>
+    <path d="M130.4 110.5 A6.8 6.8 0 0 0 143.2 110.5 Q137 114.5 130.4 110.5 Z" fill="{c}" opacity="0.8"/>
+    <circle cx="137" cy="99.6" r="1.6" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="0.7"/>
+    {''.join(details)}
+  </g>
+"""
+    return wrap(body, tier_defs(rarity, g))
+
+
+# ---------------------------------------------------------------------------
+# CLOAK — hazmat drape evolving into a containment energy field.
+# Footprint: x54-126, y72-192.
+# ---------------------------------------------------------------------------
+
+def cloak_svg(rarity: str, idx: int) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    lc = RARITY_LIGHT[rarity]
+    g = f"cHaz{idx}"
+
+    details = []
+    if idx == 0:
+        details.append(f'<rect x="63" y="150" width="8" height="3" rx="0.6" fill="#c8c2ae" opacity="0.8" transform="rotate(-7 67 151.5)"/>')
+        details.append(f'<path d="M112 178 L116 184 L119 177.5 L115 175 Z" fill="url(#{g}Deep)" opacity="0.75"/>')
+    if idx >= 1:
+        # Sealed zipper seam.
+        details.append(
+            f'<path d="M90 78 L90 182" stroke="{p["trim"]}" stroke-width="1" opacity="0.6"/>'
+            f'<rect x="88.8" y="84" width="2.4" height="3.4" rx="0.7" fill="{p["trim"]}" opacity="0.9"/>'
+        )
+    if idx >= 2:
+        details.append(rune_strip(61.5, 172.5, 3, c, step=4.4, height=2.4, opacity=0.65))
+        details.append(rune_strip(105.5, 172.5, 3, c, step=4.4, height=2.4, opacity=0.65))
+        details.append(
+            f'<path d="M62 110 Q60 140 61.5 172 M118 110 Q120 140 118.5 172" stroke="{p["trim"]}" stroke-width="0.9" fill="none" opacity="0.6"/>'
+        )
+    if idx >= 3:
+        # Biohazard-style trefoil on the left panel.
+        details.append(
+            f'<circle cx="68" cy="128" r="1.3" fill="none" stroke="{c}" stroke-width="0.7"/>'
+            f'<path d="M68 124.4 A3.6 3.6 0 0 1 71.2 130 M68 124.4 A3.6 3.6 0 0 0 64.8 130 M64.9 130.1 Q68 132.4 71.1 130.1" '
+            f'stroke="{c}" stroke-width="0.85" fill="none" opacity="0.9"/>'
+        )
+    if idx >= 4:
+        # Hex containment cells fading in and out.
+        hexes = []
+        for hx, hy, d in [(64, 104, "3.4s"), (115, 120, "4.1s"), (66, 148, "3.8s")]:
+            hexes.append(
+                f'<path d="M{hx} {hy-3.4} L{hx+3} {hy-1.7} L{hx+3} {hy+1.7} L{hx} {hy+3.4} L{hx-3} {hy+1.7} L{hx-3} {hy-1.7} Z" '
+                f'fill="none" stroke="{c}" stroke-width="0.65" opacity="0.55">'
+                f'<animate attributeName="opacity" values="0.55;0.15;0.55" dur="{d}" repeatCount="indefinite"/></path>'
+            )
+        details.append("".join(hexes))
+        details.append(ember(67, 160, 0.65, lc, rise=11, dur="3.6s"))
+        details.append(ember(114, 152, 0.6, c, rise=10, dur="3.1s", begin="1.3s"))
+    if idx == 5:
+        details.append(glow_pulse(90, 134, 36, 42, f"url(#{g}Aura)", dur="5.5s", omin=0.2, omax=0.45))
+        details.append(constellation([(64, 108), (69, 124), (66, 142), (71, 158), (67, 174)], lc, dot_r=0.7))
+        details.append(constellation([(116, 108), (111, 124), (114, 142), (109, 158), (113, 174)], lc, dot_r=0.7))
+
+    body = f"""
+  <g id="cloak_{rarity}" opacity="0.95">
+    <path d="M64 75 Q90 70 116 75 L124 92 L120 188 Q105 183 90 183 Q75 183 60 188 L56 92 Z"
+          fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="1" opacity="0.55"/>
+    <path d="M66 92 Q64 138 63 182 M114 92 Q116 138 117 182" stroke="{p["edge"]}" stroke-width="0.75" fill="none" opacity="0.5"/>
+    <path d="M72 76 L78 74.8 L80 88 L73 90 Z M108 76 L102 74.8 L100 88 L107 90 Z" fill="url(#{g}Deep)" opacity="0.8"/>
+    <path d="M70 150 L61 189 L74 189 Z" fill="url(#{g}Deep)" opacity="0.5"/>
+    <path d="M110 150 L119 188 L106 189 Z" fill="url(#{g}Deep)" opacity="0.5"/>
+    <path d="M79 76 Q90 73.4 101 76 L100 80.6 Q90 78.4 80 80.6 Z" fill="url(#{g}Deep)" stroke="{p["edge"]}" stroke-width="0.7"/>
+    <circle cx="90" cy="78.5" r="1.4" fill="{c}" opacity="0.9"/>
+    {''.join(details)}
+  </g>
+"""
+    return wrap(body, tier_defs(rarity, g))
+
+
+# ---------------------------------------------------------------------------
+# AMULET — clip-on ID badge maturing into an atom-orbit eureka emblem.
+# Footprint: x80-102, y88-114.
+# ---------------------------------------------------------------------------
+
+def amulet_svg(rarity: str, idx: int) -> str:
+    p = PAL[rarity]
+    c = RARITY_COLORS[rarity]
+    lc = RARITY_LIGHT[rarity]
+    g = f"cBadge{idx}"
+
+    details = []
+    if idx >= 1:
+        details.append(f'<rect x="84.6" y="95.4" width="10.8" height="13.2" rx="1.4" fill="none" stroke="{p["trim"]}" stroke-width="0.9" opacity="0.95"/>')
+    if idx >= 2:
+        # Electron orbit rings.
+        details.append(
+            f'<ellipse cx="90" cy="102" rx="9.4" ry="3.6" fill="none" stroke="{c}" stroke-width="0.6" opacity="0.6">'
+            f'<animateTransform attributeName="transform" type="rotate" values="0 90 102;360 90 102" dur="7s" repeatCount="indefinite"/></ellipse>'
+            f'<ellipse cx="90" cy="102" rx="9.4" ry="3.6" fill="none" stroke="{c}" stroke-width="0.6" opacity="0.6" transform="rotate(60 90 102)"/>'
+        )
+    if idx >= 3:
+        details.append(
+            f'<circle cx="98.6" cy="99" r="1" fill="{lc}">'
+            f'<animateTransform attributeName="transform" type="rotate" values="0 90 102;360 90 102" dur="4.5s" repeatCount="indefinite"/></circle>'
+        )
+    if idx >= 4:
+        details.append(
+            f'<circle cx="90" cy="102" r="3.4" fill="{c}" opacity="0.3">'
+            f'<animate attributeName="r" values="2.8;5;2.8" dur="2.4s" repeatCount="indefinite"/>'
+            f'<animate attributeName="opacity" values="0.3;0.12;0.3" dur="2.4s" repeatCount="indefinite"/></circle>'
+        )
+        details.append(ember(86, 95, 0.5, lc, rise=5, dur="2.6s"))
+    if idx == 5:
+        details.append(glow_pulse(90, 102, 12.5, 11, f"url(#{g}Aura)", dur="3.7s", omin=0.35, omax=0.8))
+        details.append(orbit_glint(90, 102, 11.4, 0.85, lc, dur="6s"))
+        details.append(constellation([(84.5, 94), (90, 92), (95.5, 94)], lc, dot_r=0.6))
+
+    body = f"""
+  <g id="amulet_{rarity}">
+    <path d="M83 88 Q90 92.4 97 88" stroke="{p["trim"]}" stroke-width="1.1" fill="none" opacity="0.95"/>
+    <rect x="88.6" y="91.4" width="2.8" height="2.6" rx="0.6" fill="{p["trim"]}"/>
+    <rect x="83.6" y="94.4" width="12.8" height="15.2" rx="1.8" fill="url(#{g}Case)" stroke="{p["edge"]}" stroke-width="1"/>
+    <rect x="85.6" y="96.6" width="8.8" height="4" rx="0.8" fill="url(#{g}Glass)" opacity="0.95"/>
+    <path d="M86.2 103.4 L93.8 103.4 M86.2 105.4 L92 105.4 M86.2 107.4 L93 107.4" stroke="{p["shadow"]}" stroke-width="0.7" opacity="0.9"/>
+    <circle cx="90" cy="102" r="1.1" fill="{c}" opacity="0.95"/>
+    {''.join(details)}
+  </g>
+"""
+    return wrap(body, tier_defs(rarity, g))
+
+
+# ---------------------------------------------------------------------------
+# FX tiers — reaction glow and rising charged motes.
+# ---------------------------------------------------------------------------
+
+def fx_epic() -> str:
+    c = RARITY_COLORS["epic"]
+    lc = RARITY_LIGHT["epic"]
+    defs = radial_gradient("cFxEpic", [("0%", c, 0.38), ("65%", c, 0.12), ("100%", c, 0.0)])
+    body = f"""
+  <g id="fx_epic">
+    <ellipse cx="90" cy="120" rx="52" ry="78" fill="url(#cFxEpic)"/>
+    <ellipse cx="90" cy="201" rx="40" ry="8.5" fill="{c}" opacity="0.28">
+      <animate attributeName="opacity" values="0.28;0.48;0.28" dur="3.2s" repeatCount="indefinite"/>
+    </ellipse>
+    <path d="M52 164 Q48 134 58 110 M128 164 Q132 134 122 110" stroke="{c}" stroke-width="1.05" fill="none" opacity="0.5"/>
+    <path d="M54 124 L57 124 M55.5 122.5 L55.5 125.5" stroke="{lc}" stroke-width="0.7" opacity="0.8">
+      <animateTransform attributeName="transform" type="translate" values="0 0;2 -8;0 0" dur="3.9s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.25;0.8" dur="3.9s" repeatCount="indefinite"/>
+    </path>
+    {ember(60, 150, 0.95, lc, rise=16, dur="3.5s")}
+    {ember(121, 154, 0.85, c, rise=18, dur="4.2s", begin="1.4s")}
+    {ember(75, 178, 0.75, lc, rise=13, dur="3s", begin="0.7s")}
+  </g>
+"""
+    return wrap(body, defs)
+
+
+def fx_legendary() -> str:
+    c = RARITY_COLORS["legendary"]
+    lc = RARITY_LIGHT["legendary"]
+    defs = radial_gradient("cFxLeg", [("0%", c, 0.42), ("60%", c, 0.15), ("100%", c, 0.0)])
+    body = f"""
+  <g id="fx_legendary">
+    <ellipse cx="90" cy="118" rx="58" ry="86" fill="url(#cFxLeg)"/>
+    <ellipse cx="90" cy="202" rx="46" ry="9" fill="{c}" opacity="0.32">
+      <animate attributeName="opacity" values="0.32;0.55;0.32" dur="2.8s" repeatCount="indefinite"/>
+    </ellipse>
+    <path d="M48 176 Q42 128 60 96 M132 176 Q138 128 120 96" stroke="{c}" stroke-width="1.25" fill="none" opacity="0.55"/>
+    <ellipse cx="58" cy="140" rx="6.5" ry="2.6" fill="none" stroke="{lc}" stroke-width="0.7" opacity="0.6">
+      <animateTransform attributeName="transform" type="rotate" values="0 58 140;360 58 140" dur="6s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="123" cy="128" rx="6.5" ry="2.6" fill="none" stroke="{lc}" stroke-width="0.7" opacity="0.55" transform="rotate(45 123 128)">
+      <animate attributeName="opacity" values="0.55;0.2;0.55" dur="3.4s" repeatCount="indefinite"/>
+    </ellipse>
+    {ember(62, 160, 1.05, lc, rise=22, dur="3.3s")}
+    {ember(118, 164, 0.95, c, rise=24, dur="3.9s", begin="1.2s")}
+    {ember(90, 186, 0.85, lc, rise=18, dur="2.9s", begin="0.5s")}
+  </g>
+"""
+    return wrap(body, defs)
+
+
+def fx_celestial() -> str:
+    c = RARITY_COLORS["celestial"]
+    lc = RARITY_LIGHT["celestial"]
+    defs = radial_gradient("cFxCel", [("0%", c, 0.38), ("55%", c, 0.13), ("100%", c, 0.0)])
+    body = f"""
+  <g id="fx_celestial">
+    <rect x="56" y="0" width="68" height="220" fill="{c}" opacity="0.05"/>
+    <ellipse cx="90" cy="116" rx="60" ry="92" fill="url(#cFxCel)"/>
+    <ellipse cx="90" cy="203" rx="48" ry="9" fill="{c}" opacity="0.28">
+      <animate attributeName="opacity" values="0.28;0.5;0.28" dur="3.7s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="90" cy="120" rx="50" ry="76" fill="none" stroke="{c}" stroke-width="0.85" opacity="0.38">
+      <animate attributeName="opacity" values="0.38;0.65;0.38" dur="4.5s" repeatCount="indefinite"/>
+    </ellipse>
+    {constellation([(50, 58), (64, 40), (82, 32), (102, 33), (119, 43), (130, 60)], lc)}
+    {constellation([(48, 148), (58, 168), (74, 182)], lc, dot_r=0.7)}
+    {constellation([(132, 148), (122, 168), (106, 182)], lc, dot_r=0.7)}
+    {orbit_glint(90, 118, 54, 1.25, lc, dur="12.5s")}
+    {ember(66, 152, 0.75, lc, rise=26, dur="4.7s")}
+    {ember(114, 158, 0.75, lc, rise=24, dur="5.3s", begin="2s")}
+  </g>
+"""
+    return wrap(body, defs)
+
+
+# ---------------------------------------------------------------------------
+# HERO BASE — unchanged silhouette.
+# ---------------------------------------------------------------------------
 
 def hero_base_svg() -> str:
     return wrap(
@@ -116,284 +745,21 @@ def hero_base_svg() -> str:
     )
 
 
-def helmet_svg(rarity: str, idx: int) -> str:
-    c = RARITY_COLORS[rarity]
-    side = ""
-    if idx >= 1:
-        side = f'<rect x="72" y="46.2" width="4.8" height="4.6" rx="1" fill="{c}" opacity="0.75"/><rect x="103.2" y="46.2" width="4.8" height="4.6" rx="1" fill="{c}" opacity="0.75"/>'
-    strap = ""
-    if idx >= 2:
-        strap = f'<path d="M76 48.5 L104 48.5" stroke="{c}" stroke-width="1.05" opacity="0.85"/>'
-    crown = ""
-    if idx >= 3:
-        crown = f'<path d="M84 36 L96 36 L99 43 L81 43 Z" fill="#2e4364" stroke="{c}" stroke-width="0.95"/><circle cx="90" cy="39.5" r="1.8" fill="{c}" opacity="0.95"/>'
-    aura = ""
-    if idx >= 4:
-        aura = f'<ellipse cx="90" cy="48.5" rx="19" ry="7.4" fill="none" stroke="{c}" stroke-width="1.1" opacity="0.62"/>'
-    halo = ""
-    if idx == 5:
-        halo = f'<ellipse cx="90" cy="48.5" rx="25.5" ry="9.8" fill="none" stroke="{c}" stroke-width="1.1" opacity="0.56"/><ellipse cx="90" cy="48.5" rx="21" ry="8.1" fill="none" stroke="#baf8ff" stroke-width="0.85" opacity="0.58"/>'
-    body = f"""
-  <g id="helmet_{rarity}">
-    <rect x="76.2" y="44.6" width="27.6" height="8" rx="3.2" fill="#153047" stroke="#0e1b2b" stroke-width="0.9"/>
-    <circle cx="85.5" cy="48.5" r="2.6" fill="none" stroke="#cceeff" stroke-width="1"/>
-    <circle cx="94.5" cy="48.5" r="2.6" fill="none" stroke="#cceeff" stroke-width="1"/>
-    <path d="M88.1 48.5 L91.9 48.5" stroke="#cceeff" stroke-width="0.85"/>
-    <path d="M79.3 48.5 L83 48.5 M97 48.5 L100.7 48.5" stroke="{c}" stroke-width="0.9" opacity="0.8"/>
-    {side}
-    {strap}
-    {crown}
-    {aura}
-    {halo}
-  </g>
-"""
-    return wrap(body)
-
-
-def chestplate_svg(rarity: str, idx: int) -> str:
-    c = RARITY_COLORS[rarity]
-    details = ""
-    if idx >= 1:
-        details += '<path d="M74 90 L106 90 M74 100 L106 100 M74 110 L106 110 M74 120 L106 120" stroke="#7c8da7" stroke-width="0.85" opacity="0.72"/>'
-    if idx >= 2:
-        details += f'<path d="M72 82 L80 76 L100 76 L108 82" stroke="{c}" stroke-width="1" fill="none" opacity="0.82"/><path d="M76 134 Q90 139 104 134" stroke="{c}" stroke-width="1.05" fill="none" opacity="0.75"/>'
-    if idx >= 3:
-        details += f'<rect x="84.5" y="94.5" width="11" height="16.5" rx="2.3" fill="#183048" stroke="{c}" stroke-width="1"/><path d="M87 103 L93 103" stroke="{c}" stroke-width="0.92"/>'
-    if idx >= 4:
-        details += f'<path d="M68 86 Q90 70 112 86" stroke="{c}" stroke-width="1.28" fill="none" opacity="0.85"/><path d="M74 114 L106 114" stroke="{c}" stroke-width="1.1" opacity="0.8"/>'
-    if idx == 5:
-        details += f'<ellipse cx="90" cy="103" rx="18" ry="7.2" fill="none" stroke="{c}" stroke-width="0.95" opacity="0.54"/><ellipse cx="90" cy="103" rx="12.5" ry="5.2" fill="none" stroke="#baf8ff" stroke-width="0.8" opacity="0.58"/>'
-    body = f"""
-  <g id="chestplate_{rarity}">
-    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z" fill="#dae0ea" stroke="#97a3b4" stroke-width="1.1"/>
-    <path d="M76 84 L104 84 L105 143 L75 143 Z" fill="#4b5c79" opacity="0.92"/>
-    <path d="M76 84 L83 94 L80 143 L74 143 Z" fill="#303f5b" opacity="0.75"/>
-    <path d="M104 84 L97 94 L100 143 L106 143 Z" fill="#303f5b" opacity="0.75"/>
-    <path d="M90 84 L90 143" stroke="#24324a" stroke-width="1.02"/>
-    <path d="M79 86 L86 92 M101 86 L94 92" stroke="#dce4f0" stroke-width="1.05" opacity="0.7"/>
-    {details}
-  </g>
-"""
-    return wrap(body)
-
-
-def gauntlets_svg(rarity: str, idx: int) -> str:
-    c = RARITY_COLORS[rarity]
-    details = ""
-    if idx >= 1:
-        details += '<path d="M40 143 L60 143 M120 143 L140 143" stroke="#7f90ab" stroke-width="0.85" opacity="0.75"/>'
-    if idx >= 2:
-        details += f'<path d="M44 136 L56 136 M124 136 L136 136" stroke="{c}" stroke-width="0.95" opacity="0.82"/>'
-    if idx >= 3:
-        details += f'<circle cx="49.5" cy="147.2" r="1.4" fill="{c}"/><circle cx="130.5" cy="147.2" r="1.4" fill="{c}"/>'
-    if idx >= 4:
-        details += f'<path d="M39 145.8 L61 145.8" stroke="{c}" stroke-width="1.22" opacity="0.82"/><path d="M119 145.8 L141 145.8" stroke="{c}" stroke-width="1.22" opacity="0.82"/>'
-    if idx == 5:
-        details += f'<ellipse cx="50" cy="146.4" rx="8.2" ry="3" fill="none" stroke="{c}" stroke-width="0.82" opacity="0.54"/><ellipse cx="130" cy="146.4" rx="8.2" ry="3" fill="none" stroke="{c}" stroke-width="0.82" opacity="0.54"/>'
-    body = f"""
-  <g id="gauntlets_{rarity}">
-    <path d="M38 134 L62 134 L61 156 L39 156 Z" fill="#dbe2ec" stroke="#97a3b4" stroke-width="1"/>
-    <path d="M118 134 L142 134 L141 156 L119 156 Z" fill="#dbe2ec" stroke="#97a3b4" stroke-width="1"/>
-    <rect x="42.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#f6fbff" opacity="0.92"/>
-    <rect x="122.8" y="150.2" width="14.3" height="2.8" rx="1.2" fill="#f6fbff" opacity="0.92"/>
-    <path d="M44.5 138 L55.5 138 M124.5 138 L135.5 138" stroke="#415370" stroke-width="0.9"/>
-    {details}
-  </g>
-"""
-    return wrap(body)
-
-
-def boots_svg(rarity: str, idx: int) -> str:
-    c = RARITY_COLORS[rarity]
-    details = ""
-    if idx >= 1:
-        details += '<path d="M44 194 L73 194 M106 194 L135 194" stroke="#8a9cb7" stroke-width="0.88" opacity="0.75"/>'
-    if idx >= 2:
-        details += f'<rect x="53" y="189.7" width="6" height="2.3" rx="1" fill="{c}" opacity="0.85"/><rect x="120" y="189.7" width="6" height="2.3" rx="1" fill="{c}" opacity="0.85"/>'
-    if idx >= 3:
-        details += f'<path d="M45 202.5 L74 202.5" stroke="{c}" stroke-width="1.08" opacity="0.84"/><path d="M106 202.5 L135 202.5" stroke="{c}" stroke-width="1.08" opacity="0.84"/>'
-    if idx >= 4:
-        details += f'<path d="M48 188 Q60 181 72 188" stroke="{c}" stroke-width="0.95" fill="none" opacity="0.84"/><path d="M108 188 Q120 181 132 188" stroke="{c}" stroke-width="0.95" fill="none" opacity="0.84"/>'
-    if idx == 5:
-        details += f'<ellipse cx="60" cy="207" rx="12" ry="3.2" fill="none" stroke="{c}" stroke-width="0.86" opacity="0.54"/><ellipse cx="120" cy="207" rx="12" ry="3.2" fill="none" stroke="{c}" stroke-width="0.86" opacity="0.54"/>'
-    body = f"""
-  <g id="boots_{rarity}">
-    <path d="M43 188 L74 188 L76 202 L41 202 Z" fill="#dce3ed" stroke="#98a4b5" stroke-width="1"/>
-    <path d="M104 188 L135 188 L137 202 L102 202 Z" fill="#dce3ed" stroke="#98a4b5" stroke-width="1"/>
-    <path d="M41 201 L77 201 L79 209 L39 209 Z" fill="#5a6270" stroke="#2c323b" stroke-width="1"/>
-    <path d="M102 201 L138 201 L140 209 L100 209 Z" fill="#5a6270" stroke="#2c323b" stroke-width="1"/>
-    <path d="M45 192 L74 192" stroke="{c}" stroke-width="1.12" opacity="0.88"/>
-    <path d="M106 192 L135 192" stroke="{c}" stroke-width="1.12" opacity="0.88"/>
-    {details}
-  </g>
-"""
-    return wrap(body)
-
-
-def shield_svg(rarity: str, idx: int) -> str:
-    c = RARITY_COLORS[rarity]
-    details = ""
-    if idx >= 1:
-        details += '<path d="M38 109 L58 109 M38 117 L58 117 M38 125 L58 125 M38 133 L58 133" stroke="#8fa3bf" stroke-width="0.82" opacity="0.75"/>'
-    if idx >= 2:
-        details += f'<path d="M40 103 L58 103 L62 109 L62 140 L58 146 L40 146 L36 140 L36 109 Z" fill="none" stroke="{c}" stroke-width="0.9" opacity="0.82"/>'
-    if idx >= 3:
-        details += f'<rect x="43" y="115.5" width="12" height="2" rx="1" fill="{c}" opacity="0.86"><animate attributeName="y" values="115.5;137;115.5" dur="2.1s" repeatCount="indefinite"/></rect>'
-    if idx >= 4:
-        details += f'<path d="M44 126 L49 131 L55 121" stroke="{c}" stroke-width="1.08" fill="none"/><circle cx="49.5" cy="110.4" r="2.05" fill="#22334d" stroke="{c}" stroke-width="0.9"/>'
-    if idx == 5:
-        details += f'<ellipse cx="49" cy="125" rx="17.2" ry="8.2" fill="none" stroke="{c}" stroke-width="0.95" opacity="0.55"/><ellipse cx="49" cy="125" rx="11.7" ry="5.5" fill="none" stroke="#baf8ff" stroke-width="0.8" opacity="0.58"/>'
-    body = f"""
-  <g id="shield_{rarity}">
-    <path d="M34 100 L60 100 L64 106 L64 142 L60 149 L34 149 L30 142 L30 106 Z" fill="#dce3ed" stroke="#97a4b5" stroke-width="1"/>
-    <rect x="36.5" y="103.4" width="21" height="42" rx="2" fill="#4b5d7a" opacity="0.9"/>
-    <path d="M41 100 L53 100 L57 94 L45 94 Z" fill="#dce3ed" stroke="#97a4b5" stroke-width="0.8"/>
-    <path d="M30 106 L64 106" stroke="{c}" stroke-width="0.98" opacity="0.82"/>
-    {details}
-  </g>
-"""
-    return wrap(body)
-
-
-def weapon_svg(rarity: str, idx: int) -> str:
-    c = RARITY_COLORS[rarity]
-    details = ""
-    if idx >= 1:
-        details += f'<path d="M126 103.5 Q139 96 146 108" stroke="{c}" stroke-width="0.9" fill="none" opacity="0.82"/>'
-    if idx >= 2:
-        details += f'<path d="M127 111.5 Q139 106 147 99" stroke="{c}" stroke-width="0.85" fill="none" opacity="0.75"/>'
-    if idx >= 3:
-        details += f'<circle cx="142" cy="102.5" r="1.5" fill="{c}" opacity="0.95"/><path d="M124 124 L128 120 L131 126 L127 130 Z" fill="#28415f" stroke="{c}" stroke-width="0.88"/>'
-    if idx >= 4:
-        details += f'<path d="M124 106 Q140 94 151 106" stroke="{c}" stroke-width="1.28" fill="none" opacity="0.9"/><path d="M126 118 Q140 112 149 105" stroke="{c}" stroke-width="0.9" fill="none" opacity="0.8"><animate attributeName="opacity" values="0.45;1;0.45" dur="1.5s" repeatCount="indefinite"/></path>'
-    if idx == 5:
-        details += f'<ellipse cx="142" cy="103" rx="10.8" ry="4.3" fill="none" stroke="{c}" stroke-width="0.88" opacity="0.55"/>'
-    body = f"""
-  <g id="weapon_{rarity}" transform="rotate(-24 121 131)">
-    <rect x="115.2" y="126" width="10.2" height="36" rx="3" fill="#1b2b43" stroke="#0e1725" stroke-width="1"/>
-    <rect x="116.8" y="134" width="7" height="2.4" rx="1" fill="{c}" opacity="0.92"/>
-    <rect x="116.8" y="145" width="7" height="2.4" rx="1" fill="{c}" opacity="0.75"/>
-    <rect x="118.8" y="160" width="3.2" height="4.8" rx="1.4" fill="#28405d"/>
-    <path d="M114.8 126 L125.6 126 L127 122 L113.6 122 Z" fill="#38537a" stroke="#1a2b45" stroke-width="1"/>
-    <path d="M124 102 Q141 92 152 106 Q138 111 126 124 Z" fill="#d7e6f8" stroke="#385372" stroke-width="1.02"/>
-    <path d="M126.3 103.5 L129.6 108.8 L126.3 114.2 L123 108.8 Z" fill="#ffffff" opacity="0.92"/>
-    {details}
-  </g>
-"""
-    return wrap(body)
-
-
-def cloak_svg(rarity: str, idx: int) -> str:
-    c = RARITY_COLORS[rarity]
-    details = ""
-    if idx >= 1:
-        details += '<path d="M72 94 L68 182 M108 94 L112 182" stroke="#9fb3d1" stroke-width="0.8" opacity="0.45"/>'
-    if idx >= 2:
-        details += f'<path d="M68 83 Q90 96 112 83" stroke="{c}" stroke-width="0.95" fill="none" opacity="0.82"/>'
-    if idx >= 3:
-        details += f'<rect x="74" y="106" width="32" height="1.6" rx="0.8" fill="{c}" opacity="0.73"/><rect x="74" y="124" width="32" height="1.6" rx="0.8" fill="{c}" opacity="0.73"/><rect x="74" y="142" width="32" height="1.6" rx="0.8" fill="{c}" opacity="0.73"/>'
-    if idx >= 4:
-        details += f'<path d="M66 112 Q90 96 114 112" stroke="{c}" stroke-width="1.25" fill="none" opacity="0.85"/><path d="M66 150 Q90 136 114 150" stroke="{c}" stroke-width="1.05" fill="none" opacity="0.67"/>'
-    if idx == 5:
-        details += f'<ellipse cx="90" cy="136" rx="33" ry="18" fill="none" stroke="{c}" stroke-width="0.95" opacity="0.5"/>'
-    body = f"""
-  <g id="cloak_{rarity}" opacity="0.86">
-    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#dce3ed" opacity="0.36"/>
-    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#5a6f92" opacity="0.34"/>
-    <path d="M70 150 L62 191 L74 191 Z" fill="#415a80" opacity="0.5"/>
-    <path d="M108 150 L120 189 L106 190 Z" fill="#415a80" opacity="0.5"/>
-    {details}
-  </g>
-"""
-    return wrap(body)
-
-
-def amulet_svg(rarity: str, idx: int) -> str:
-    c = RARITY_COLORS[rarity]
-    details = ""
-    if idx >= 1:
-        details += f'<circle cx="90" cy="100" r="6.6" fill="none" stroke="{c}" stroke-width="1.05" opacity="0.85"/>'
-    if idx >= 2:
-        details += f'<path d="M90 95.3 L92.3 99.6 L90 103.9 L87.7 99.6 Z" fill="{c}" opacity="0.9"/><path d="M84.5 100 L95.5 100" stroke="{c}" stroke-width="0.9" opacity="0.8"/>'
-    if idx >= 3:
-        details += f'<circle cx="90" cy="100" r="10.2" fill="none" stroke="{c}" stroke-width="0.86" opacity="0.45"><animateTransform attributeName="transform" type="rotate" values="0 90 100;360 90 100" dur="8s" repeatCount="indefinite"/></circle>'
-    if idx >= 4:
-        details += f'<path d="M82 100 L76 97 L78 104 Z" fill="{c}" opacity="0.9"/><path d="M98 100 L104 97 L102 104 Z" fill="{c}" opacity="0.9"/>'
-    if idx == 5:
-        details += f'<ellipse cx="90" cy="100" rx="14.2" ry="5.2" fill="none" stroke="{c}" stroke-width="0.88" opacity="0.58"/><ellipse cx="90" cy="100" rx="10.7" ry="3.9" fill="none" stroke="#bcf8ff" stroke-width="0.78" opacity="0.58"/>'
-    pulse = ""
-    if idx >= 3:
-        pulse = f'<circle cx="90" cy="100" r="2.7" fill="{c}" opacity="0.24"><animate attributeName="r" values="2.1;4.4;2.1" dur="2s" repeatCount="indefinite"/></circle>'
-    body = f"""
-  <g id="amulet_{rarity}">
-    <path d="M86 90 Q90 86 94 90" stroke="#8fa2bc" stroke-width="1.02" fill="none"/>
-    <circle cx="90" cy="100" r="5.1" fill="#304868" stroke="#15263c" stroke-width="1"/>
-    <circle cx="90" cy="100" r="2" fill="{c}" opacity="0.95"/>
-    {details}
-    {pulse}
-  </g>
-"""
-    return wrap(body)
-
-
-def fx_epic() -> str:
-    return wrap(
-        """
-  <g id="fx_epic">
-    <ellipse cx="90" cy="101" rx="25" ry="12" fill="#9C27B0" opacity="0.1"/>
-    <circle cx="90" cy="100" r="19" fill="none" stroke="#9C27B0" stroke-width="1.65" opacity="0.66"/>
-    <path d="M69 100 L111 100" stroke="#cf83ef" stroke-width="1" opacity="0.74"/>
-    <circle cx="66" cy="93" r="1.15" fill="#cf83ef"/>
-    <circle cx="114" cy="109" r="1.15" fill="#cf83ef"/>
-  </g>
-"""
-    )
-
-
-def fx_legendary() -> str:
-    return wrap(
-        """
-  <g id="fx_legendary">
-    <ellipse cx="90" cy="100" rx="29" ry="14" fill="#FF9800" opacity="0.11"/>
-    <ellipse cx="90" cy="100" rx="35" ry="17" fill="none" stroke="#FF9800" stroke-width="1.45" opacity="0.74"/>
-    <ellipse cx="90" cy="100" rx="22.5" ry="10.8" fill="none" stroke="#ffd59f" stroke-width="1" opacity="0.67"/>
-    <path d="M57 102 Q90 75 123 102" stroke="#FF9800" stroke-width="1.35" fill="none" opacity="0.74"/>
-    <circle cx="90" cy="82" r="1.95" fill="#FF9800"/>
-  </g>
-"""
-    )
-
-
-def fx_celestial() -> str:
-    return wrap(
-        """
-  <g id="fx_celestial">
-    <rect x="60" y="0" width="60" height="220" fill="#00E5FF" opacity="0.045"/>
-    <ellipse cx="90" cy="100" rx="31" ry="14.3" fill="#00E5FF" opacity="0.1"/>
-    <ellipse cx="90" cy="100" rx="39" ry="18.3" fill="none" stroke="#00E5FF" stroke-width="1.12" opacity="0.7"/>
-    <ellipse cx="90" cy="100" rx="33" ry="15.1" fill="none" stroke="#b1f9ff" stroke-width="0.88" opacity="0.58"/>
-    <path d="M90 67 L90 133" stroke="#bdf9ff" stroke-width="1" opacity="0.55"/>
-    <path d="M57 100 L123 100" stroke="#bdf9ff" stroke-width="1" opacity="0.55"/>
-    <circle cx="60" cy="88" r="1.2" fill="#9bf6ff"/>
-    <circle cx="120" cy="92" r="1.15" fill="#9bf6ff"/>
-    <circle cx="104" cy="116" r="1.08" fill="#9bf6ff"/>
-    <circle cx="76" cy="116" r="1.08" fill="#9bf6ff"/>
-  </g>
-"""
-    )
-
-
 def main() -> None:
     write(ROOT / "hero_base.svg", hero_base_svg())
+    slot_fns = {
+        "helmet": helmet_svg,
+        "chestplate": chestplate_svg,
+        "gauntlets": gauntlets_svg,
+        "boots": boots_svg,
+        "shield": shield_svg,
+        "weapon": weapon_svg,
+        "cloak": cloak_svg,
+        "amulet": amulet_svg,
+    }
     for idx, rarity in enumerate(RARITIES):
-        write(ROOT / "gear" / "helmet" / f"helmet_{rarity}.svg", helmet_svg(rarity, idx))
-        write(ROOT / "gear" / "chestplate" / f"chestplate_{rarity}.svg", chestplate_svg(rarity, idx))
-        write(ROOT / "gear" / "gauntlets" / f"gauntlets_{rarity}.svg", gauntlets_svg(rarity, idx))
-        write(ROOT / "gear" / "boots" / f"boots_{rarity}.svg", boots_svg(rarity, idx))
-        write(ROOT / "gear" / "shield" / f"shield_{rarity}.svg", shield_svg(rarity, idx))
-        write(ROOT / "gear" / "weapon" / f"weapon_{rarity}.svg", weapon_svg(rarity, idx))
-        write(ROOT / "gear" / "cloak" / f"cloak_{rarity}.svg", cloak_svg(rarity, idx))
-        write(ROOT / "gear" / "amulet" / f"amulet_{rarity}.svg", amulet_svg(rarity, idx))
+        for slot, fn in slot_fns.items():
+            write(ROOT / "gear" / slot / f"{slot}_{rarity}.svg", fn(rarity, idx))
 
     write(ROOT / "fx" / "tier_epic.svg", fx_epic())
     write(ROOT / "fx" / "tier_legendary.svg", fx_legendary())
@@ -403,4 +769,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

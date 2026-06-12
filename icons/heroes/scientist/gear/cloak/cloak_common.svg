@@ -1,11 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="cHaz0Case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8a93a0"/>
+      <stop offset="45%" stop-color="#5a626e"/>
+      <stop offset="100%" stop-color="#3f4651"/>
+    </linearGradient>
+    <linearGradient id="cHaz0Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a626e"/>
+      <stop offset="100%" stop-color="#2b323c"/>
+    </linearGradient>
+    <linearGradient id="cHaz0Glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#aebdc9"/>
+      <stop offset="100%" stop-color="#3f4651"/>
+    </linearGradient>
+  </defs>
 
-  <g id="cloak_common" opacity="0.86">
-    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#dce3ed" opacity="0.36"/>
-    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#5a6f92" opacity="0.34"/>
-    <path d="M70 150 L62 191 L74 191 Z" fill="#415a80" opacity="0.5"/>
-    <path d="M108 150 L120 189 L106 190 Z" fill="#415a80" opacity="0.5"/>
-    
+  <g id="cloak_common" opacity="0.95">
+    <path d="M64 75 Q90 70 116 75 L124 92 L120 188 Q105 183 90 183 Q75 183 60 188 L56 92 Z"
+          fill="url(#cHaz0Case)" stroke="#2b323c" stroke-width="1" opacity="0.55"/>
+    <path d="M66 92 Q64 138 63 182 M114 92 Q116 138 117 182" stroke="#2b323c" stroke-width="0.75" fill="none" opacity="0.5"/>
+    <path d="M72 76 L78 74.8 L80 88 L73 90 Z M108 76 L102 74.8 L100 88 L107 90 Z" fill="url(#cHaz0Deep)" opacity="0.8"/>
+    <path d="M70 150 L61 189 L74 189 Z" fill="url(#cHaz0Deep)" opacity="0.5"/>
+    <path d="M110 150 L119 188 L106 189 Z" fill="url(#cHaz0Deep)" opacity="0.5"/>
+    <path d="M79 76 Q90 73.4 101 76 L100 80.6 Q90 78.4 80 80.6 Z" fill="url(#cHaz0Deep)" stroke="#2b323c" stroke-width="0.7"/>
+    <circle cx="90" cy="78.5" r="1.4" fill="#9E9E9E" opacity="0.9"/>
+    <rect x="63" y="150" width="8" height="3" rx="0.6" fill="#c8c2ae" opacity="0.8" transform="rotate(-7 67 151.5)"/><path d="M112 178 L116 184 L119 177.5 L115 175 Z" fill="url(#cHaz0Deep)" opacity="0.75"/>
   </g>
 
 </svg>

@@ -1,14 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="wWeap2Plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fb2dc"/>
+      <stop offset="45%" stop-color="#4a5d78"/>
+      <stop offset="100%" stop-color="#32425a"/>
+    </linearGradient>
+    <linearGradient id="wWeap2Deep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a5d78"/>
+      <stop offset="100%" stop-color="#22304a"/>
+    </linearGradient>
+  </defs>
 
   <g id="weapon_rare" transform="rotate(-24 121 131)">
-    <rect x="115.2" y="126" width="10.2" height="36" rx="3" fill="#2a3d58" stroke="#151f30" stroke-width="1"/>
-    <rect x="116.8" y="134" width="7" height="2.4" rx="1" fill="#2196F3" opacity="0.92"/>
-    <rect x="116.8" y="145" width="7" height="2.4" rx="1" fill="#2196F3" opacity="0.75"/>
-    <rect x="118.8" y="160" width="3.2" height="4.8" rx="1.4" fill="#3a526f"/>
-    <path d="M114.8 126 L125.6 126 L127 122 L113.6 122 Z" fill="#536f93" stroke="#25384f" stroke-width="1"/>
-    <path d="M124 102 Q141 92 152 106 Q138 111 126 124 Z" fill="#d9e4f2" stroke="#4a6181" stroke-width="1"/>
-    <path d="M126.3 103.5 L129.6 108.8 L126.3 114.2 L123 108.8 Z" fill="#ffffff" opacity="0.92"/>
-    <path d="M126 103.5 Q139 96 146 108" stroke="#2196F3" stroke-width="0.88" fill="none" opacity="0.82"/><path d="M127 111.5 Q139 106 147 99" stroke="#2196F3" stroke-width="0.8" fill="none" opacity="0.75"/>
+    <rect x="115.2" y="126" width="10.2" height="38" rx="3.2" fill="url(#wWeap2Deep)" stroke="#22304a" stroke-width="1"/>
+    <path d="M116 130 L124.6 130 M116 152 L124.6 152" stroke="#5d4a6e" stroke-width="2.2" opacity="0.95"/>
+    <rect x="118.6" y="160.5" width="3.4" height="5" rx="1.5" fill="url(#wWeap2Plate)" stroke="#22304a" stroke-width="0.7"/>
+    <path d="M114.4 126 L126.2 126 L127.8 121.4 L112.8 121.4 Z" fill="url(#wWeap2Plate)" stroke="#22304a" stroke-width="1"/>
+    <path d="M124 102 Q141 91 152.5 105.5 Q138.5 111 126.5 124 Z" fill="url(#wWeap2Plate)" stroke="#22304a" stroke-width="1.1"/>
+    <path d="M126.5 105 Q138 97.5 147.5 105.5 Q137 110 128.5 119 Z" fill="url(#wWeap2Deep)" opacity="0.92"/>
+    <path d="M126.3 103.5 L129.6 108.8 L126.3 114.2 L123 108.8 Z" fill="#90caf9" opacity="0.9"/>
+    <circle cx="120.3" cy="123.7" r="1.1" fill="#2196F3" opacity="0.95"/>
+    <path d="M126 103.5 Q139 95.5 148 105" stroke="#64a8e8" stroke-width="0.95" fill="none" opacity="0.85"/><path d="M117.3 137.5 L117.3 140.1 M117.3 138.8 L119.1 137.5" stroke="#2196F3" stroke-width="0.55" fill="none" opacity="0.95" stroke-linecap="round"/><path d="M117.3 143.5 L117.3 146.1 M117.3 144.8 L119.1 143.5" stroke="#2196F3" stroke-width="0.55" fill="none" opacity="0.8" stroke-linecap="round"/><path d="M127.5 121 L149 103" stroke="#90caf9" stroke-width="0.85" stroke-linecap="round" opacity="0.675"><animate attributeName="opacity" values="0.675;1.0;0.35;0.675" dur="2.7s" repeatCount="indefinite"/></path>
   </g>
 
 </svg>
